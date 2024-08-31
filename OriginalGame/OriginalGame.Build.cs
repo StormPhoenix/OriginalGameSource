@@ -8,19 +8,49 @@ public class OriginalGame : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
+		PublicIncludePaths.AddRange(
+			new string[]
+			{
+				"OriginalGame"
+			});
+
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
-			"Core", "CoreUObject", "Engine", "InputCore", "AIModule",
+			"Core",
+			"CoreUObject",
+			"Engine",
+			"InputCore",
+			"AIModule",
+			"GameplayAbilities",
+			"CommonGame",
+			"GameplayTags"
 		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "ModularGameplayActors" });
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"AudioMixer",
+			"ApplicationCore",
+			"DeveloperSettings",
+			"CommonLoadingScreen",
+			"CommonInput",
+			"CommonUI",
+			"GameFeatures",
+			"GameplayMessageNodes",
+			"GameplayMessageRuntime",
+			"ModularGameplay",
+			"ModularGameplayActors",
+			"Slate",
+			"EnhancedInput",
+			"RHI",
+			"UMG"
+		});
 
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
-
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+		if (Target.bBuildEditor)
+		{
+			PublicDependencyModuleNames.AddRange(new string[]
+			{
+				"UnrealEd", "AnimGraph"
+			});
+		}
 	}
 }

@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SpectatorPawn.h"
-#include "ScorpioSpectator.generated.h"
+#include "QinSpectator.generated.h"
 
 UCLASS()
-class ORIGINALGAME_API AScorpioSpectator : public ASpectatorPawn
+class ORIGINALGAME_API AQinSpectator : public ASpectatorPawn
 {
 	GENERATED_BODY()
 
 public:
-	AScorpioSpectator();
+	AQinSpectator();
 
 protected:
 	virtual void BeginPlay() override;

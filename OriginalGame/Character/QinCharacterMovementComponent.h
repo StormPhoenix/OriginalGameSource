@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "ScorpioCharacterMovementComponent.generated.h"
+#include "QinCharacterMovementComponent.generated.h"
 
 UCLASS(Config = Game)
-class ORIGINALGAME_API UScorpioCharacterMovementComponent : public UCharacterMovementComponent
+class ORIGINALGAME_API UQinCharacterMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()
 
 public:
-	UScorpioCharacterMovementComponent();
+	UQinCharacterMovementComponent();
 
 protected:
 	virtual void BeginPlay() override;

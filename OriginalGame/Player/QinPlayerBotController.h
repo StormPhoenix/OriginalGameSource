@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "ModularAIController.h"
-#include "ScorpioPlayerBotController.generated.h"
+#include "QinPlayerBotController.generated.h"
 
 UCLASS(Blueprintable)
-class ORIGINALGAME_API AScorpioPlayerBotController : public AModularAIController
+class ORIGINALGAME_API AQinPlayerBotController : public AModularAIController
 {
 	GENERATED_BODY()
 
 public:
-	AScorpioPlayerBotController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	AQinPlayerBotController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 protected:
 	virtual void BeginPlay() override;

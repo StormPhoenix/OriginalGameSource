@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "ModularPlayerState.h"
-#include "ScorpioPlayerState.generated.h"
+#include "QinPlayerState.generated.h"
 
 /**
  * 
  */
 UCLASS(Config = Game)
-class ORIGINALGAME_API AScorpioPlayerState : public AModularPlayerState
+class ORIGINALGAME_API AQinPlayerState : public AModularPlayerState
 {
 	GENERATED_BODY()
 	
 public:
-	AScorpioPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	AQinPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 };

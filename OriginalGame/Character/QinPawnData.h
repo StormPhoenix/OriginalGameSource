@@ -4,20 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "ScorpioPawnData.generated.h"
+#include "QinPawnData.generated.h"
 
 /**
  * 
  */
 UCLASS(BlueprintType, Const, Meta = (DisplayName = "Original Game Pawn Data", ShortTooltip = "Data asset used to define a Pawn."))
-class ORIGINALGAME_API UScorpioPawnData : public UPrimaryDataAsset
+class ORIGINALGAME_API UQinPawnData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
 public:
-	UScorpioPawnData(const FObjectInitializer& ObjectInitializer);
+	UQinPawnData(const FObjectInitializer& ObjectInitializer);
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Scorpio|Pawn")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Qin|Pawn")
 	TSubclassOf<APawn> PawnClass;
 };

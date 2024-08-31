@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "ModularCharacter.h"
-#include "ScorpioCharacter.generated.h"
+#include "QinCharacter.generated.h"
 
 UCLASS(Config = Game, Meta = (ShortTooltip = "The base character pawn class used by this project."))
-class ORIGINALGAME_API AScorpioCharacter : public AModularCharacter
+class ORIGINALGAME_API AQinCharacter : public AModularCharacter
 {
 	GENERATED_BODY()
 
 public:
-	AScorpioCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	AQinCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	UFUNCTION(BlueprintCallable, Category = "OriginalGame|Character")
-	AScorpioPlayerState* GetScorpioPlayerState() const;
+	AQinPlayerState* GetQinPlayerState() const;
 	
 protected:
 	virtual void BeginPlay() override;

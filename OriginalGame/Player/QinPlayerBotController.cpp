@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ScorpioPlayerBotController.h"
+#include "QinPlayerBotController.h"
 
 
-AScorpioPlayerBotController::AScorpioPlayerBotController(
+AQinPlayerBotController::AQinPlayerBotController(
 	const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -12,12 +12,12 @@ AScorpioPlayerBotController::AScorpioPlayerBotController(
 	bStopAILogicOnUnposses = false;
 }
 
-void AScorpioPlayerBotController::BeginPlay()
+void AQinPlayerBotController::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void AScorpioPlayerBotController::Tick(float DeltaTime)
+void AQinPlayerBotController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
