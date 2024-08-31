@@ -7,7 +7,7 @@
 #include "JoyGameState.h"
 #include "JoyLogChannels.h"
 #include "JoyWorldSettings.h"
-#include "Character/JoyCharacter.h"
+#include "Character/JoyPawnData.h"
 #include "Character/JoySpectator.h"
 #include "Development/JoyDeveloperSettings.h"
 #include "Kismet/GameplayStatics.h"
@@ -34,6 +34,19 @@ void AJoyGameMode::InitGameState()
 	check(ExperienceComponent);
 	ExperienceComponent->CallOrRegister_OnExperienceLoaded(
 		FOnJoyExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
+}
+
+UClass* AJoyGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+	if (const UJoyPawnData* PawnData = GetPawnDataForController(InController))
+	{
+		if (PawnData->PawnClass)
+		{
+			return PawnData->PawnClass;
+		}
+	}
+
+	return Super::GetDefaultPawnClassForController_Implementation(InController);
 }
 
 void AJoyGameMode::OnExperienceLoaded(const UJoyExperienceDefinition* CurrentExperience)
@@ -144,7 +157,8 @@ void AJoyGameMode::OnMatchAssignmentGiven(FPrimaryAssetId ExperienceId, const FS
 {
 	if (ExperienceId.IsValid())
 	{
-		UE_LOG(LogJoyExperience, Log, TEXT("Identified experience %s (Source: %s)"), *ExperienceId.ToString(), *ExperienceIdSource);
+		UE_LOG(LogJoyExperience, Log, TEXT("Identified experience %s (Source: %s)"), *ExperienceId.ToString(),
+		       *ExperienceIdSource);
 
 		auto* ExperienceComponent = GameState->FindComponentByClass<UJoyExperienceManagerComponent>();
 		check(ExperienceComponent);
@@ -154,4 +168,47 @@ void AJoyGameMode::OnMatchAssignmentGiven(FPrimaryAssetId ExperienceId, const FS
 	{
 		UE_LOG(LogJoyExperience, Error, TEXT("Failed to identify experience, loading screen will stay up forever"));
 	}
+}
+
+void AJoyGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
+{
+	Super::FinishRestartPlayer(NewPlayer, StartRotation);
+}
+
+void AJoyGameMode::GenericPlayerInitialization(AController* NewPlayer)
+{
+	Super::GenericPlayerInitialization(NewPlayer);
+
+	OnGameModePlayerInitialized.Broadcast(this, NewPlayer);
+}
+
+const UJoyPawnData* AJoyGameMode::GetPawnDataForController(const AController* InController) const
+{
+	if (InController != nullptr)
+	{
+		if (const AJoyPlayerState* LyraPS = InController->GetPlayerState<AJoyPlayerState>())
+		{
+			if (const UJoyPawnData* PawnData = LyraPS->GetPawnData<UJoyPawnData>())
+			{
+				return PawnData;
+			}
+		}
+	}
+
+	// If not, fall back to the the default for the current experience
+	check(GameState);
+	const auto* ExperienceComponent = GameState->FindComponentByClass<UJoyExperienceManagerComponent>();
+	check(ExperienceComponent);
+
+	if (ExperienceComponent->IsExperienceLoaded())
+	{
+		const UJoyExperienceDefinition* Experience = ExperienceComponent->GetCurrentExperienceChecked();
+		if (Experience->DefaultPawnData != nullptr)
+		{
+			return Experience->DefaultPawnData;
+		}
+	}
+
+	// Experience not loaded yet, so there is no pawn data to be had
+	return nullptr;
 }

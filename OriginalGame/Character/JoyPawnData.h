@@ -19,5 +19,8 @@ public:
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Joy|Pawn")
-	TSubclassOf<APawn> PawnClass;
+	TSubclassOf<APawn> PawnClass{nullptr};
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Joy|Pawn")
+	TSubclassOf<AController> ControllerClass{nullptr};
 };

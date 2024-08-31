@@ -6,6 +6,8 @@
 #include "Components/GameStateComponent.h"
 #include "JoyPawnCreationComponent.generated.h"
 
+class UJoyPawnData;
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ORIGINALGAME_API UJoyPawnCreationComponent : public UGameStateComponent
 {
@@ -13,6 +15,8 @@ class ORIGINALGAME_API UJoyPawnCreationComponent : public UGameStateComponent
 
 public:
 	UJoyPawnCreationComponent(const FObjectInitializer& ObjectInitializer);
+
+	void SpawnPawnFromPawnData(const UJoyPawnData* PawnData) const;
 
 protected:
 	virtual void BeginPlay() override;

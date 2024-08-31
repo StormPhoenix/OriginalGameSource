@@ -46,8 +46,6 @@ public:
 	// Logs all assets currently loaded and tracked by the asset manager.
 	static void DumpLoadedAssets();
 
-	const UJoyPawnData* GetDefaultPawnData() const;
-
 protected:
 	static UObject* SynchronousLoadAsset(const FSoftObjectPath& AssetPath);
 	static bool ShouldLogAssetLoads();
@@ -61,11 +59,6 @@ protected:
 	virtual void PreBeginPIE(bool bStartSimulate) override;
 #endif
 	//~End of UAssetManager interface
-
-protected:
-	// Pawn data used when spawning player pawns if there isn't one set on the player state.
-	UPROPERTY(Config)
-	TSoftObjectPtr<UJoyPawnData> DefaultPawnData;
 
 private:
 	// Flushes the StartupJobs array. Processes all startup work.

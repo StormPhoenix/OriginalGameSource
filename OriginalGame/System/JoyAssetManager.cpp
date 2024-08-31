@@ -31,7 +31,6 @@ static FAutoConsoleCommand CVarDumpLoadedAssets(
 
 UJoyAssetManager::UJoyAssetManager()
 {
-	DefaultPawnData = nullptr;
 }
 
 UJoyAssetManager& UJoyAssetManager::Get()
@@ -128,11 +127,6 @@ void UJoyAssetManager::InitializeGameplayCueManager()
 	UJoyGameplayCueManager* GCM = UJoyGameplayCueManager::Get();
 	check(GCM);
 	GCM->LoadAlwaysLoadedCues();
-}
-
-const UJoyPawnData* UJoyAssetManager::GetDefaultPawnData() const
-{
-	return GetAsset(DefaultPawnData);
 }
 
 void UJoyAssetManager::DoAllStartupJobs()
