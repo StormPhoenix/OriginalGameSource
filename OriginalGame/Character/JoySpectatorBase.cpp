@@ -1,25 +1,25 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "JoySpectator.h"
+#include "JoySpectatorBase.h"
 
 
-AJoySpectator::AJoySpectator()
+AJoySpectatorBase::AJoySpectatorBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AJoySpectator::BeginPlay()
+void AJoySpectatorBase::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void AJoySpectator::Tick(float DeltaTime)
+void AJoySpectatorBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void AJoySpectator::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AJoySpectatorBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }

@@ -38,7 +38,9 @@ public:
 	TArray<FString> GameFeaturesToEnable;
 
 	/** The default pawn class to spawn for players */
-	//@TODO: Make soft?
+	UPROPERTY(EditDefaultsOnly, Category=Gameplay)
+	TObjectPtr<const UJoyPawnData> DefaultSpectatorData;
+	
 	UPROPERTY(EditDefaultsOnly, Category=Gameplay)
 	TObjectPtr<const UJoyPawnData> DefaultPawnData;
 

@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SpectatorPawn.h"
-#include "JoySpectator.generated.h"
+#include "JoySpectatorBase.generated.h"
 
 UCLASS()
-class ORIGINALGAME_API AJoySpectator : public ASpectatorPawn
+class ORIGINALGAME_API AJoySpectatorBase : public ASpectatorPawn
 {
 	GENERATED_BODY()
 
 public:
-	AJoySpectator();
+	AJoySpectatorBase();
 
 protected:
 	virtual void BeginPlay() override;

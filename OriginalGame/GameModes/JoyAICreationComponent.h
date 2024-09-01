@@ -4,19 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "Components/GameStateComponent.h"
-#include "JoyPawnCreationComponent.generated.h"
+#include "JoyAICreationComponent.generated.h"
 
+class AJoyAISpawner;
+class UJoyExperienceDefinition;
 class UJoyPawnData;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class ORIGINALGAME_API UJoyPawnCreationComponent : public UGameStateComponent
+class ORIGINALGAME_API UJoyAICreationComponent : public UGameStateComponent
 {
 	GENERATED_BODY()
 
 public:
-	UJoyPawnCreationComponent(const FObjectInitializer& ObjectInitializer);
+	UJoyAICreationComponent(const FObjectInitializer& ObjectInitializer);
 
-	void SpawnPawnFromPawnData(const UJoyPawnData* PawnData) const;
+	void SpawnFromAISpawner(AJoyAISpawner* Spawner) const;
 
 protected:
 	virtual void BeginPlay() override;
@@ -24,4 +26,9 @@ protected:
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
+
+private:
+	void OnExperienceLoaded(const UJoyExperienceDefinition* Experience);
+
+	void ServerCreateAI() const;
 };

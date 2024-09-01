@@ -8,7 +8,7 @@
 #include "JoyLogChannels.h"
 #include "JoyWorldSettings.h"
 #include "Character/JoyPawnData.h"
-#include "Character/JoySpectator.h"
+#include "Character/JoySpectatorBase.h"
 #include "Development/JoyDeveloperSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/JoyPlayerController.h"
@@ -21,8 +21,8 @@ AJoyGameMode::AJoyGameMode(const FObjectInitializer& ObjectInitializer)
 	GameStateClass = AJoyGameState::StaticClass();
 	PlayerControllerClass = AJoyPlayerController::StaticClass();
 	PlayerStateClass = AJoyPlayerState::StaticClass();
-	DefaultPawnClass = AJoySpectator::StaticClass();
-	SpectatorClass = AJoySpectator::StaticClass();
+	DefaultPawnClass = AJoySpectatorBase::StaticClass();
+	SpectatorClass = AJoySpectatorBase::StaticClass();
 }
 
 void AJoyGameMode::InitGameState()
@@ -56,12 +56,27 @@ void AJoyGameMode::OnExperienceLoaded(const UJoyExperienceDefinition* CurrentExp
 	// GetDefaultPawnClassForController_Implementation might only be getting called for players anyways
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
-		APlayerController* PC = Cast<APlayerController>(*Iterator);
-		if ((PC != nullptr) && (PC->GetPawn() == nullptr))
+		if (auto* PC = Cast<APlayerController>(*Iterator))
 		{
-			if (PlayerCanRestart(PC))
+			;
+			if (PC->GetPawnOrSpectator() == nullptr)
 			{
-				RestartPlayer(PC);
+				if (PlayerCanRestart(PC))
+				{
+					RestartPlayer(PC);
+				}
+			}
+			else if (auto* JoyPS = PC->GetPlayerState<AJoyPlayerState>();
+				JoyPS != nullptr && JoyPS->GetPawnData<UJoyPawnData>() == nullptr)
+			{
+				if (PC->GetSpectatorPawn())
+				{
+					JoyPS->SetPawnData(CurrentExperience->DefaultSpectatorData);
+				}
+				else
+				{
+					JoyPS->SetPawnData(CurrentExperience->DefaultPawnData);
+				}
 			}
 		}
 	}
@@ -200,12 +215,16 @@ const UJoyPawnData* AJoyGameMode::GetPawnDataForController(const AController* In
 	const auto* ExperienceComponent = GameState->FindComponentByClass<UJoyExperienceManagerComponent>();
 	check(ExperienceComponent);
 
-	if (ExperienceComponent->IsExperienceLoaded())
+	if (ExperienceComponent->IsExperienceLoaded() && InController != nullptr)
 	{
 		const UJoyExperienceDefinition* Experience = ExperienceComponent->GetCurrentExperienceChecked();
-		if (Experience->DefaultPawnData != nullptr)
+		const UJoyPawnData* DefaultPawnData = InController->IsA<APlayerController>()
+			                                      ? Experience->DefaultSpectatorData
+			                                      : Experience->DefaultPawnData;
+
+		if (DefaultPawnData != nullptr)
 		{
-			return Experience->DefaultPawnData;
+			return DefaultPawnData;
 		}
 	}
 
