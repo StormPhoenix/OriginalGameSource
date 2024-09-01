@@ -88,6 +88,11 @@ void AJoySpectatorBase::BindDefaultInputMappings(UEnhancedInputLocalPlayerSubsys
 	// Add the key mappings that may have been set by the player
 	JoyIC->AddInputMappings(InputConfig, EnhanceInput);
 
+	BindDefaultInputMappings_Impl(JoyIC, InputConfig);
+}
+
+void AJoySpectatorBase::BindDefaultInputMappings_Impl(UJoyInputComponent* JoyIC, const UJoyInputConfig* InputConfig)
+{
 	// This is where we actually bind and input action to a gameplay tag, which means that Gameplay Ability Blueprints
 	// will be triggered directly by these input actions Triggered events.
 	TArray<uint32> BindHandles;

@@ -7,6 +7,8 @@
 #include "InputActionValue.h"
 #include "JoySpectatorBase.generated.h"
 
+class UJoyInputComponent;
+class UJoyInputConfig;
 class UEnhancedInputLocalPlayerSubsystem;
 
 UCLASS()
@@ -23,17 +25,19 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void BindDefaultInputMappings(UEnhancedInputLocalPlayerSubsystem* EnhanceInput,
-	                                      UInputComponent* InInputComponent);
+	void BindDefaultInputMappings(UEnhancedInputLocalPlayerSubsystem* EnhanceInput,
+	                              UInputComponent* InInputComponent);
+
+	virtual void BindDefaultInputMappings_Impl(UJoyInputComponent* JoyIC, const UJoyInputConfig* InputConfig);
 
 public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
-	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
+	virtual void Input_AbilityInputTagPressed(FGameplayTag InputTag);
+	virtual void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 
-	void Input_Move(const FInputActionValue& InputActionValue);
-	void Input_LookMouse(const FInputActionValue& InputActionValue);
-	void Input_LookStick(const FInputActionValue& InputActionValue);
+	virtual void Input_Move(const FInputActionValue& InputActionValue);
+	virtual void Input_LookMouse(const FInputActionValue& InputActionValue);
+	virtual void Input_LookStick(const FInputActionValue& InputActionValue);
 };
