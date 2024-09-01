@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Input/JoyInputConfig.h"
 #include "JoyPawnData.generated.h"
 
 /**
  * 
  */
-UCLASS(BlueprintType, Const, Meta = (DisplayName = "Original Game Pawn Data", ShortTooltip = "Data asset used to define a Pawn."))
+UCLASS(BlueprintType, Const,
+	Meta = (DisplayName = "Original Game Pawn Data", ShortTooltip = "Data asset used to define a Pawn."))
 class ORIGINALGAME_API UJoyPawnData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
@@ -20,7 +22,10 @@ public:
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Joy|Pawn")
 	TSubclassOf<APawn> PawnClass{nullptr};
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Joy|Pawn")
 	TSubclassOf<AController> ControllerClass{nullptr};
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Joy|Input")
+	TObjectPtr<UJoyInputConfig> InputConfig;
 };

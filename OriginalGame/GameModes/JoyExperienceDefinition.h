@@ -37,10 +37,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
 	TArray<FString> GameFeaturesToEnable;
 
-	/** The default pawn class to spawn for players */
-	UPROPERTY(EditDefaultsOnly, Category=Gameplay)
-	TObjectPtr<const UJoyPawnData> DefaultSpectatorData;
-	
 	UPROPERTY(EditDefaultsOnly, Category=Gameplay)
 	TObjectPtr<const UJoyPawnData> DefaultPawnData;
 

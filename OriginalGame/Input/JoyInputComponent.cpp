@@ -23,7 +23,7 @@ void UJoyInputComponent::AddInputMappings(const UJoyInputConfig* InputConfig, UE
 	check(LocalPlayer);
 
 	// Add any registered input mappings from the settings!
-	if (UJoySettingsLocal* LocalSettings = UJoySettingsLocal::Get())
+	if (const UJoySettingsLocal* LocalSettings = UJoySettingsLocal::Get())
 	{	
 		// Tell enhanced input about any custom keymappings that the player may have customized
 		for (const TPair<FName, FKey>& Pair : LocalSettings->GetCustomPlayerInputConfig())

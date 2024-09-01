@@ -58,24 +58,14 @@ void AJoyGameMode::OnExperienceLoaded(const UJoyExperienceDefinition* CurrentExp
 	{
 		if (auto* PC = Cast<APlayerController>(*Iterator))
 		{
-			;
-			if (PC->GetPawnOrSpectator() == nullptr)
+			auto* JoyPS = PC->GetPlayerState<AJoyPlayerState>();
+			if (PC->GetPawnOrSpectator() == nullptr || JoyPS == nullptr || JoyPS->GetPawnData<UJoyPawnData>() ==
+				nullptr)
 			{
+				JoyPS->SetPawnData(CurrentExperience->DefaultPawnData);
 				if (PlayerCanRestart(PC))
 				{
 					RestartPlayer(PC);
-				}
-			}
-			else if (auto* JoyPS = PC->GetPlayerState<AJoyPlayerState>();
-				JoyPS != nullptr && JoyPS->GetPawnData<UJoyPawnData>() == nullptr)
-			{
-				if (PC->GetSpectatorPawn())
-				{
-					JoyPS->SetPawnData(CurrentExperience->DefaultSpectatorData);
-				}
-				else
-				{
-					JoyPS->SetPawnData(CurrentExperience->DefaultPawnData);
 				}
 			}
 		}
@@ -218,13 +208,9 @@ const UJoyPawnData* AJoyGameMode::GetPawnDataForController(const AController* In
 	if (ExperienceComponent->IsExperienceLoaded() && InController != nullptr)
 	{
 		const UJoyExperienceDefinition* Experience = ExperienceComponent->GetCurrentExperienceChecked();
-		const UJoyPawnData* DefaultPawnData = InController->IsA<APlayerController>()
-			                                      ? Experience->DefaultSpectatorData
-			                                      : Experience->DefaultPawnData;
-
-		if (DefaultPawnData != nullptr)
+		if (Experience->DefaultPawnData)
 		{
-			return DefaultPawnData;
+			return Experience->DefaultPawnData;
 		}
 	}
 
