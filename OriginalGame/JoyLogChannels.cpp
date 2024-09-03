@@ -6,7 +6,8 @@
 DEFINE_LOG_CATEGORY(LogJoy);
 DEFINE_LOG_CATEGORY(LogJoyExperience);
 DEFINE_LOG_CATEGORY(LogJoyAbilitySystem);
-DEFINE_LOG_CATEGORY(LogJoyTeams);
+DEFINE_LOG_CATEGORY(LogJoyCamera);
+DEFINE_LOG_CATEGORY(LogJoyTimeDilation);
 
 FString GetClientServerContextString(UObject* ContextObject)
 {

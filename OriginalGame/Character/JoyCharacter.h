@@ -16,7 +16,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "OriginalGame|Character")
 	AJoyPlayerState* GetJoyPlayerState() const;
-	
+
+	void SetCustomTimeDilation(float const TimeDilation);
+
 protected:
 	virtual void BeginPlay() override;
 

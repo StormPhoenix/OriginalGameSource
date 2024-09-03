@@ -11,7 +11,7 @@ AJoyCharacter::AJoyCharacter(const FObjectInitializer& ObjectInitializer)
 		ACharacter::CharacterMovementComponentName))
 {
 	PrimaryActorTick.bCanEverTick = true;
-	
+
 	UJoyCharacterMovementComponent* JoyMoveComp = CastChecked<UJoyCharacterMovementComponent>(GetCharacterMovement());
 	JoyMoveComp->GravityScale = 1.0f;
 	JoyMoveComp->MaxAcceleration = 2400.0f;
@@ -46,4 +46,14 @@ void AJoyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 AJoyPlayerState* AJoyCharacter::GetJoyPlayerState() const
 {
 	return CastChecked<AJoyPlayerState>(GetPlayerState(), ECastCheckedType::NullAllowed);
+}
+
+void AJoyCharacter::SetCustomTimeDilation(float const TimeDilation)
+{
+	if (IsActorBeingDestroyed())
+	{
+		return;
+	}
+
+	CustomTimeDilation = TimeDilation;
 }

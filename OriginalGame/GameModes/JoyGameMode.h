@@ -14,7 +14,7 @@ class UJoyExperienceDefinition;
  *
  * This is called after the player has finished initialization
  */
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLyraGameModePlayerInitialized, AGameModeBase* /*GameMode*/, AController* /*NewPlayer*/);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnJoyGameModePlayerInitialized, AGameModeBase* /*GameMode*/, AController* /*NewPlayer*/);
 
 UCLASS(Config = Game, Meta = (ShortTooltip = "The base game mode class used by this project."))
 class ORIGINALGAME_API AJoyGameMode : public AModularGameModeBase
@@ -32,7 +32,7 @@ public:
 	virtual void GenericPlayerInitialization(AController* NewPlayer) override;
 	//~End of AGameModeBase interface
 
-	FOnLyraGameModePlayerInitialized OnGameModePlayerInitialized;
+	FOnJoyGameModePlayerInitialized OnGameModePlayerInitialized;
 protected:
 	const UJoyPawnData* GetPawnDataForController(const AController* InController) const;
 	

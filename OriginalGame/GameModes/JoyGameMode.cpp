@@ -191,9 +191,9 @@ const UJoyPawnData* AJoyGameMode::GetPawnDataForController(const AController* In
 {
 	if (InController != nullptr)
 	{
-		if (const AJoyPlayerState* LyraPS = InController->GetPlayerState<AJoyPlayerState>())
+		if (const AJoyPlayerState* JoyPS = InController->GetPlayerState<AJoyPlayerState>())
 		{
-			if (const UJoyPawnData* PawnData = LyraPS->GetPawnData<UJoyPawnData>())
+			if (const UJoyPawnData* PawnData = JoyPS->GetPawnData<UJoyPawnData>())
 			{
 				return PawnData;
 			}
