@@ -33,3 +33,25 @@ void UJoyGameBlueprintLibrary::UnregisterInputReceiver(const UObject* WorldConte
 		}
 	}
 }
+
+void UJoyGameBlueprintLibrary::RegisterInputBlocker(const UObject* WorldContextObject, UObject* Blocker)
+{
+	if (const auto* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (auto* JoySpectator = Cast<AJoySpectator>(PC->GetSpectatorPawn()))
+		{
+			JoySpectator->RegisterInputBlocker(Blocker);
+		}
+	}
+}
+
+void UJoyGameBlueprintLibrary::UnregisterInputBlocker(const UObject* WorldContextObject, UObject* Blocker)
+{
+	if (const auto* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if (auto* JoySpectator = Cast<AJoySpectator>(PC->GetSpectatorPawn()))
+		{
+			JoySpectator->UnregisterInputBlocker(Blocker);
+		}
+	}
+}

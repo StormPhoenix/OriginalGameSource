@@ -4,6 +4,7 @@
 #include "JoyCharacter.h"
 
 #include "JoyCharacterMovementComponent.h"
+#include "Camera/JoyCameraComponent.h"
 #include "OriginalGame/Player/JoyPlayerState.h"
 
 AJoyCharacter::AJoyCharacter(const FObjectInitializer& ObjectInitializer)
@@ -26,6 +27,8 @@ AJoyCharacter::AJoyCharacter(const FObjectInitializer& ObjectInitializer)
 	JoyMoveComp->GetNavAgentPropertiesRef().bCanCrouch = true;
 	JoyMoveComp->bCanWalkOffLedgesWhenCrouching = true;
 	JoyMoveComp->SetCrouchedHalfHeight(65.0f);
+
+	JoyCameraComponent = CreateDefaultSubobject<UJoyCameraComponent>(TEXT("CameraComponent"));
 }
 
 void AJoyCharacter::BeginPlay()

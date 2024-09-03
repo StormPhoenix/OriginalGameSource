@@ -5,16 +5,16 @@
 #include "GameFramework/WorldSettings.h"
 #include "Kismet/GameplayStatics.h"
 
-FFGTimeDilationHandle::FFGTimeDilationHandle(int64 const Seq) : SequenceID(Seq)
+FJoyTimeDilationHandle::FJoyTimeDilationHandle(int64 const Seq) : SequenceID(Seq)
 {
 }
 
-FFGTimeDilationHandleCache::FFGTimeDilationHandleCache(int64 const Seq, float const Dilation)
-	: FFGTimeDilationHandleCache(FFGTimeDilationHandle(Seq), Dilation)
+FJoyTimeDilationHandleCache::FJoyTimeDilationHandleCache(int64 const Seq, float const Dilation)
+	: FJoyTimeDilationHandleCache(FJoyTimeDilationHandle(Seq), Dilation)
 {
 }
 
-FFGTimeDilationHandleCache::FFGTimeDilationHandleCache(FFGTimeDilationHandle const Handle, float const Dilation)
+FJoyTimeDilationHandleCache::FJoyTimeDilationHandleCache(FJoyTimeDilationHandle const Handle, float const Dilation)
 	: Handle(Handle), TimeDilation(Dilation)
 {
 }
@@ -53,10 +53,10 @@ void UJoyTimeDilationManageSubsystem::Tick(float)
 		return;
 	}
 
-	TArray<FFGTimeDilationRequestCache> TempRequestCaches;;
+	TArray<FJoyTimeDilationRequestCache> TempRequestCaches;;
 	std::swap(RequestCaches, TempRequestCaches);
 
-	for (FFGTimeDilationRequestCache& Req : TempRequestCaches)
+	for (FJoyTimeDilationRequestCache& Req : TempRequestCaches)
 	{
 		UE_LOG(LogJoyTimeDilation, Log, TEXT("%s"), *Req.Description);
 
@@ -85,7 +85,7 @@ void UJoyTimeDilationManageSubsystem::Tick(float)
 		}
 	}
 
-	for (FFGTimeDilationRequestCache const& Req : TempRequestCaches)
+	for (FJoyTimeDilationRequestCache const& Req : TempRequestCaches)
 	{
 		// ReSharper disable once CppExpressionWithoutSideEffects
 		Req.OnApplyCallback.ExecuteIfBound(Req.Handle, Req.bSuccess);
@@ -104,52 +104,52 @@ ETickableTickType UJoyTimeDilationManageSubsystem::GetTickableTickType() const
 
 TStatId UJoyTimeDilationManageSubsystem::GetStatId() const
 {
-	RETURN_QUICK_DECLARE_CYCLE_STAT(UFGTimeDilationManageSubsystem, STATGROUP_Tickables);
+	RETURN_QUICK_DECLARE_CYCLE_STAT(UJoyTimeDilationManageSubsystem, STATGROUP_Tickables);
 }
 
-FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::AddGlobalTimeDilation(
+FJoyTimeDilationHandle UJoyTimeDilationManageSubsystem::AddGlobalTimeDilation(
 	float const TimeDilation, const FString Description)
 {
 	return NewAddTimeDilationRequestCache(true, false, nullptr, TimeDilation, false, nullptr, Description);
 }
 
-FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::AddGlobalTimeDilationWithCallback(
+FJoyTimeDilationHandle UJoyTimeDilationManageSubsystem::AddGlobalTimeDilationWithCallback(
 	float const TimeDilation, FFGOnTimeDilationApply OnApply, const FString Description)
 {
 	return NewAddTimeDilationRequestCache(true, false, nullptr, TimeDilation, false, std::move(OnApply), Description);
 }
 
-FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::OverrideGlobalTimeDilation(
+FJoyTimeDilationHandle UJoyTimeDilationManageSubsystem::OverrideGlobalTimeDilation(
 	float const TimeDilation, const FString Description)
 {
 	return NewAddTimeDilationRequestCache(true, true, nullptr, TimeDilation, false, nullptr, Description);
 }
 
-FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::OverrideGlobalTimeDilationWithCallback(
+FJoyTimeDilationHandle UJoyTimeDilationManageSubsystem::OverrideGlobalTimeDilationWithCallback(
 	float const TimeDilation, FFGOnTimeDilationApply OnApply, const FString Description)
 {
 	return NewAddTimeDilationRequestCache(true, true, nullptr, TimeDilation, false, std::move(OnApply), Description);
 }
 
-FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::AddActorTimeDilation(
+FJoyTimeDilationHandle UJoyTimeDilationManageSubsystem::AddActorTimeDilation(
 	AActor* Actor, float const TimeDilation, const FString Description)
 {
 	return NewAddTimeDilationRequestCache(false, false, Actor, TimeDilation, false, nullptr, Description);
 }
 
-FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::AddActorTimeDilationWithCallback(
+FJoyTimeDilationHandle UJoyTimeDilationManageSubsystem::AddActorTimeDilationWithCallback(
 	AActor* Actor, float const TimeDilation, FFGOnTimeDilationApply OnApply, const FString Description)
 {
 	return NewAddTimeDilationRequestCache(false, false, Actor, TimeDilation, false, std::move(OnApply), Description);
 }
 
-FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::OverrideActorTimeDilation(
+FJoyTimeDilationHandle UJoyTimeDilationManageSubsystem::OverrideActorTimeDilation(
 	AActor* Actor, float const TimeDilation, bool const bUseAbsoluteValue, FString Description)
 {
 	return NewAddTimeDilationRequestCache(false, true, Actor, TimeDilation, bUseAbsoluteValue, nullptr, Description);
 }
 
-FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::OverrideActorTimeDilationWithCallback(AActor* Actor,
+FJoyTimeDilationHandle UJoyTimeDilationManageSubsystem::OverrideActorTimeDilationWithCallback(AActor* Actor,
 	float const TimeDilation, bool const bUseAbsoluteValue, FFGOnTimeDilationApply OnApply, const FString Description)
 {
 	return NewAddTimeDilationRequestCache(
@@ -157,16 +157,16 @@ FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::OverrideActorTimeDilation
 }
 
 bool UJoyTimeDilationManageSubsystem::UpdateGlobalTimeDilation(
-	FFGTimeDilationHandle const& Handle, float const TimeDilation)
+	FJoyTimeDilationHandle const& Handle, float const TimeDilation)
 {
-	if (FFGTimeDilationRequestCache* CacheItem = RequestCaches.FindByKey(Handle))
+	if (FJoyTimeDilationRequestCache* CacheItem = RequestCaches.FindByKey(Handle))
 	{
 		CacheItem->Dilation = TimeDilation;
 		return true;
 	}
 
-	FFGTimeDilationManageCache& Cache = GlobalCache;
-	if (FFGTimeDilationHandleCache* CacheItem = Cache.HandleCaches.FindByKey(Handle))
+	FJoyTimeDilationManageCache& Cache = GlobalCache;
+	if (FJoyTimeDilationHandleCache* CacheItem = Cache.HandleCaches.FindByKey(Handle))
 	{
 		CacheItem->TimeDilation = TimeDilation;
 		ReCalculateCacheTimeDilation(Cache);
@@ -178,33 +178,33 @@ bool UJoyTimeDilationManageSubsystem::UpdateGlobalTimeDilation(
 }
 
 bool UJoyTimeDilationManageSubsystem::UpdateActorTimeDilation(
-	AActor* Actor, FFGTimeDilationHandle const& Handle, float const TimeDilation)
+	AActor* Actor, FJoyTimeDilationHandle const& Handle, float const TimeDilation)
 {
 	if (!Actor)
 	{
 		return false;
 	}
 
-	if (FFGTimeDilationRequestCache* CacheItem = RequestCaches.FindByKey(Handle))
+	if (FJoyTimeDilationRequestCache* CacheItem = RequestCaches.FindByKey(Handle))
 	{
 		CacheItem->Dilation = TimeDilation;
 		return true;
 	}
 
 	uint32 const ID = Actor->GetUniqueID();
-	FFGTimeDilationManageCache* CachePtr = ActorCaches.Find(ID);
+	FJoyTimeDilationManageCache* CachePtr = ActorCaches.Find(ID);
 	if (!CachePtr)
 	{
 		return false;
 	}
 
-	FFGTimeDilationManageCache& Cache = *CachePtr;
+	FJoyTimeDilationManageCache& Cache = *CachePtr;
 	if (Cache.OwnerActor.Get() != Actor)
 	{
 		return false;
 	}
 
-	FFGTimeDilationHandleCache* CacheItem = Cache.HandleCaches.FindByKey(Handle);
+	FJoyTimeDilationHandleCache* CacheItem = Cache.HandleCaches.FindByKey(Handle);
 	if (!CacheItem)
 	{
 		return false;
@@ -227,13 +227,13 @@ bool UJoyTimeDilationManageSubsystem::UpdateActorTimeDilation(
 	return true;
 }
 
-void UJoyTimeDilationManageSubsystem::RemoveGlobalTimeDilation(FFGTimeDilationHandle const& Handle)
+void UJoyTimeDilationManageSubsystem::RemoveGlobalTimeDilation(FJoyTimeDilationHandle const& Handle)
 {
 	RemoveGlobalTimeDilationWithCallback(Handle, nullptr);
 }
 
 void UJoyTimeDilationManageSubsystem::RemoveGlobalTimeDilationWithCallback(
-	FFGTimeDilationHandle const& Handle, FFGOnTimeDilationApply OnApply)
+	FJoyTimeDilationHandle const& Handle, FFGOnTimeDilationApply OnApply)
 {
 	if (int32 const Index = RequestCaches.IndexOfByKey(Handle); Index != INDEX_NONE)
 	{
@@ -248,13 +248,13 @@ void UJoyTimeDilationManageSubsystem::RemoveGlobalTimeDilationWithCallback(
 	NewRemoveTimeDilationRequestCache(Handle, true, nullptr, std::move(OnApply));
 }
 
-void UJoyTimeDilationManageSubsystem::RemoveActorTimeDilation(AActor* Actor, FFGTimeDilationHandle const& Handle)
+void UJoyTimeDilationManageSubsystem::RemoveActorTimeDilation(AActor* Actor, FJoyTimeDilationHandle const& Handle)
 {
 	RemoveActorTimeDilationWithCallback(Actor, Handle, nullptr);
 }
 
 void UJoyTimeDilationManageSubsystem::RemoveActorTimeDilationWithCallback(
-	AActor* Actor, FFGTimeDilationHandle const& Handle, FFGOnTimeDilationApply OnApply)
+	AActor* Actor, FJoyTimeDilationHandle const& Handle, FFGOnTimeDilationApply OnApply)
 {
 	if (int32 const Index = RequestCaches.IndexOfByKey(Handle); Index != INDEX_NONE)
 	{
@@ -274,9 +274,9 @@ float UJoyTimeDilationManageSubsystem::GetGlobalTimeDilation() const
 	return GlobalCache.CurrentDilation;
 }
 
-float UJoyTimeDilationManageSubsystem::GetGlobalTimeDilationOfHandle(FFGTimeDilationHandle const& Handle) const
+float UJoyTimeDilationManageSubsystem::GetGlobalTimeDilationOfHandle(FJoyTimeDilationHandle const& Handle) const
 {
-	FFGTimeDilationHandleCache const* CacheItem = GlobalCache.HandleCaches.FindByKey(Handle);
+	FJoyTimeDilationHandleCache const* CacheItem = GlobalCache.HandleCaches.FindByKey(Handle);
 	if (!CacheItem)
 	{
 		return 1.0f;
@@ -285,7 +285,7 @@ float UJoyTimeDilationManageSubsystem::GetGlobalTimeDilationOfHandle(FFGTimeDila
 	return CacheItem->TimeDilation;
 }
 
-void UJoyTimeDilationManageSubsystem::SetGlobalTimeDilationByCache(FFGTimeDilationManageCache& Cache) const
+void UJoyTimeDilationManageSubsystem::SetGlobalTimeDilationByCache(FJoyTimeDilationManageCache& Cache) const
 {
 	UWorld const* World = GetWorld();
 	if (!World)
@@ -312,15 +312,15 @@ void UJoyTimeDilationManageSubsystem::SetGlobalTimeDilationByCache(FFGTimeDilati
 }
 
 bool UJoyTimeDilationManageSubsystem::AddGlobalTimeDilationImpl(
-	FFGTimeDilationHandle const Handle, float const TimeDilation, bool const bOverride)
+	FJoyTimeDilationHandle const Handle, float const TimeDilation, bool const bOverride)
 {
-	FFGTimeDilationManageCache& Cache = GlobalCache;
+	FJoyTimeDilationManageCache& Cache = GlobalCache;
 	if (bOverride)
 	{
 		Cache.HandleCaches.Reset();
 	}
 
-	FFGTimeDilationHandleCache const CacheItem(Handle, TimeDilation);
+	FJoyTimeDilationHandleCache const CacheItem(Handle, TimeDilation);
 	Cache.HandleCaches.Add(CacheItem);
 	ReCalculateCacheTimeDilation(Cache);
 	SetGlobalTimeDilationByCache(Cache);
@@ -328,7 +328,7 @@ bool UJoyTimeDilationManageSubsystem::AddGlobalTimeDilationImpl(
 	return true;
 }
 
-bool UJoyTimeDilationManageSubsystem::AddActorTimeDilationImpl(FFGTimeDilationHandle const Handle, AActor* Actor,
+bool UJoyTimeDilationManageSubsystem::AddActorTimeDilationImpl(FJoyTimeDilationHandle const Handle, AActor* Actor,
                                                                float const TimeDilation, bool const bOverride,
                                                                bool const bUseAbsoluteValue)
 {
@@ -338,7 +338,7 @@ bool UJoyTimeDilationManageSubsystem::AddActorTimeDilationImpl(FFGTimeDilationHa
 	}
 
 	uint32 const ID = Actor->GetUniqueID();
-	FFGTimeDilationManageCache* CachePtr = ActorCaches.Find(ID);
+	FJoyTimeDilationManageCache* CachePtr = ActorCaches.Find(ID);
 	if (CachePtr)
 	{
 		// 如果一个 Actor 已经被回收但没有正确处理时间膨胀的反注册，那么可能出现 ID 冲突，
@@ -355,14 +355,14 @@ bool UJoyTimeDilationManageSubsystem::AddActorTimeDilationImpl(FFGTimeDilationHa
 		CachePtr->OwnerActor = Actor;
 	}
 
-	FFGTimeDilationManageCache& Cache = *CachePtr;
+	FJoyTimeDilationManageCache& Cache = *CachePtr;
 	if (bOverride)
 	{
 		Cache.HandleCaches.Reset();
 	}
 
 	float const ActualTimeDilation = bUseAbsoluteValue ? TimeDilation / GetGlobalTimeDilation() : TimeDilation;
-	FFGTimeDilationHandleCache const CacheItem(Handle, ActualTimeDilation);
+	FJoyTimeDilationHandleCache const CacheItem(Handle, ActualTimeDilation);
 	Cache.HandleCaches.Add(CacheItem);
 	ReCalculateCacheTimeDilation(Cache);
 	if (IsValid(Actor) && !Actor->IsActorBeingDestroyed())
@@ -380,9 +380,9 @@ bool UJoyTimeDilationManageSubsystem::AddActorTimeDilationImpl(FFGTimeDilationHa
 	return true;
 }
 
-bool UJoyTimeDilationManageSubsystem::RemoveGlobalTimeDilationImpl(FFGTimeDilationHandle const Handle)
+bool UJoyTimeDilationManageSubsystem::RemoveGlobalTimeDilationImpl(FJoyTimeDilationHandle const Handle)
 {
-	FFGTimeDilationManageCache& Cache = GlobalCache;
+	FJoyTimeDilationManageCache& Cache = GlobalCache;
 	int32 const Index = Cache.HandleCaches.IndexOfByKey(Handle);
 	if (Index == INDEX_NONE)
 	{
@@ -395,7 +395,7 @@ bool UJoyTimeDilationManageSubsystem::RemoveGlobalTimeDilationImpl(FFGTimeDilati
 	return true;
 }
 
-bool UJoyTimeDilationManageSubsystem::RemoveActorTimeDilationImpl(FFGTimeDilationHandle const Handle, AActor* Actor)
+bool UJoyTimeDilationManageSubsystem::RemoveActorTimeDilationImpl(FJoyTimeDilationHandle const Handle, AActor* Actor)
 {
 	if (!Actor)
 	{
@@ -403,13 +403,13 @@ bool UJoyTimeDilationManageSubsystem::RemoveActorTimeDilationImpl(FFGTimeDilatio
 	}
 
 	uint32 const ID = Actor->GetUniqueID();
-	FFGTimeDilationManageCache* CachePtr = ActorCaches.Find(ID);
+	FJoyTimeDilationManageCache* CachePtr = ActorCaches.Find(ID);
 	if (!CachePtr)
 	{
 		return false;
 	}
 
-	FFGTimeDilationManageCache& Cache = *CachePtr;
+	FJoyTimeDilationManageCache& Cache = *CachePtr;
 	if (Cache.OwnerActor.Get() != Actor)
 	{
 		return false;
@@ -443,17 +443,17 @@ bool UJoyTimeDilationManageSubsystem::RemoveActorTimeDilationImpl(FFGTimeDilatio
 	return true;
 }
 
-FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::NewAddTimeDilationRequestCache(bool const bIsGlobal,
+FJoyTimeDilationHandle UJoyTimeDilationManageSubsystem::NewAddTimeDilationRequestCache(bool const bIsGlobal,
 	bool const bOverride, AActor* Actor, float const TimeDilation, bool const bUseAbsoluteValue,
 	FFGOnTimeDilationApply OnApply, const FString& Description)
 {
 	SequenceNumber++;
-	FFGTimeDilationRequestCache& NewReq = RequestCaches.Emplace_GetRef();
+	FJoyTimeDilationRequestCache& NewReq = RequestCaches.Emplace_GetRef();
 	NewReq.bIsAdd = true;
 	NewReq.bIsGlobal = bIsGlobal;
 	NewReq.bOverride = bOverride;
 	NewReq.bUseAbsoluteValue = bUseAbsoluteValue;
-	NewReq.Handle = FFGTimeDilationHandle(SequenceNumber);
+	NewReq.Handle = FJoyTimeDilationHandle(SequenceNumber);
 	NewReq.Actor = Actor;
 	NewReq.Dilation = TimeDilation;
 	NewReq.OnApplyCallback = std::move(OnApply);
@@ -462,9 +462,9 @@ FFGTimeDilationHandle UJoyTimeDilationManageSubsystem::NewAddTimeDilationRequest
 }
 
 void UJoyTimeDilationManageSubsystem::NewRemoveTimeDilationRequestCache(
-	FFGTimeDilationHandle const Handle, bool const bIsGlobal, AActor* Actor, FFGOnTimeDilationApply OnApply)
+	FJoyTimeDilationHandle const Handle, bool const bIsGlobal, AActor* Actor, FFGOnTimeDilationApply OnApply)
 {
-	FFGTimeDilationRequestCache& NewReq = RequestCaches.Emplace_GetRef();
+	FJoyTimeDilationRequestCache& NewReq = RequestCaches.Emplace_GetRef();
 	NewReq.bIsAdd = false;
 	NewReq.bIsGlobal = bIsGlobal;
 	NewReq.bOverride = false;
@@ -474,10 +474,10 @@ void UJoyTimeDilationManageSubsystem::NewRemoveTimeDilationRequestCache(
 	NewReq.OnApplyCallback = std::move(OnApply);
 }
 
-void UJoyTimeDilationManageSubsystem::ReCalculateCacheTimeDilation(FFGTimeDilationManageCache& Cache)
+void UJoyTimeDilationManageSubsystem::ReCalculateCacheTimeDilation(FJoyTimeDilationManageCache& Cache)
 {
 	float TimeDilation = 1.0f;
-	for (FFGTimeDilationHandleCache const& CacheItem : Cache.HandleCaches)
+	for (FJoyTimeDilationHandleCache const& CacheItem : Cache.HandleCaches)
 	{
 		TimeDilation *= CacheItem.TimeDilation;
 	}

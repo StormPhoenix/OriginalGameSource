@@ -4,6 +4,8 @@
 #include "JoySpectator.h"
 
 #include "GameplayTagContainer.h"
+#include "JoyCharacter.h"
+#include "Input/JoyInputBlocker.h"
 #include "Input/JoyInputReceiver.h"
 
 
@@ -29,22 +31,34 @@ void AJoySpectator::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AJoySpectator::Input_Move(const FInputActionValue& InputActionValue)
 {
-	UJoyInputReceiver::ReceiveMoveInput(InputReceivers, this, InputActionValue);
+	if (!UJoyInputBlocker::BlockMoveInput(InputBlockers, this, InputActionValue))
+	{
+		UJoyInputReceiver::ReceiveMoveInput(InputReceivers, this, InputActionValue);
+	}
 }
 
-void AJoySpectator::Input_LookMouse(const FInputActionValue& InputActionValue)
+void AJoySpectator::Input_LookMove(const FInputActionValue& InputActionValue)
 {
-	UJoyInputReceiver::ReceiveLookMouseInput(InputReceivers, this, InputActionValue);
+	if (!UJoyInputBlocker::BlockLookMoveInput(InputBlockers, this, InputActionValue))
+	{
+		UJoyInputReceiver::ReceiveLookMoveInput(InputReceivers, this, InputActionValue);
+	}
 }
 
 void AJoySpectator::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
-	UJoyInputReceiver::ReceiveAbilityTagPressInput(InputReceivers, this, InputTag);
+	if (!UJoyInputBlocker::BlockAbilityTagPressInput(InputBlockers, this, InputTag))
+	{
+		UJoyInputReceiver::ReceiveAbilityTagPressInput(InputReceivers, this, InputTag);
+	}
 }
 
 void AJoySpectator::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	UJoyInputReceiver::ReceiveAbilityTagReleaseInput(InputReceivers, this, InputTag);
+	if (!UJoyInputBlocker::BlockAbilityTagReleaseInput(InputBlockers, this, InputTag))
+	{
+		UJoyInputReceiver::ReceiveAbilityTagReleaseInput(InputReceivers, this, InputTag);
+	}
 }
 
 void AJoySpectator::RegisterInputReceiver(const TScriptInterface<IJoyInputReceiver> Receiver)
@@ -60,5 +74,21 @@ void AJoySpectator::UnregisterInputReceiver(const TScriptInterface<IJoyInputRece
 	if (Receiver.GetObject())
 	{
 		InputReceivers.Remove(Receiver.GetObject());
+	}
+}
+
+void AJoySpectator::UnregisterInputBlocker(const TScriptInterface<IJoyInputBlocker> Blocker)
+{
+	if (Blocker.GetObject())
+	{
+		InputBlockers.Remove(Blocker.GetObject());
+	}
+}
+
+void AJoySpectator::RegisterInputBlocker(const TScriptInterface<IJoyInputBlocker> Blocker)
+{
+	if (Blocker.GetObject())
+	{
+		InputBlockers.AddUnique(Blocker.GetObject());
 	}
 }

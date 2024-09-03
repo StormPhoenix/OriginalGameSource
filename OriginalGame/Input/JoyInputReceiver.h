@@ -28,7 +28,7 @@ public:
 		TConstArrayView<TObjectPtr<UObject>> const& Receivers,
 		UObject* InputReceiver, FGameplayTag const& InputTag);
 
-	static void ReceiveLookMouseInput(
+	static void ReceiveLookMoveInput(
 		TConstArrayView<TObjectPtr<UObject>> const& Receivers,
 		UObject* InputReceiver, const FInputActionValue& InputActionValue);
 

@@ -102,7 +102,7 @@ void AJoySpectatorBase::BindDefaultInputMappings_Impl(UJoyInputComponent* JoyIC,
 	JoyIC->BindNativeAction(InputConfig, JoyGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this,
 	                        &ThisClass::Input_Move, /*bLogIfNotFound=*/false);
 	JoyIC->BindNativeAction(InputConfig, JoyGameplayTags::InputTag_Look_Mouse, ETriggerEvent::Triggered, this,
-	                        &ThisClass::Input_LookMouse, /*bLogIfNotFound=*/false);
+	                        &ThisClass::Input_LookMove, /*bLogIfNotFound=*/false);
 	JoyIC->BindNativeAction(InputConfig, JoyGameplayTags::InputTag_Look_Stick, ETriggerEvent::Triggered, this,
 	                        &ThisClass::Input_LookStick, /*bLogIfNotFound=*/false);
 }
@@ -135,7 +135,7 @@ void AJoySpectatorBase::Input_Move(const FInputActionValue& InputActionValue)
 	}
 }
 
-void AJoySpectatorBase::Input_LookMouse(const FInputActionValue& InputActionValue)
+void AJoySpectatorBase::Input_LookMove(const FInputActionValue& InputActionValue)
 {
 	const FVector2D Value = InputActionValue.Get<FVector2D>();
 	if (Value.X != 0.0f)

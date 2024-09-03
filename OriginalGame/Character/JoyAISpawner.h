@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "JoyAISpawner.generated.h"
 
+class UJoyPawnData;
+
 UCLASS()
 class ORIGINALGAME_API AJoyAISpawner : public AActor
 {

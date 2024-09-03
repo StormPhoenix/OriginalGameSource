@@ -38,6 +38,6 @@ public:
 	virtual void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 
 	virtual void Input_Move(const FInputActionValue& InputActionValue);
-	virtual void Input_LookMouse(const FInputActionValue& InputActionValue);
+	virtual void Input_LookMove(const FInputActionValue& InputActionValue);
 	virtual void Input_LookStick(const FInputActionValue& InputActionValue);
 };

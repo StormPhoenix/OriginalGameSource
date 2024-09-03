@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "JoySpectatorBase.h"
+#include "Input/JoyInputBlocker.h"
+#include "Input/JoyInputReceiver.h"
 #include "JoySpectator.generated.h"
 
 UCLASS()
@@ -25,13 +27,20 @@ public:
 	virtual void Input_AbilityInputTagReleased(FGameplayTag InputTag) override;
 
 	virtual void Input_Move(const FInputActionValue& InputActionValue) override;
-	virtual void Input_LookMouse(const FInputActionValue& InputActionValue) override;
+	virtual void Input_LookMove(const FInputActionValue& InputActionValue) override;
 
 	void RegisterInputReceiver(const TScriptInterface<IJoyInputReceiver> Receiver);
 
 	void UnregisterInputReceiver(const TScriptInterface<IJoyInputReceiver> Receiver);
+	
+	void RegisterInputBlocker(const TScriptInterface<IJoyInputBlocker> Blocker);
+
+	void UnregisterInputBlocker(const TScriptInterface<IJoyInputBlocker> Blocker);
 
 private:
 	UPROPERTY()
 	TArray<TObjectPtr<UObject>> InputReceivers{};
+
+	UPROPERTY()
+	TArray<TObjectPtr<UObject>> InputBlockers{};
 };

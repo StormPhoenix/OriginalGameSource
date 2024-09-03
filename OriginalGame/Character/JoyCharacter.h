@@ -6,6 +6,8 @@
 #include "ModularCharacter.h"
 #include "JoyCharacter.generated.h"
 
+class UJoyCameraComponent;
+
 UCLASS(Config = Game, Meta = (ShortTooltip = "The base character pawn class used by this project."))
 class ORIGINALGAME_API AJoyCharacter : public AModularCharacter
 {
@@ -27,4 +29,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Joy|Character", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UJoyCameraComponent> JoyCameraComponent{nullptr};
 };

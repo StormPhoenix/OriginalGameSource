@@ -46,7 +46,7 @@ void UJoyInputReceiver::ReceiveAbilityTagReleaseInput(
 	}
 }
 
-void UJoyInputReceiver::ReceiveLookMouseInput(
+void UJoyInputReceiver::ReceiveLookMoveInput(
 	TConstArrayView<TObjectPtr<UObject>> const& Receivers,
 	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {
