@@ -94,6 +94,10 @@ struct FCameraLocalRotationSettings
 		meta = (EditCondition = "bModifyRoll", EditConditionHides))
 	float Roll = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName = "Roll 自适应选项",
+		meta = (EditCondition = "bModifyRoll", EditConditionHides))
+	FCameraAdaptiveOption RelativeRollAdaptiveOption{};
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName = "混合完毕后是否复位 Roll",
 		meta = (EditCondition = "bModifyRoll", EditConditionHides))
 	bool bResetRoll = true;

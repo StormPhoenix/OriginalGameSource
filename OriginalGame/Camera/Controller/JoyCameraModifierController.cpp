@@ -64,6 +64,24 @@ void PreProcessCameraModifiers(FCameraModifiers& Modifiers, const UJoyCameraModi
 						Modifiers.LocalRotationSettings.RelativeYawAdaptiveOption.bSync ? -AbsoluteYaw : AbsoluteYaw;
 				}
 			}
+			
+			if (Modifiers.LocalRotationSettings.bModifyRoll &&
+				Modifiers.LocalRotationSettings.RelativeRollAdaptiveOption.bAdaptiveOption)
+			{
+				const float AbsoluteRoll = FMath::Abs(Modifiers.LocalRotationSettings.Roll);
+				if (LocalRotator.Yaw >= 0)
+				{
+					// 镜头位于角色左侧
+					Modifiers.LocalRotationSettings.Roll =
+						Modifiers.LocalRotationSettings.RelativeRollAdaptiveOption.bSync ? -AbsoluteRoll : AbsoluteRoll;
+				}
+				else
+				{
+					// 镜头位于角色右侧
+					Modifiers.LocalRotationSettings.Roll =
+						Modifiers.LocalRotationSettings.RelativeRollAdaptiveOption.bSync ? AbsoluteRoll : -AbsoluteRoll;
+				}
+			}
 
 			if (Modifiers.LocalOffsetSettings.bModified &&
 				Modifiers.LocalOffsetSettings.LocalArmOffsetYAdaptiveOption.bAdaptiveOption)
