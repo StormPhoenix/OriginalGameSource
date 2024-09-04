@@ -10,7 +10,8 @@
 #include "JoyPlayerState.h"
 #include "Utils/JoyCameraBlueprintLibrary.h"
 
-AJoyPlayerController::AJoyPlayerController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+AJoyPlayerController::AJoyPlayerController(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 }
 
@@ -104,12 +105,20 @@ void AJoyPlayerController::DoSwitchCharacter()
 
 	if (auto* JoyCameraManager = Cast<AJoyPlayerCameraManager>(PlayerCameraManager))
 	{
-		JoyCameraManager->SetBlendViewType(CharacterSwitchSpec.ExtraParam.BlendType);
 		if (CharacterSwitchSpec.To != nullptr)
 		{
-			JoyCameraManager->OnViewTargetBlendComplete.AddUObject(
-				this, &AJoyPlayerController::OnCharacterSwitchFinished);
-			SetViewTargetWithBlend(CharacterSwitchSpec.To.Get(), TargetSwitchTime, VTBlend_Cubic);
+			if (CharacterSwitchSpec.ExtraParam.bImmediately)
+			{
+				SetViewTarget(CharacterSwitchSpec.To.Get());
+				OnCharacterSwitchFinished(CharacterSwitchSpec.From.Get(), CharacterSwitchSpec.To.Get());
+			}
+			else
+			{
+				JoyCameraManager->SetBlendViewType(CharacterSwitchSpec.ExtraParam.BlendType);
+				JoyCameraManager->OnViewTargetBlendComplete.AddUObject(
+					this, &AJoyPlayerController::OnCharacterSwitchFinished);
+				SetViewTargetWithBlend(CharacterSwitchSpec.To.Get(), TargetSwitchTime, VTBlend_Cubic);
+			}
 		}
 	}
 	else

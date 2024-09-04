@@ -4,9 +4,11 @@
 
 #include "Components/GameStateComponent.h"
 #include "CoreMinimal.h"
+#include "Character/JoyPawnData.h"
 
 #include "JoyAICreationComponent.generated.h"
 
+class AController;
 class AJoyAISpawner;
 class UJoyExperienceDefinition;
 class UJoyPawnData;
@@ -19,7 +21,9 @@ class ORIGINALGAME_API UJoyAICreationComponent : public UGameStateComponent
 public:
 	UJoyAICreationComponent(const FObjectInitializer& ObjectInitializer);
 
-	void SpawnFromAISpawner(AJoyAISpawner* Spawner) const;
+	AController* SpawnFromAISpawner(AJoyAISpawner* Spawner) const;
+
+	AController* SpawnFromPawnData(const UJoyPawnData* PawnData, AActor* StartSpot) const;
 
 protected:
 	virtual void BeginPlay() override;

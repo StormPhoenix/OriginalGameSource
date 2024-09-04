@@ -15,7 +15,8 @@
 #include "Player/JoyPlayerState.h"
 #include "System/JoyAssetManager.h"
 
-AJoyGameMode::AJoyGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+AJoyGameMode::AJoyGameMode(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	GameStateClass = AJoyGameState::StaticClass();
 	PlayerControllerClass = AJoyPlayerController::StaticClass();
@@ -60,7 +61,7 @@ void AJoyGameMode::OnExperienceLoaded(const UJoyExperienceDefinition* CurrentExp
 		{
 			auto* JoyPS = PC->GetPlayerState<AJoyPlayerState>();
 			if (PC->GetPawnOrSpectator() == nullptr || JoyPS == nullptr ||
-				JoyPS->GetPawnData<UJoyPawnData>() == nullptr)
+			    JoyPS->GetPawnData<UJoyPawnData>() == nullptr)
 			{
 				JoyPS->SetPawnData(CurrentExperience->DefaultPawnData);
 				if (PlayerCanRestart(PC))
@@ -200,20 +201,5 @@ const UJoyPawnData* AJoyGameMode::GetPawnDataForController(const AController* In
 		}
 	}
 
-	// If not, fall back to the the default for the current experience
-	check(GameState);
-	const auto* ExperienceComponent = GameState->FindComponentByClass<UJoyExperienceManagerComponent>();
-	check(ExperienceComponent);
-
-	if (ExperienceComponent->IsExperienceLoaded() && InController != nullptr)
-	{
-		const UJoyExperienceDefinition* Experience = ExperienceComponent->GetCurrentExperienceChecked();
-		if (Experience->DefaultPawnData)
-		{
-			return Experience->DefaultPawnData;
-		}
-	}
-
-	// Experience not loaded yet, so there is no pawn data to be had
 	return nullptr;
 }

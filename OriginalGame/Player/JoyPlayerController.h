@@ -19,6 +19,9 @@ struct FJoyCharacterSwitchExtraParam
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere, DisplayName = "立即切换")
+	bool bImmediately{false};
+
 	UPROPERTY(EditAnywhere, DisplayName = "摄像机切换参数")
 	EJoyCameraBlendType BlendType{EJoyCameraBlendType::LockTarget};
 };

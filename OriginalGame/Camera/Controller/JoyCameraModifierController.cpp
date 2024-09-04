@@ -2,6 +2,7 @@
 
 #include "Camera/JoyCameraComponent.h"
 #include "Camera/JoyPlayerCameraManager.h"
+#include "Character/JoyCharacter.h"
 #include "Gameplay/JoyCharacterControlManageSubsystem.h"
 #include "Gameplay/TimeDilation/JoyTimeDilationManageSubsystem.h"
 #include "JoyGameBlueprintLibrary.h"
@@ -1184,15 +1185,15 @@ void UJoyCameraModifierController::ResetViewTarget()
 {
 	if (bResetViewTarget && PCM != nullptr)
 	{
-		if (auto* ControlManager = UJoyCharacterControlManageSubsystem::Get(GetWorld()))
+		if (const auto* ControlManager = UJoyCharacterControlManageSubsystem::Get(GetWorld()))
 		{
 			const AJoyCharacter* CurrentControlCharacter = ControlManager->GetCurrentControlCharacter();
-			const AActor* CurViewTarget = PCM->GetViewTarget();
-			if (CurrentControlCharacter != CurViewTarget)
+			const AActor* CurrentViewTarget = PCM->GetViewTarget();
+			if (CurrentViewTarget != CurrentControlCharacter)
 			{
 				// 需要复原 ViewTarget，为了保证复原过程中方向不变，需要重置 Controller 方向
 				auto* JoyPlayerController = UJoyGameBlueprintLibrary::GetJoyPlayerController(GetWorld());
-				auto* JoyCamera = UJoyCameraComponent::FindCameraComponent(CurViewTarget);
+				auto* JoyCamera = UJoyCameraComponent::FindCameraComponent(CurrentViewTarget);
 				if (JoyPlayerController && JoyCamera)
 				{
 					// 在进行 SetViewTarget 之前冻结相机，不允许修改镜头，避免切换过程中出现抖动

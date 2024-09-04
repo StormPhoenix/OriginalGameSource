@@ -3,6 +3,8 @@
 
 #include "JoyCameraModifierController.generated.h"
 
+struct FVirtualCamera;
+
 USTRUCT(BlueprintType)
 struct FCameraAdaptiveOption
 {
