@@ -45,7 +45,7 @@ void AJoyPlayerController::SwitchCharacter(
 
 void AJoyPlayerController::ApplyTimeDilation(float TimeDilation)
 {
-	ResetTimeDilation();
+	RemoveTimeDilation();
 	if (auto* TimeSys = UJoyTimeDilationManageSubsystem::GetTimeDilationManageSubsystem(this))
 	{
 		TimeDilationHandle =
@@ -53,7 +53,7 @@ void AJoyPlayerController::ApplyTimeDilation(float TimeDilation)
 	}
 }
 
-void AJoyPlayerController::ResetTimeDilation()
+void AJoyPlayerController::RemoveTimeDilation()
 {
 	if (!TimeDilationHandle.IsValid())
 	{
@@ -69,11 +69,6 @@ void AJoyPlayerController::ResetTimeDilation()
 
 void AJoyPlayerController::DoSwitchCharacter()
 {
-	if (CheckDuringCharacterSwitching())
-	{
-		return;
-	}
-
 	if (CharacterSwitchSpec.From != nullptr)
 	{
 		CharacterSwitchSpec.From->bUseControllerRotationYaw = false;
@@ -142,4 +137,5 @@ void AJoyPlayerController::OnCharacterSwitchFinished(AActor* ViewTarget, AActor*
 	}
 
 	CharacterSwitchSpec.Reset();
+	RemoveTimeDilation();
 }

@@ -87,7 +87,7 @@ private:
 
 	void ApplyTimeDilation(float TimeDilation);
 
-	void ResetTimeDilation();
+	void RemoveTimeDilation();
 
 private:
 	// @TODO 挪动到资产配置
