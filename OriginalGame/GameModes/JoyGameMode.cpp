@@ -12,6 +12,7 @@
 #include "JoyWorldSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/JoyPlayerController.h"
+#include "Player/JoyPlayerSpawningManagerComponent.h"
 #include "Player/JoyPlayerState.h"
 #include "System/JoyAssetManager.h"
 
@@ -178,6 +179,12 @@ void AJoyGameMode::OnMatchAssignmentGiven(FPrimaryAssetId ExperienceId, const FS
 
 void AJoyGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
 {
+	if (UJoyPlayerSpawningManagerComponent* PlayerSpawningComponent =
+		GameState->FindComponentByClass<UJoyPlayerSpawningManagerComponent>())
+	{
+		PlayerSpawningComponent->FinishRestartPlayer(NewPlayer, StartRotation);
+	}
+
 	Super::FinishRestartPlayer(NewPlayer, StartRotation);
 }
 

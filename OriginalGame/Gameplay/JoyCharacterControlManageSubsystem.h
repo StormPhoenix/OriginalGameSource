@@ -24,9 +24,6 @@ struct FCharacterControlState
 
 	UPROPERTY()
 	TObjectPtr<AJoyCharacter> LastControlCharacter{nullptr};
-
-	// @TODO 回调绑定要放到 PlayerController 的初始化流程中
-	bool bPlayerControllerCallbackBound{false};
 };
 
 /**
@@ -65,8 +62,6 @@ public:
 
 private:
 	bool AllowCharacterSwitching() const;
-
-	void InitializePlayerController(AJoyPlayerController* PlayerController);
 
 private:
 	UPROPERTY()
