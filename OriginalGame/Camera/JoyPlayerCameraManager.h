@@ -96,6 +96,11 @@ struct FViewTargetCameraInfo
 	UPROPERTY()
 	FVirtualCamera CurrentCamera;
 
+	/** 若 Modify 修正结束后需恢复，则恢复到 RestoreCamera 镜头，一般 RestoreCamera 与 LastCamera 一致，
+	 * 但若一段 Modify 未执行完就被新的 Modify 打断时，就需要存储上一段 Modify 的恢复位置 */
+	UPROPERTY()
+	FVirtualCamera RestoreCamera;
+
 	bool bNeedFading = false;
 
 	// 是否要对弹簧臂长度变动做淡入
@@ -526,7 +531,7 @@ private:
 
 	void ResetModifiedMarkers();
 
-	void SyncDesiredCameraData(float DeltaTime);
+	void SyncDesireCameraData(float DeltaTime);
 
 	void UpdateActorTransform(float DeltaTime);
 

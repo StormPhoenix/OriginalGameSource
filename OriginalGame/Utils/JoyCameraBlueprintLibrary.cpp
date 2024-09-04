@@ -5,7 +5,6 @@
 #include "JoyGameBlueprintLibrary.h"
 #include "Camera/JoyCameraComponent.h"
 #include "Camera/JoyPlayerCameraManager.h"
-#include "Components/SceneCaptureComponent2D.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/JoyPlayerController.h"
 

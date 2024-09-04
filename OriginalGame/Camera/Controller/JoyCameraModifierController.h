@@ -253,7 +253,7 @@ struct FCameraFadeOutData
 
 	float ArmLength{0.};
 
-	bool bModifyCameraOffset{false};
+	bool bModifyArmOffset{false};
 
 	FVector WorldCameraOffsetAdditional{FVector::ZeroVector};
 
@@ -399,6 +399,8 @@ public:
 
 private:
 	void StartModifyFadeOut();
+
+	void MakeRestoreCameraData(FVirtualCamera& RestoreCamera) const;
 
 	void UpdateModifyFadeOut(float DeltaSeconds);
 

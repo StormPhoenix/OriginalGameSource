@@ -285,7 +285,7 @@ void UJoyCameraModifierController::UpdateModifyFadeOut(float DeltaSeconds)
 		}
 	}
 
-	bNeedModifyFadeOut = ModifyFadeOutData.bModifyArmLength || ModifyFadeOutData.bModifyCameraOffset ||
+	bNeedModifyFadeOut = ModifyFadeOutData.bModifyArmLength || ModifyFadeOutData.bModifyArmOffset ||
 		ModifyFadeOutData.bModifyArmPitch || ModifyFadeOutData.bModifyArmYaw ||
 		ModifyFadeOutData.bModifyArmRoll || ModifyFadeOutData.bModifyFov;
 }
@@ -420,12 +420,13 @@ FCameraModifyHandle UJoyCameraModifierController::ApplyCameraModify(
 	}
 
 	// 如果存在状态混合，则终止
-
 	EndModify();
 	CurrentCameraModifySpec.Clear();
 
 	FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	TargetCameraInfo.LastCamera.CopyCamera(TargetCameraInfo.CurrentCamera);
+	TargetCameraInfo.RestoreCamera.CopyCamera(TargetCameraInfo.CurrentCamera);
+	MakeRestoreCameraData(TargetCameraInfo.RestoreCamera);
 
 	ModifyDuration = Duration >= 0 ? Duration : 0;
 	ModifyBlendInTime = BlendInTime;
@@ -531,10 +532,10 @@ void UJoyCameraModifierController::StartModifyFadeOut()
 		ModifyFadeOutData.Fov = PCM->GetBaseCameraFov();
 	}
 
-	ModifyFadeOutData.bModifyCameraOffset =
+	ModifyFadeOutData.bModifyArmOffset =
 		CurrentCameraModifySpec.CameraModifiers.WorldOffsetAdditionalSettings.bModified ||
 		bNeedModifyAdditionalLocalCameraOffset;
-	if (ModifyFadeOutData.bModifyCameraOffset)
+	if (ModifyFadeOutData.bModifyArmOffset)
 	{
 		// 恢复世界坐标位移
 		ModifyFadeOutData.WorldCameraOffsetAdditional = GetFinalWorldArmOffset();
@@ -543,6 +544,27 @@ void UJoyCameraModifierController::StartModifyFadeOut()
 	bNeedModifyFadeOut = ModifyFadeOutData.bModifyArmLength | ModifyFadeOutData.bModifyArmPitch |
 		ModifyFadeOutData.bModifyArmYaw | ModifyFadeOutData.bModifyArmRoll |
 		ModifyFadeOutData.bModifyFov;
+}
+
+void UJoyCameraModifierController::MakeRestoreCameraData(FVirtualCamera& RestoreCamera) const
+{
+	// 不处理 Arm Length 恢复，因为它会默认恢复到基础臂长
+
+	// 处理 Arm Rotation 恢复
+	if (ModifyFadeOutData.bModifyArmPitch || ModifyFadeOutData.bModifyArmYaw || ModifyFadeOutData.bModifyArmRoll)
+	{
+		RestoreCamera.SetArmCenterRotation(ModifyFadeOutData.ArmRotation);
+	}
+
+	// 不处理 Arm Fov 恢复，因为它会默认恢复到基础 Fov
+
+	// 不处理 Arm Local Offset 恢复，因为它会默认恢复基础局部偏移
+
+	// 处理 Arm World Offset
+	if (ModifyFadeOutData.bModifyArmOffset)
+	{
+		RestoreCamera.WorldArmOffsetAdditional = ModifyFadeOutData.WorldCameraOffsetAdditional;
+	}
 }
 
 void UJoyCameraModifierController::EndModify()
@@ -1041,7 +1063,7 @@ FRotator UJoyCameraModifierController::GetFinalArmRotation()
 		if (CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.bReset)
 		{
 			// 是否要还原相机弹簧臂方向
-			return TargetCameraInfo.LastCamera.ArmCenterRotation;
+			return TargetCameraInfo.RestoreCamera.ArmCenterRotation;
 		}
 	}
 	else if (CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch || CurrentCameraModifySpec.
@@ -1053,20 +1075,20 @@ FRotator UJoyCameraModifierController::GetFinalArmRotation()
 		if (CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bResetPitch)
 		{
 			// 复位 Pitch
-			FinalRotator.Pitch = TargetCameraInfo.LastCamera.ArmCenterRotation.Pitch;
+			FinalRotator.Pitch = TargetCameraInfo.RestoreCamera.ArmCenterRotation.Pitch;
 		}
 
 		if (CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bResetYaw)
 		{
 			// 复位 Yaw
-			FinalRotator.Yaw = TargetCameraInfo.LastCamera.ArmCenterRotation.Yaw;
+			FinalRotator.Yaw = TargetCameraInfo.RestoreCamera.ArmCenterRotation.Yaw;
 		}
 
 		if (CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bResetRoll)
 		{
 			// 复位 Roll，且要复位到 0
 			// FinalRotator.Roll = 0;
-			FinalRotator.Roll = TargetCameraInfo.LastCamera.ArmCenterRotation.Roll;
+			FinalRotator.Roll = TargetCameraInfo.RestoreCamera.ArmCenterRotation.Roll;
 		}
 
 		return FinalRotator;
