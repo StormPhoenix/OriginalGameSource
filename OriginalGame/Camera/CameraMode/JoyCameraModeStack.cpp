@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "JoyCameraModeStack.h"
+
+#include "Gameplay/TimeDilation/JoyTimeDilationManageSubsystem.h"
 #include "JoyCameraMode.h"
 #include "JoyCameraMode_ThirdPerson.h"
-#include "Gameplay/TimeDilation/JoyTimeDilationManageSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 
 UJoyCameraModeStack::UJoyCameraModeStack()
@@ -41,8 +41,8 @@ void UJoyCameraModeStack::UpdateCameraStack()
 		const int NextID = i + 1;
 		if (NextID < CameraModeOperations.Num() &&
 			(CameraModeOperations[i].CameraModeClass == CameraModeOperations[NextID].CameraModeClass &&
-				CameraModeOperations[i].OP == ECameraModePushPopOption::Push && CameraModeOperations[NextID].OP ==
-				ECameraModePushPopOption::Pop))
+				CameraModeOperations[i].OP == ECameraModePushPopOption::Push &&
+				CameraModeOperations[NextID].OP == ECameraModePushPopOption::Pop))
 		{
 			i += 1;
 			continue;

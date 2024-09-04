@@ -3,6 +3,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Controller/JoyCameraModifierController.h"
 #include "Input/JoyInputBlocker.h"
+
 #include "JoyPlayerCameraManager.generated.h"
 
 struct FGameplayTag;
@@ -96,8 +97,9 @@ struct FViewTargetCameraInfo
 	UPROPERTY()
 	FVirtualCamera CurrentCamera;
 
-	/** 若 Modify 修正结束后需恢复，则恢复到 RestoreCamera 镜头，一般 RestoreCamera 与 LastCamera 一致，
-	 * 但若一段 Modify 未执行完就被新的 Modify 打断时，就需要存储上一段 Modify 的恢复位置 */
+	/** 若 Modify 修正结束后需恢复，则恢复到 RestoreCamera 镜头，一般
+	 * RestoreCamera 与 LastCamera 一致， 但若一段 Modify 未执行完就被新的 Modify
+	 * 打断时，就需要存储上一段 Modify 的恢复位置 */
 	UPROPERTY()
 	FVirtualCamera RestoreCamera;
 
@@ -224,8 +226,7 @@ public:
 		return false;
 	}
 
-	virtual bool BlockAbilityTagPressInput_Implementation(
-		UObject* InputReceiver, FGameplayTag const& InputTag) override
+	virtual bool BlockAbilityTagPressInput_Implementation(UObject* InputReceiver, FGameplayTag const& InputTag) override
 	{
 		return false;
 	}
@@ -297,9 +298,10 @@ public:
 	FVector2f CameraSecondaryRotLagRange{1.0f};
 
 	/**
-	 * If true and camera location lag is enabled, draws markers at the camera target (in green) and the lagged position
-	 * (in yellow). A line is drawn between the two locations, in green normally but in red if the distance to the lag
-	 * target has been clamped (by CameraLagMaxDistance).
+	 * If true and camera location lag is enabled, draws markers at the camera
+	 * target (in green) and the lagged position (in yellow). A line is drawn
+	 * between the two locations, in green normally but in red if the distance to
+	 * the lag target has been clamped (by CameraLagMaxDistance).
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Joy|Camera|Debug")
 	uint32 bDrawDebugLagMarkers : 1;
@@ -332,10 +334,10 @@ public:
 	virtual void InitializeFor(class APlayerController* PC) override;
 
 	virtual void SetViewTarget(class AActor* NewViewTarget,
-	                           FViewTargetTransitionParams TransitionParams = FViewTargetTransitionParams()) override;
+		FViewTargetTransitionParams TransitionParams = FViewTargetTransitionParams()) override;
 
 	void SetViewTargetWithCurveBlend(AActor* NewViewTarget, TObjectPtr<UCurveFloat> BlendCurve,
-	                                 bool bEnableUpdateCameraConfig, FViewTargetTransitionParams TransitionParams = {});
+		bool bEnableUpdateCameraConfig, FViewTargetTransitionParams TransitionParams = {});
 
 	mutable FOnViewTargetBlendComplete OnViewTargetBlendComplete;
 

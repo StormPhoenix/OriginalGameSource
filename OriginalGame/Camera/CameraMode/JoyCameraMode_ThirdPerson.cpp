@@ -18,7 +18,7 @@
 
 namespace JoyCameraMode_ThirdPerson_Statics
 {
-	static const FName NAME_IgnoreCameraCollision = TEXT("IgnoreCameraCollision");
+static const FName NAME_IgnoreCameraCollision = TEXT("IgnoreCameraCollision");
 }
 
 UJoyCameraMode_ThirdPerson::UJoyCameraMode_ThirdPerson()
@@ -183,10 +183,9 @@ void UJoyCameraMode_ThirdPerson::UpdateDesiredViewPose(
 		{
 			FQuat const QCurrent = CameraComponent->CameraDataThisFrame.ViewRotation.Data.GetNormalized().Quaternion();
 			FQuat const QTarget = DesiredRot.GetNormalized().Quaternion();
-			const float CameraRotLagRecoverSpeed =
-				PlayerCameraManager != nullptr
-					? PlayerCameraManager->GetArmRotatorLagRecoverSpeed()
-					: DefaultCameraRotLagSpeed;
+			const float CameraRotLagRecoverSpeed = PlayerCameraManager != nullptr
+													   ? PlayerCameraManager->GetArmRotatorLagRecoverSpeed()
+													   : DefaultCameraRotLagSpeed;
 			DesiredRot = FMath::RInterpTo(QCurrent.Rotator(), QTarget.Rotator(), DeltaTime, CameraRotLagRecoverSpeed);
 		}
 	}
@@ -206,23 +205,19 @@ void UJoyCameraMode_ThirdPerson::UpdateDesiredViewPose(
 
 	if (IsEnableLocationLag())
 	{
-		const float CameraLagRecoverSpeed =
-			PlayerCameraManager != nullptr
-				? PlayerCameraManager->GetArmCenterLagRecoverSpeed()
-				: DefaultCameraLagRecoverSpeed;
+		const float CameraLagRecoverSpeed = PlayerCameraManager != nullptr
+												? PlayerCameraManager->GetArmCenterLagRecoverSpeed()
+												: DefaultCameraLagRecoverSpeed;
 
-		DesiredLoc =
-			FMath::VInterpTo(CameraComponent->CameraDataThisFrame.ArmLocation.Data, DesiredLoc, DeltaTime,
-			                 CameraLagRecoverSpeed);
-		const float CameraLagMaxDistanceXY =
-			PlayerCameraManager != nullptr
-				? PlayerCameraManager->GetArmCenterLagMaxDistanceXY()
-				: DefaultCameraLagMaxDistance;
+		DesiredLoc = FMath::VInterpTo(
+			CameraComponent->CameraDataThisFrame.ArmLocation.Data, DesiredLoc, DeltaTime, CameraLagRecoverSpeed);
+		const float CameraLagMaxDistanceXY = PlayerCameraManager != nullptr
+												 ? PlayerCameraManager->GetArmCenterLagMaxDistanceXY()
+												 : DefaultCameraLagMaxDistance;
 
-		const float CameraLagMaxDistanceZ =
-			PlayerCameraManager != nullptr
-				? PlayerCameraManager->GetArmCenterLagMaxDistanceZ()
-				: DefaultCameraLagMaxDistance;
+		const float CameraLagMaxDistanceZ = PlayerCameraManager != nullptr
+												? PlayerCameraManager->GetArmCenterLagMaxDistanceZ()
+												: DefaultCameraLagMaxDistance;
 
 		if (CameraLagMaxDistanceXY >= 0.f && CameraLagMaxDistanceZ >= 0.f)
 		{
@@ -252,8 +247,8 @@ void UJoyCameraMode_ThirdPerson::UpdateDesiredViewPose(
 		}
 
 		// 如果角色是面对着相机移动的，那么要防止角色太靠近相机导致穿模
-		if (FVector::DotProduct(DesiredRot.Vector(),
-		                        (DesiredLoc - CameraComponent->CameraDataThisFrame.ArmLocation.Data)) < 0.)
+		if (FVector::DotProduct(
+				DesiredRot.Vector(), (DesiredLoc - CameraComponent->CameraDataThisFrame.ArmLocation.Data)) < 0.)
 		{
 			float LaggedLength = (DesiredLoc - OutCameraLoc).Length();
 			if ((ArmOffset.Length() - LaggedLength) < MinArmLength)
@@ -334,7 +329,7 @@ void UJoyCameraMode_ThirdPerson::UpdatePreventPenetration(float DeltaTime)
 		bool const bSingleRayPenetrationCheck = !bDoPredictiveAvoidance;
 
 		PreventCameraPenetration(*PPActor, SafeLocation, View.Location, DeltaTime, AimLineToDesiredPosBlockedPct,
-		                         bSingleRayPenetrationCheck);
+			bSingleRayPenetrationCheck);
 	}
 }
 
@@ -378,8 +373,7 @@ void UJoyCameraMode_ThirdPerson::OnActivation()
 }
 
 void UJoyCameraMode_ThirdPerson::PreventCameraPenetration(class AActor const& ViewTarget, FVector const& SafeLoc,
-                                                          FVector& CameraLoc, float const& DeltaTime,
-                                                          float& DistBlockedPct, bool bSingleRayOnly)
+	FVector& CameraLoc, float const& DeltaTime, float& DistBlockedPct, bool bSingleRayOnly)
 {
 #if ENABLE_DRAW_DEBUG
 	DebugActorsHitDuringCameraPenetration.Reset();
@@ -421,7 +415,7 @@ void UJoyCameraMode_ThirdPerson::PreventCameraPenetration(class AActor const& Vi
 			// cast for world and pawn hits separately.  this is so we can safely ignore the
 			// camera's target pawn
 			SphereShape.Sphere.Radius = Feeler.Extent;
-			ECollisionChannel TraceChannel = ECC_Camera; //(Feeler.PawnWeight > 0.f) ? ECC_Pawn : ECC_Camera;
+			ECollisionChannel TraceChannel = ECC_Camera;	//(Feeler.PawnWeight > 0.f) ? ECC_Pawn : ECC_Camera;
 
 			// do multi-line check to make sure the hits we throw out aren't
 			// masking real hits behind (these are important rays).

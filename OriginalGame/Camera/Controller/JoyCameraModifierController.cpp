@@ -1,11 +1,11 @@
 ﻿#include "JoyCameraModifierController.h"
 
-#include "JoyGameBlueprintLibrary.h"
-#include "JoyLogChannels.h"
 #include "Camera/JoyCameraComponent.h"
 #include "Camera/JoyPlayerCameraManager.h"
 #include "Gameplay/JoyCharacterControlManageSubsystem.h"
 #include "Gameplay/TimeDilation/JoyTimeDilationManageSubsystem.h"
+#include "JoyGameBlueprintLibrary.h"
+#include "JoyLogChannels.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/JoyPlayerController.h"
 #include "Utils/JoyMathBlueprintLibrary.h"
@@ -64,7 +64,7 @@ void PreProcessCameraModifiers(FCameraModifiers& Modifiers, const UJoyCameraModi
 						Modifiers.LocalRotationSettings.RelativeYawAdaptiveOption.bSync ? -AbsoluteYaw : AbsoluteYaw;
 				}
 			}
-			
+
 			if (Modifiers.LocalRotationSettings.bModifyRoll &&
 				Modifiers.LocalRotationSettings.RelativeRollAdaptiveOption.bAdaptiveOption)
 			{
@@ -91,17 +91,15 @@ void PreProcessCameraModifiers(FCameraModifiers& Modifiers, const UJoyCameraModi
 				{
 					// 镜头位于角色左侧
 					Modifiers.LocalOffsetSettings.LocalArmOffset.Y =
-						Modifiers.LocalOffsetSettings.LocalArmOffsetYAdaptiveOption.bSync
-							? AbsoluteLocalY
-							: -AbsoluteLocalY;
+						Modifiers.LocalOffsetSettings.LocalArmOffsetYAdaptiveOption.bSync ? AbsoluteLocalY
+																						  : -AbsoluteLocalY;
 				}
 				else
 				{
 					// 镜头位于角色右侧
 					Modifiers.LocalOffsetSettings.LocalArmOffset.Y =
-						Modifiers.LocalOffsetSettings.LocalArmOffsetYAdaptiveOption.bSync
-							? -AbsoluteLocalY
-							: AbsoluteLocalY;
+						Modifiers.LocalOffsetSettings.LocalArmOffsetYAdaptiveOption.bSync ? -AbsoluteLocalY
+																						  : AbsoluteLocalY;
 				}
 			}
 		}
@@ -209,7 +207,7 @@ void UJoyCameraModifierController::UpdateModifyFadeOut(float DeltaSeconds)
 		{
 			ModifyFadeOutData.bModifyArmLength =
 				FloatInterpTo(TargetCameraInfo.CurrentCamera.ArmLength, ModifyFadeOutData.ArmLength, DeltaSeconds,
-				              ModifyArmLengthLagSpeed, TargetCameraInfo.DesiredCamera.ArmLength);
+					ModifyArmLengthLagSpeed, TargetCameraInfo.DesiredCamera.ArmLength);
 			TargetCameraInfo.bCameraArmLength_HasModified = true;
 		}
 	}
@@ -245,8 +243,7 @@ void UJoyCameraModifierController::UpdateModifyFadeOut(float DeltaSeconds)
 		{
 			float ArmPitch{0.f};
 			ModifyFadeOutData.bModifyArmPitch = FloatInterpTo(TargetCameraInfo.CurrentCamera.ArmCenterRotation.Pitch,
-			                                                  ModifyFadeOutData.ArmRotation.Pitch, DeltaSeconds,
-			                                                  ModifyArmRotationLagSpeed, ArmPitch);
+				ModifyFadeOutData.ArmRotation.Pitch, DeltaSeconds, ModifyArmRotationLagSpeed, ArmPitch);
 			TargetCameraInfo.DesiredCamera.ArmCenterRotation.Pitch = ArmPitch;
 			TargetCameraInfo.bArmPitch_HasModified = true;
 		}
@@ -263,8 +260,7 @@ void UJoyCameraModifierController::UpdateModifyFadeOut(float DeltaSeconds)
 		{
 			float ArmYaw{0.f};
 			ModifyFadeOutData.bModifyArmYaw = FloatInterpTo(TargetCameraInfo.CurrentCamera.ArmCenterRotation.Yaw,
-			                                                ModifyFadeOutData.ArmRotation.Yaw, DeltaSeconds,
-			                                                ModifyArmRotationLagSpeed, ArmYaw);
+				ModifyFadeOutData.ArmRotation.Yaw, DeltaSeconds, ModifyArmRotationLagSpeed, ArmYaw);
 			TargetCameraInfo.DesiredCamera.ArmCenterRotation.Yaw = ArmYaw;
 			TargetCameraInfo.bArmYaw_HasModified = true;
 		}
@@ -281,8 +277,7 @@ void UJoyCameraModifierController::UpdateModifyFadeOut(float DeltaSeconds)
 		{
 			float ArmRoll{0.f};
 			ModifyFadeOutData.bModifyArmRoll = FloatInterpTo(TargetCameraInfo.CurrentCamera.ArmCenterRotation.Roll,
-			                                                 ModifyFadeOutData.ArmRotation.Roll, DeltaSeconds,
-			                                                 ModifyArmRotationLagSpeed, ArmRoll);
+				ModifyFadeOutData.ArmRotation.Roll, DeltaSeconds, ModifyArmRotationLagSpeed, ArmRoll);
 			TargetCameraInfo.DesiredCamera.ArmCenterRotation.Roll = ArmRoll;
 			TargetCameraInfo.bArmRoll_HasModified = true;
 		}
@@ -297,15 +292,14 @@ void UJoyCameraModifierController::UpdateModifyFadeOut(float DeltaSeconds)
 		else
 		{
 			ModifyFadeOutData.bModifyFov = FloatInterpTo(TargetCameraInfo.CurrentCamera.Fov, ModifyFadeOutData.Fov,
-			                                             DeltaSeconds, ModifyArmLengthLagSpeed,
-			                                             TargetCameraInfo.DesiredCamera.Fov);
+				DeltaSeconds, ModifyArmLengthLagSpeed, TargetCameraInfo.DesiredCamera.Fov);
 			TargetCameraInfo.bCameraFov_HasModified = true;
 		}
 	}
 
 	bNeedModifyFadeOut = ModifyFadeOutData.bModifyArmLength || ModifyFadeOutData.bModifyArmOffset ||
-		ModifyFadeOutData.bModifyArmPitch || ModifyFadeOutData.bModifyArmYaw ||
-		ModifyFadeOutData.bModifyArmRoll || ModifyFadeOutData.bModifyFov;
+						 ModifyFadeOutData.bModifyArmPitch || ModifyFadeOutData.bModifyArmYaw ||
+						 ModifyFadeOutData.bModifyArmRoll || ModifyFadeOutData.bModifyFov;
 }
 
 void UJoyCameraModifierController::UpdateModifiers(float DeltaSeconds)
@@ -346,10 +340,9 @@ void UJoyCameraModifierController::UpdateModifiers(float DeltaSeconds)
 		if (!bNeedManualBreakModify)
 		{
 			/** 如果是到达时间限制进入淡出，则统计 BlendIn + BlendDuration + BlendOut 阶段经过时间 */
-			CurrentRawBlendAlpha =
-				ModifyBlendOutTime > 0
-					? (ModifyElapsedTime - ModifyBlendInTime - ModifyDuration) / ModifyBlendOutTime
-					: 1;
+			CurrentRawBlendAlpha = ModifyBlendOutTime > 0
+									   ? (ModifyElapsedTime - ModifyBlendInTime - ModifyDuration) / ModifyBlendOutTime
+									   : 1;
 			BlendAlpha = CurrentRawBlendAlpha;
 		}
 		else
@@ -360,7 +353,6 @@ void UJoyCameraModifierController::UpdateModifiers(float DeltaSeconds)
 			BlendAlpha = CurrentRawBlendAlpha;
 		}
 	}
-
 
 	CurrentRawBlendAlpha = FMath::Clamp(CurrentRawBlendAlpha, 0, 1.);
 	BlendAlpha = FMath::Clamp(BlendAlpha, 0, 1.);
@@ -421,9 +413,8 @@ FCameraModifyHandle UJoyCameraModifierController::GetLastModifierHandle() const
 	return LastModifierHandle;
 }
 
-FCameraModifyHandle UJoyCameraModifierController::ApplyCameraModify(
-	float Duration, float BlendInTime, float BlendOutTime, FCameraModifiers const& InCameraModifiers,
-	bool bNeedManualBreak)
+FCameraModifyHandle UJoyCameraModifierController::ApplyCameraModify(float Duration, float BlendInTime,
+	float BlendOutTime, FCameraModifiers const& InCameraModifiers, bool bNeedManualBreak)
 {
 	if (PCM == nullptr)
 	{
@@ -456,12 +447,12 @@ FCameraModifyHandle UJoyCameraModifierController::ApplyCameraModify(
 	bNeedManualBreakModify = bNeedManualBreak;
 	bHasManualBreakModify = false;
 
-	bNeedModifyAdditionalArmLength = !FMath::IsNearlyEqual(
-		CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.ArmLengthAdditional, 0);
+	bNeedModifyAdditionalArmLength =
+		!FMath::IsNearlyEqual(CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.ArmLengthAdditional, 0);
 	bNeedModifyAdditionalLocalCameraOffset =
 		!CurrentCameraModifySpec.CameraModifiers.LocalOffsetSettings.LocalArmOffsetAdditional.IsNearlyZero();
-	bNeedModifyAdditionalCameraRotation = !CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.
-	                                                               ArmRotationAdditional.IsNearlyZero();
+	bNeedModifyAdditionalCameraRotation =
+		!CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.ArmRotationAdditional.IsNearlyZero();
 
 	bIsModified = true;
 	bResetViewTarget = CurrentCameraModifySpec.CameraModifiers.bResetViewTarget;
@@ -501,25 +492,25 @@ FCameraModifyHandle UJoyCameraModifierController::ApplyCameraModify(
 
 bool UJoyCameraModifierController::IsCameraOffsetModified() const
 {
-	return bNeedModifyAdditionalLocalCameraOffset || CurrentCameraModifySpec.CameraModifiers.
-	                                                                         WorldOffsetAdditionalSettings.bModified ||
-		CurrentCameraModifySpec.CameraModifiers.LocalOffsetSettings.bModified;
+	return bNeedModifyAdditionalLocalCameraOffset ||
+		   CurrentCameraModifySpec.CameraModifiers.WorldOffsetAdditionalSettings.bModified ||
+		   CurrentCameraModifySpec.CameraModifiers.LocalOffsetSettings.bModified;
 }
 
 bool UJoyCameraModifierController::IsCameraRotationModified() const
 {
-	return bNeedModifyAdditionalCameraRotation || CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.
-	                                                                      bModified ||
-		CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch || CurrentCameraModifySpec.
-		CameraModifiers.LocalRotationSettings.bModifyYaw ||
-		CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll;
+	return bNeedModifyAdditionalCameraRotation ||
+		   CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.bModified ||
+		   CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch ||
+		   CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyYaw ||
+		   CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll;
 }
 
 void UJoyCameraModifierController::StartModifyFadeOut()
 {
 	// 检查是否需要复位 ArmLength
-	ModifyFadeOutData.bModifyArmLength = CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.bModified ||
-		bNeedModifyAdditionalArmLength;
+	ModifyFadeOutData.bModifyArmLength =
+		CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.bModified || bNeedModifyAdditionalArmLength;
 	if (ModifyFadeOutData.bModifyArmLength)
 	{
 		ModifyFadeOutData.ArmLength = GetFinalArmLength();
@@ -527,16 +518,16 @@ void UJoyCameraModifierController::StartModifyFadeOut()
 
 	// 检查是否需要复位 ArmRotation
 	ModifyFadeOutData.bModifyArmPitch = CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch ||
-		CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.bModified ||
-		bNeedModifyAdditionalCameraRotation;
+										CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.bModified ||
+										bNeedModifyAdditionalCameraRotation;
 
 	ModifyFadeOutData.bModifyArmYaw = CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyYaw ||
-		CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.bModified ||
-		bNeedModifyAdditionalCameraRotation;
+									  CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.bModified ||
+									  bNeedModifyAdditionalCameraRotation;
 
 	ModifyFadeOutData.bModifyArmRoll = CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll ||
-		CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.bModified ||
-		bNeedModifyAdditionalCameraRotation;
+									   CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.bModified ||
+									   bNeedModifyAdditionalCameraRotation;
 
 	if (ModifyFadeOutData.bModifyArmPitch || ModifyFadeOutData.bModifyArmYaw || ModifyFadeOutData.bModifyArmRoll)
 	{
@@ -560,8 +551,8 @@ void UJoyCameraModifierController::StartModifyFadeOut()
 	}
 
 	bNeedModifyFadeOut = ModifyFadeOutData.bModifyArmLength | ModifyFadeOutData.bModifyArmPitch |
-		ModifyFadeOutData.bModifyArmYaw | ModifyFadeOutData.bModifyArmRoll |
-		ModifyFadeOutData.bModifyFov;
+						 ModifyFadeOutData.bModifyArmYaw | ModifyFadeOutData.bModifyArmRoll |
+						 ModifyFadeOutData.bModifyFov;
 }
 
 void UJoyCameraModifierController::MakeRestoreCameraData(FVirtualCamera& RestoreCamera) const
@@ -685,25 +676,26 @@ void UJoyCameraModifierController::UpdateFovModifier(EBlendState State, float Al
 		else if (State == EBlendState::BlendOut)
 		{
 			Alpha = 1.0 - UJoyMathBlueprintLibrary::GetNormalizeCurveFloat(
-				CurrentCameraModifySpec.CameraModifiers.CameraFovSettings.CameraFovCurve, 1.0 - CurrentRawBlendAlpha);
+							  CurrentCameraModifySpec.CameraModifiers.CameraFovSettings.CameraFovCurve,
+							  1.0 - CurrentRawBlendAlpha);
 		}
 	}
 
 	const float TargetFov = CurrentCameraModifySpec.CameraModifiers.CameraFovSettings.CameraFov;
 	switch (State)
 	{
-	case EBlendState::BlendIn:
-		TargetCameraInfo.DesiredCamera.Fov = FMath::Lerp(TargetCameraInfo.LastCamera.Fov, TargetFov, Alpha);
-		break;
-	case EBlendState::Loop:
-		TargetCameraInfo.DesiredCamera.Fov = TargetFov;
-		break;
-	case EBlendState::BlendOut:
-		// TargetCameraInfo.DesiredCamera.Fov = FMath::Lerp(TargetFov, PCM->GetBaseCameraFov(), Alpha);
-		TargetCameraInfo.DesiredCamera.Fov = FMath::Lerp(TargetFov, GetFinalFov(), Alpha);
-		break;
-	default:
-		break;
+		case EBlendState::BlendIn:
+			TargetCameraInfo.DesiredCamera.Fov = FMath::Lerp(TargetCameraInfo.LastCamera.Fov, TargetFov, Alpha);
+			break;
+		case EBlendState::Loop:
+			TargetCameraInfo.DesiredCamera.Fov = TargetFov;
+			break;
+		case EBlendState::BlendOut:
+			// TargetCameraInfo.DesiredCamera.Fov = FMath::Lerp(TargetFov, PCM->GetBaseCameraFov(), Alpha);
+			TargetCameraInfo.DesiredCamera.Fov = FMath::Lerp(TargetFov, GetFinalFov(), Alpha);
+			break;
+		default:
+			break;
 	}
 
 	TargetCameraInfo.bCameraFov_HasModified = true;
@@ -746,8 +738,8 @@ void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, 
 		TargetCameraInfo.bArmPitch_HasModified = true;
 		TargetCameraInfo.bArmRoll_HasModified = true;
 
-		if (CurrentCameraModifySpec.CameraModifiers.bArmRotationCurveControl && CurrentCameraModifySpec.CameraModifiers.
-			ArmRotationCurve != nullptr)
+		if (CurrentCameraModifySpec.CameraModifiers.bArmRotationCurveControl &&
+			CurrentCameraModifySpec.CameraModifiers.ArmRotationCurve != nullptr)
 		{
 			if (State == EBlendState::BlendIn)
 			{
@@ -757,13 +749,13 @@ void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, 
 			else if (State == EBlendState::BlendOut)
 			{
 				Alpha = 1.0 - UJoyMathBlueprintLibrary::GetNormalizeCurveFloat(
-					CurrentCameraModifySpec.CameraModifiers.ArmRotationCurve, 1.0 - CurrentRawBlendAlpha);
+								  CurrentCameraModifySpec.CameraModifiers.ArmRotationCurve, 1.0 - CurrentRawBlendAlpha);
 			}
 		}
 	}
-	else if (CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch || CurrentCameraModifySpec.
-		CameraModifiers.LocalRotationSettings.bModifyYaw ||
-		CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll)
+	else if (CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch ||
+			 CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyYaw ||
+			 CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll)
 	{
 		/** 修改相机臂旋转（角色局部坐标系） */
 		if (State == EBlendState::BlendOut || (PCM != nullptr && PCM->bMoveInput))
@@ -775,21 +767,19 @@ void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, 
 		const FQuat PawnFaceQuat =
 			ExternalDependencyCameraData.IsValid()
 				? ExternalDependencyCameraData.GetPawnFaceViewQuat()
-				: (ModifiedViewTarget.Get() != nullptr
-					   ? ModifiedViewTarget->GetActorRotation().Quaternion()
-					   : FRotator::ZeroRotator.Quaternion());
+				: (ModifiedViewTarget.Get() != nullptr ? ModifiedViewTarget->GetActorRotation().Quaternion()
+													   : FRotator::ZeroRotator.Quaternion());
 
-		const FQuat AdderQuat = FRotator(
-				CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch
-					? CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.Pitch
-					: 0,
-				CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyYaw
-					? CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.Yaw
-					: 0,
-				CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll
-					? CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.Roll
-					: 0)
-			.Quaternion();
+		const FQuat AdderQuat = FRotator(CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch
+											 ? CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.Pitch
+											 : 0,
+			CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyYaw
+				? CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.Yaw
+				: 0,
+			CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll
+				? CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.Roll
+				: 0)
+									.Quaternion();
 		TargetArmRotator = (PawnFaceQuat * AdderQuat).Rotator();
 
 		if (!CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch)
@@ -807,12 +797,12 @@ void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, 
 			TargetArmRotator.Roll = TargetCameraInfo.LastCamera.ArmCenterRotation.Roll;
 		}
 
-		TargetCameraInfo.bArmPitch_HasModified |= CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.
-		                                                                  bModifyPitch;
-		TargetCameraInfo.bArmYaw_HasModified |= CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.
-		                                                                bModifyYaw;
-		TargetCameraInfo.bArmRoll_HasModified |= CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.
-		                                                                 bModifyRoll;
+		TargetCameraInfo.bArmPitch_HasModified |=
+			CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch;
+		TargetCameraInfo.bArmYaw_HasModified |=
+			CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyYaw;
+		TargetCameraInfo.bArmRoll_HasModified |=
+			CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll;
 	}
 	else
 	{
@@ -829,8 +819,8 @@ void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, 
 
 		TargetCameraInfo.bArmPitch_HasModified |=
 			(CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.ArmRotationAdditional.Pitch != 0);
-		TargetCameraInfo.bArmYaw_HasModified |= (CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.
-		                                                                 ArmRotationAdditional.Yaw != 0);
+		TargetCameraInfo.bArmYaw_HasModified |=
+			(CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.ArmRotationAdditional.Yaw != 0);
 		TargetCameraInfo.bArmRoll_HasModified |=
 			(CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.ArmRotationAdditional.Roll != 0);
 	}
@@ -844,20 +834,20 @@ void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, 
 	TargetCameraInfo.DesiredCamera.ArmCenterRotation = TargetArmRotator;
 	switch (State)
 	{
-	case EBlendState::BlendIn:
-		TargetCameraInfo.DesiredCamera.ArmCenterRotation = FQuat::Slerp(
+		case EBlendState::BlendIn:
+			TargetCameraInfo.DesiredCamera.ArmCenterRotation = FQuat::Slerp(
 				TargetCameraInfo.LastCamera.ArmCenterRotation.Quaternion(), TargetArmRotator.Quaternion(), Alpha)
-			.Rotator();
-		break;
-	case EBlendState::Loop:
-		TargetCameraInfo.DesiredCamera.ArmCenterRotation = TargetArmRotator;
-		break;
-	case EBlendState::BlendOut:
-		TargetCameraInfo.DesiredCamera.ArmCenterRotation =
-			FQuat::Slerp(TargetArmRotator.Quaternion(), GetFinalArmRotation().Quaternion(), Alpha).Rotator();
-		break;
-	default:
-		break;
+																   .Rotator();
+			break;
+		case EBlendState::Loop:
+			TargetCameraInfo.DesiredCamera.ArmCenterRotation = TargetArmRotator;
+			break;
+		case EBlendState::BlendOut:
+			TargetCameraInfo.DesiredCamera.ArmCenterRotation =
+				FQuat::Slerp(TargetArmRotator.Quaternion(), GetFinalArmRotation().Quaternion(), Alpha).Rotator();
+			break;
+		default:
+			break;
 	}
 }
 
@@ -875,8 +865,8 @@ void UJoyCameraModifierController::UpdateLocalArmCenterOffsetModifier(EBlendStat
 		return;
 	}
 
-	if ((!CurrentCameraModifySpec.CameraModifiers.LocalOffsetSettings.bModified && !
-		bNeedModifyAdditionalLocalCameraOffset))
+	if ((!CurrentCameraModifySpec.CameraModifiers.LocalOffsetSettings.bModified &&
+			!bNeedModifyAdditionalLocalCameraOffset))
 	{
 		return;
 	}
@@ -901,21 +891,21 @@ void UJoyCameraModifierController::UpdateLocalArmCenterOffsetModifier(EBlendStat
 
 	switch (State)
 	{
-	case EBlendState::BlendIn:
-		// 从 LastCamera 状态开始 Blend
-		TargetCameraInfo.DesiredCamera.LocalArmCenterOffset =
-			FMath::Lerp(TargetCameraInfo.LastCamera.LocalArmCenterOffset, TargetCameraOffset, Alpha);
-		break;
-	case EBlendState::Loop:
-		TargetCameraInfo.DesiredCamera.LocalArmCenterOffset = TargetCameraOffset;
-		break;
-	case EBlendState::BlendOut:
-		/** CameraOffset 默认还原到基础 Offset */
-		TargetCameraInfo.DesiredCamera.LocalArmCenterOffset =
-			FMath::Lerp(TargetCameraOffset, GetFinalLocalArmOffset(), Alpha);
-		break;
-	default:
-		break;
+		case EBlendState::BlendIn:
+			// 从 LastCamera 状态开始 Blend
+			TargetCameraInfo.DesiredCamera.LocalArmCenterOffset =
+				FMath::Lerp(TargetCameraInfo.LastCamera.LocalArmCenterOffset, TargetCameraOffset, Alpha);
+			break;
+		case EBlendState::Loop:
+			TargetCameraInfo.DesiredCamera.LocalArmCenterOffset = TargetCameraOffset;
+			break;
+		case EBlendState::BlendOut:
+			/** CameraOffset 默认还原到基础 Offset */
+			TargetCameraInfo.DesiredCamera.LocalArmCenterOffset =
+				FMath::Lerp(TargetCameraOffset, GetFinalLocalArmOffset(), Alpha);
+			break;
+		default:
+			break;
 	}
 
 	TargetCameraInfo.bCameraOffset_HasModified = true;
@@ -945,21 +935,21 @@ void UJoyCameraModifierController::UpdateWorldArmCenterOffsetModifier(EBlendStat
 		CurrentCameraModifySpec.CameraModifiers.WorldOffsetAdditionalSettings.WorldArmOffsetAdditional;
 	switch (State)
 	{
-	case EBlendState::BlendIn:
-		// 从 LastCamera 状态开始 Blend
-		TargetCameraInfo.DesiredCamera.WorldArmOffsetAdditional = FMath::Lerp(
-			TargetCameraInfo.LastCamera.WorldArmOffsetAdditional, TargetWorldArmOffsetAdditional, Alpha);
-		break;
-	case EBlendState::Loop:
-		TargetCameraInfo.DesiredCamera.WorldArmOffsetAdditional = TargetWorldArmOffsetAdditional;
-		break;
-	case EBlendState::BlendOut:
-		/** World Camera Offset 默认还原到 0 */
-		TargetCameraInfo.DesiredCamera.WorldArmOffsetAdditional =
-			FMath::Lerp(TargetWorldArmOffsetAdditional, GetFinalWorldArmOffset(), Alpha);
-		break;
-	default:
-		break;
+		case EBlendState::BlendIn:
+			// 从 LastCamera 状态开始 Blend
+			TargetCameraInfo.DesiredCamera.WorldArmOffsetAdditional = FMath::Lerp(
+				TargetCameraInfo.LastCamera.WorldArmOffsetAdditional, TargetWorldArmOffsetAdditional, Alpha);
+			break;
+		case EBlendState::Loop:
+			TargetCameraInfo.DesiredCamera.WorldArmOffsetAdditional = TargetWorldArmOffsetAdditional;
+			break;
+		case EBlendState::BlendOut:
+			/** World Camera Offset 默认还原到 0 */
+			TargetCameraInfo.DesiredCamera.WorldArmOffsetAdditional =
+				FMath::Lerp(TargetWorldArmOffsetAdditional, GetFinalWorldArmOffset(), Alpha);
+			break;
+		default:
+			break;
 	}
 
 	TargetCameraInfo.bCameraOffset_HasModified = true;
@@ -1014,28 +1004,29 @@ void UJoyCameraModifierController::UpdateArmLengthModifier(EBlendState State, fl
 		else if (State == EBlendState::BlendOut)
 		{
 			Alpha = 1.0 - UJoyMathBlueprintLibrary::GetNormalizeCurveFloat(
-				CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.ArmLengthCurve, 1.0 - CurrentRawBlendAlpha);
+							  CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.ArmLengthCurve,
+							  1.0 - CurrentRawBlendAlpha);
 		}
 	}
 
 	TargetArmLength = FMath::Clamp(TargetArmLength, PCM->MinArmLength, PCM->MaxArmLength);
 	switch (State)
 	{
-	case EBlendState::BlendIn:
-		// 在 Blend 开始之前的相机基础臂长上进行插值
-		TargetCameraInfo.DesiredCamera.ArmLength =
-			FMath::Lerp(TargetCameraInfo.LastCamera.ArmLength, TargetArmLength, Alpha);
-		break;
-	case EBlendState::Loop:
-		// 位于 Duration 期间，无需插值
-		TargetCameraInfo.DesiredCamera.ArmLength = TargetArmLength;
-		break;
-	case EBlendState::BlendOut:
-		// 在目标臂长和 Blend 完毕之后的相机基础臂长之间进行插值
-		TargetCameraInfo.DesiredCamera.ArmLength = FMath::Lerp(TargetArmLength, GetFinalArmLength(), Alpha);
-		break;
-	default:
-		break;
+		case EBlendState::BlendIn:
+			// 在 Blend 开始之前的相机基础臂长上进行插值
+			TargetCameraInfo.DesiredCamera.ArmLength =
+				FMath::Lerp(TargetCameraInfo.LastCamera.ArmLength, TargetArmLength, Alpha);
+			break;
+		case EBlendState::Loop:
+			// 位于 Duration 期间，无需插值
+			TargetCameraInfo.DesiredCamera.ArmLength = TargetArmLength;
+			break;
+		case EBlendState::BlendOut:
+			// 在目标臂长和 Blend 完毕之后的相机基础臂长之间进行插值
+			TargetCameraInfo.DesiredCamera.ArmLength = FMath::Lerp(TargetArmLength, GetFinalArmLength(), Alpha);
+			break;
+		default:
+			break;
 	}
 
 	TargetCameraInfo.bCameraArmLength_HasModified = true;
@@ -1084,9 +1075,9 @@ FRotator UJoyCameraModifierController::GetFinalArmRotation()
 			return TargetCameraInfo.RestoreCamera.ArmCenterRotation;
 		}
 	}
-	else if (CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch || CurrentCameraModifySpec.
-		CameraModifiers.LocalRotationSettings.bModifyYaw ||
-		CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll)
+	else if (CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyPitch ||
+			 CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyYaw ||
+			 CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll)
 	{
 		// 修改了角色坐标系旋转，检查要复位哪一项 (Pitch, Yaw, Roll ?)
 		FRotator FinalRotator = TargetCameraInfo.DesiredCamera.ArmCenterRotation;

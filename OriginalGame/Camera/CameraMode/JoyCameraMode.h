@@ -78,9 +78,7 @@ public:
 	virtual void OnActivation();
 
 	// Called when this camera mode is deactivated on the camera mode stack.
-	virtual void OnDeactivation()
-	{
-	};
+	virtual void OnDeactivation(){};
 
 	virtual void UpdateCameraMode(float DeltaTime);
 

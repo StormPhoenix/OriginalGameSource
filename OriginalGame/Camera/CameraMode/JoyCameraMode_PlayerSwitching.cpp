@@ -2,9 +2,9 @@
 
 #include "JoyCameraMode_PlayerSwitching.h"
 
-#include "JoyGameBlueprintLibrary.h"
 #include "Character/JoyCharacter.h"
 #include "Gameplay/JoyCharacterControlManageSubsystem.h"
+#include "JoyGameBlueprintLibrary.h"
 #include "Player/JoyPlayerController.h"
 
 UJoyCameraMode_PlayerSwitching::UJoyCameraMode_PlayerSwitching()
@@ -89,8 +89,7 @@ void UJoyCameraMode_PlayerSwitching::UpdateView(float DeltaTime)
 }
 
 void UJoyCameraMode_PlayerSwitching::PreventCameraPenetration(AActor const& ViewTarget, FVector const& SafeLoc,
-                                                              FVector& CameraLoc, float const& DeltaTime,
-                                                              float& DistBlockedPct, bool bSingleRayOnly)
+	FVector& CameraLoc, float const& DeltaTime, float& DistBlockedPct, bool bSingleRayOnly)
 {
 	Super::PreventCameraPenetration(ViewTarget, SafeLoc, CameraLoc, DeltaTime, DistBlockedPct, bSingleRayOnly);
 }

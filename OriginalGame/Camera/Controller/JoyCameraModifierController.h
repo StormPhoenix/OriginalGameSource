@@ -377,7 +377,7 @@ public:
 	UJoyCameraModifierController();
 
 	FCameraModifyHandle ApplyCameraModify(float Duration, float BlendInTime, float BlendOutTime,
-	                                      FCameraModifiers const& CameraModifiers, bool bNeedManualBreak = false);
+		FCameraModifiers const& CameraModifiers, bool bNeedManualBreak = false);
 
 	FCameraModifyHandle GetLastModifierHandle() const;
 

@@ -2,9 +2,9 @@
 
 #include "JoyCameraMode.h"
 
-#include "Components/CapsuleComponent.h"
 #include "Camera/JoyCameraComponent.h"
 #include "Camera/JoyPlayerCameraManager.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "Utils/JoyCameraBlueprintLibrary.h"
 
@@ -154,25 +154,25 @@ void UJoyCameraMode::SetBlendWeight(float Weight)
 
 	switch (BlendFunction)
 	{
-	case EJoyCameraModeBlendFunction::Linear:
-		BlendAlpha = BlendWeight;
-		break;
+		case EJoyCameraModeBlendFunction::Linear:
+			BlendAlpha = BlendWeight;
+			break;
 
-	case EJoyCameraModeBlendFunction::EaseIn:
-		BlendAlpha = FMath::InterpEaseIn(0.0f, 1.0f, BlendWeight, InvExponent);
-		break;
+		case EJoyCameraModeBlendFunction::EaseIn:
+			BlendAlpha = FMath::InterpEaseIn(0.0f, 1.0f, BlendWeight, InvExponent);
+			break;
 
-	case EJoyCameraModeBlendFunction::EaseOut:
-		BlendAlpha = FMath::InterpEaseOut(0.0f, 1.0f, BlendWeight, InvExponent);
-		break;
+		case EJoyCameraModeBlendFunction::EaseOut:
+			BlendAlpha = FMath::InterpEaseOut(0.0f, 1.0f, BlendWeight, InvExponent);
+			break;
 
-	case EJoyCameraModeBlendFunction::EaseInOut:
-		BlendAlpha = FMath::InterpEaseInOut(0.0f, 1.0f, BlendWeight, InvExponent);
-		break;
+		case EJoyCameraModeBlendFunction::EaseInOut:
+			BlendAlpha = FMath::InterpEaseInOut(0.0f, 1.0f, BlendWeight, InvExponent);
+			break;
 
-	default:
-		checkf(false, TEXT("SetBlendWeight: Invalid BlendFunction [%d]\n"), (uint8) BlendFunction);
-		break;
+		default:
+			checkf(false, TEXT("SetBlendWeight: Invalid BlendFunction [%d]\n"), (uint8) BlendFunction);
+			break;
 	}
 }
 
@@ -192,24 +192,24 @@ void UJoyCameraMode::UpdateBlending(float DeltaTime)
 
 	switch (BlendFunction)
 	{
-	case EJoyCameraModeBlendFunction::Linear:
-		BlendWeight = BlendAlpha;
-		break;
+		case EJoyCameraModeBlendFunction::Linear:
+			BlendWeight = BlendAlpha;
+			break;
 
-	case EJoyCameraModeBlendFunction::EaseIn:
-		BlendWeight = FMath::InterpEaseIn(0.0f, 1.0f, BlendAlpha, Exponent);
-		break;
+		case EJoyCameraModeBlendFunction::EaseIn:
+			BlendWeight = FMath::InterpEaseIn(0.0f, 1.0f, BlendAlpha, Exponent);
+			break;
 
-	case EJoyCameraModeBlendFunction::EaseOut:
-		BlendWeight = FMath::InterpEaseOut(0.0f, 1.0f, BlendAlpha, Exponent);
-		break;
+		case EJoyCameraModeBlendFunction::EaseOut:
+			BlendWeight = FMath::InterpEaseOut(0.0f, 1.0f, BlendAlpha, Exponent);
+			break;
 
-	case EJoyCameraModeBlendFunction::EaseInOut:
-		BlendWeight = FMath::InterpEaseInOut(0.0f, 1.0f, BlendAlpha, Exponent);
-		break;
+		case EJoyCameraModeBlendFunction::EaseInOut:
+			BlendWeight = FMath::InterpEaseInOut(0.0f, 1.0f, BlendAlpha, Exponent);
+			break;
 
-	default:
-		checkf(false, TEXT("UpdateBlending: Invalid BlendFunction [%d]\n"), (uint8) BlendFunction);
-		break;
+		default:
+			checkf(false, TEXT("UpdateBlending: Invalid BlendFunction [%d]\n"), (uint8) BlendFunction);
+			break;
 	}
 }

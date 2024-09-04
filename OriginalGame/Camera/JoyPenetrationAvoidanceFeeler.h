@@ -44,26 +44,25 @@ struct FJoyPenetrationAvoidanceFeeler
 
 	FJoyPenetrationAvoidanceFeeler()
 		: AdjustmentRot(ForceInit)
-		  , WorldWeight(0)
-		  , PawnWeight(0)
-		  , Extent(0)
-		  , TraceInterval(0)
-		  , FramesUntilNextTrace(0)
-		  , bBlurDetection(false)
+		, WorldWeight(0)
+		, PawnWeight(0)
+		, Extent(0)
+		, TraceInterval(0)
+		, FramesUntilNextTrace(0)
+		, bBlurDetection(false)
 	{
 	}
 
 	FJoyPenetrationAvoidanceFeeler(const FRotator& InAdjustmentRot, const float& InWorldWeight,
-	                               const float& InPawnWeight, const float& InExtent, const bool& InBlurDetection,
-	                               const int32& InTraceInterval = 0,
-	                               const int32& InFramesUntilNextTrace = 0)
+		const float& InPawnWeight, const float& InExtent, const bool& InBlurDetection, const int32& InTraceInterval = 0,
+		const int32& InFramesUntilNextTrace = 0)
 		: AdjustmentRot(InAdjustmentRot)
-		  , WorldWeight(InWorldWeight)
-		  , PawnWeight(InPawnWeight)
-		  , Extent(InExtent)
-		  , TraceInterval(InTraceInterval)
-		  , FramesUntilNextTrace(InFramesUntilNextTrace)
-		  , bBlurDetection(InBlurDetection)
+		, WorldWeight(InWorldWeight)
+		, PawnWeight(InPawnWeight)
+		, Extent(InExtent)
+		, TraceInterval(InTraceInterval)
+		, FramesUntilNextTrace(InFramesUntilNextTrace)
+		, bBlurDetection(InBlurDetection)
 	{
 	}
 };
