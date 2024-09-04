@@ -27,7 +27,6 @@ class ORIGINALGAME_API AJoyGameState : public AModularGameStateBase
 	GENERATED_BODY()
 
 public:
-
 	AJoyGameState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	//~AActor interface
@@ -57,6 +56,5 @@ private:
 	TObjectPtr<UJoyExperienceManagerComponent> ExperienceManagerComponent;
 
 protected:
-
 	virtual void Tick(float DeltaSeconds) override;
 };

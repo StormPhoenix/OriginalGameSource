@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/SpectatorPawn.h"
 #include "InputActionValue.h"
+
 #include "JoySpectatorBase.generated.h"
 
 class UJoyInputComponent;
@@ -25,8 +26,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	void BindDefaultInputMappings(UEnhancedInputLocalPlayerSubsystem* EnhanceInput,
-	                              UInputComponent* InInputComponent);
+	void BindDefaultInputMappings(UEnhancedInputLocalPlayerSubsystem* EnhanceInput, UInputComponent* InInputComponent);
 
 	virtual void BindDefaultInputMappings_Impl(UJoyInputComponent* JoyIC, const UJoyInputConfig* InputConfig);
 

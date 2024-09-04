@@ -16,11 +16,12 @@ struct FJoyAssetManagerStartupJob
 	mutable double LastUpdate = 0;
 
 	/** Simple job that is all synchronous */
-	FJoyAssetManagerStartupJob(const FString& InJobName, const TFunction<void(const FJoyAssetManagerStartupJob&, TSharedPtr<FStreamableHandle>&)>& InJobFunc, float InJobWeight)
-		: JobFunc(InJobFunc)
-		, JobName(InJobName)
-		, JobWeight(InJobWeight)
-	{}
+	FJoyAssetManagerStartupJob(const FString& InJobName,
+		const TFunction<void(const FJoyAssetManagerStartupJob&, TSharedPtr<FStreamableHandle>&)>& InJobFunc,
+		float InJobWeight)
+		: JobFunc(InJobFunc), JobName(InJobName), JobWeight(InJobWeight)
+	{
+	}
 
 	/** Perform actual loading, will return a handle if it created one */
 	TSharedPtr<FStreamableHandle> DoJob() const;

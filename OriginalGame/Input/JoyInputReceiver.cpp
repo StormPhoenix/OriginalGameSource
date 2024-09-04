@@ -3,7 +3,7 @@
 #include "JoyInputReceiver.h"
 
 void UJoyInputReceiver::ReceiveMoveInput(TConstArrayView<TObjectPtr<UObject>> const& Receivers, UObject* InputReceiver,
-                                         FInputActionValue const& InputActionValue)
+	FInputActionValue const& InputActionValue)
 {
 	for (UObject* Receiver : Receivers)
 	{
@@ -17,8 +17,7 @@ void UJoyInputReceiver::ReceiveMoveInput(TConstArrayView<TObjectPtr<UObject>> co
 }
 
 void UJoyInputReceiver::ReceiveAbilityTagPressInput(
-	TConstArrayView<TObjectPtr<UObject>> const& Receivers,
-	UObject* InputReceiver, FGameplayTag const& InputTag)
+	TConstArrayView<TObjectPtr<UObject>> const& Receivers, UObject* InputReceiver, FGameplayTag const& InputTag)
 {
 	for (UObject* Receiver : Receivers)
 	{
@@ -32,8 +31,7 @@ void UJoyInputReceiver::ReceiveAbilityTagPressInput(
 }
 
 void UJoyInputReceiver::ReceiveAbilityTagReleaseInput(
-	TConstArrayView<TObjectPtr<UObject>> const& Receivers,
-	UObject* InputReceiver, FGameplayTag const& InputTag)
+	TConstArrayView<TObjectPtr<UObject>> const& Receivers, UObject* InputReceiver, FGameplayTag const& InputTag)
 {
 	for (UObject* Receiver : Receivers)
 	{
@@ -46,8 +44,7 @@ void UJoyInputReceiver::ReceiveAbilityTagReleaseInput(
 	}
 }
 
-void UJoyInputReceiver::ReceiveLookMoveInput(
-	TConstArrayView<TObjectPtr<UObject>> const& Receivers,
+void UJoyInputReceiver::ReceiveLookMoveInput(TConstArrayView<TObjectPtr<UObject>> const& Receivers,
 	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {
 	for (UObject* Receiver : Receivers)
@@ -61,22 +58,21 @@ void UJoyInputReceiver::ReceiveLookMoveInput(
 	}
 }
 
-void IJoyInputReceiver::ReceiveAbilityTagPressInput_Implementation(UObject* InputReceiver,
-                                                                   FGameplayTag const& InputTag)
+void IJoyInputReceiver::ReceiveAbilityTagPressInput_Implementation(UObject* InputReceiver, FGameplayTag const& InputTag)
 {
 }
 
-void IJoyInputReceiver::ReceiveAbilityTagReleaseInput_Implementation(UObject* InputReceiver,
-                                                                     FGameplayTag const& InputTag)
+void IJoyInputReceiver::ReceiveAbilityTagReleaseInput_Implementation(
+	UObject* InputReceiver, FGameplayTag const& InputTag)
 {
 }
 
-void IJoyInputReceiver::ReceiveMoveInput_Implementation(UObject* InputReceiver,
-                                                        const FInputActionValue& InputActionValue)
+void IJoyInputReceiver::ReceiveMoveInput_Implementation(
+	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {
 }
 
-void IJoyInputReceiver::ReceiveLookMouseInput_Implementation(UObject* InputReceiver,
-                                                             const FInputActionValue& InputActionValue)
+void IJoyInputReceiver::ReceiveLookMouseInput_Implementation(
+	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {
 }

@@ -9,8 +9,8 @@
 
 void UGameFeatureAction_WorldActionBase::OnGameFeatureActivating(FGameFeatureActivatingContext& Context)
 {
-	GameInstanceStartHandles.FindOrAdd(Context) = FWorldDelegates::OnStartGameInstance.AddUObject(this, 
-		&UGameFeatureAction_WorldActionBase::HandleGameInstanceStart, FGameFeatureStateChangeContext(Context));
+	GameInstanceStartHandles.FindOrAdd(Context) = FWorldDelegates::OnStartGameInstance.AddUObject(
+		this, &UGameFeatureAction_WorldActionBase::HandleGameInstanceStart, FGameFeatureStateChangeContext(Context));
 
 	// Add to any worlds with associated game instances that have already been initialized
 	for (const FWorldContext& WorldContext : GEngine->GetWorldContexts())
@@ -29,10 +29,10 @@ void UGameFeatureAction_WorldActionBase::OnGameFeatureDeactivating(FGameFeatureD
 	{
 		FWorldDelegates::OnStartGameInstance.Remove(*FoundHandle);
 	}
-	
 }
 
-void UGameFeatureAction_WorldActionBase::HandleGameInstanceStart(UGameInstance* GameInstance, FGameFeatureStateChangeContext ChangeContext)
+void UGameFeatureAction_WorldActionBase::HandleGameInstanceStart(
+	UGameInstance* GameInstance, FGameFeatureStateChangeContext ChangeContext)
 {
 	if (FWorldContext* WorldContext = GameInstance->GetWorldContext())
 	{
@@ -42,4 +42,3 @@ void UGameFeatureAction_WorldActionBase::HandleGameInstanceStart(UGameInstance* 
 		}
 	}
 }
-

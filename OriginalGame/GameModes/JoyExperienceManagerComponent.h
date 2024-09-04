@@ -7,7 +7,10 @@
 
 #include "JoyExperienceManagerComponent.generated.h"
 
-namespace UE::GameFeatures { struct FResult; }
+namespace UE::GameFeatures
+{
+struct FResult;
+}
 
 class UJoyExperienceDefinition;
 
@@ -30,7 +33,6 @@ class UJoyExperienceManagerComponent final : public UGameStateComponent, public 
 	GENERATED_BODY()
 
 public:
-
 	UJoyExperienceManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	//~UActorComponent interface
@@ -77,7 +79,7 @@ private:
 	void OnAllActionsDeactivated();
 
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_CurrentExperience)
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentExperience)
 	TObjectPtr<const UJoyExperienceDefinition> CurrentExperience;
 
 	EJoyExperienceLoadState LoadState = EJoyExperienceLoadState::Unloaded;

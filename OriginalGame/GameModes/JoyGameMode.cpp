@@ -1,22 +1,21 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-
 #include "JoyGameMode.h"
+
+#include "Character/JoyPawnData.h"
+#include "Character/JoySpectatorBase.h"
+#include "Development/JoyDeveloperSettings.h"
 #include "JoyExperienceDefinition.h"
 #include "JoyExperienceManagerComponent.h"
 #include "JoyGameState.h"
 #include "JoyLogChannels.h"
 #include "JoyWorldSettings.h"
-#include "Character/JoyPawnData.h"
-#include "Character/JoySpectatorBase.h"
-#include "Development/JoyDeveloperSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/JoyPlayerController.h"
 #include "Player/JoyPlayerState.h"
 #include "System/JoyAssetManager.h"
 
-AJoyGameMode::AJoyGameMode(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+AJoyGameMode::AJoyGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	GameStateClass = AJoyGameState::StaticClass();
 	PlayerControllerClass = AJoyPlayerController::StaticClass();
@@ -29,7 +28,7 @@ void AJoyGameMode::InitGameState()
 {
 	Super::InitGameState();
 
-	// Listen for the experience load to complete	
+	// Listen for the experience load to complete
 	auto* ExperienceComponent = GameState->FindComponentByClass<UJoyExperienceManagerComponent>();
 	check(ExperienceComponent);
 	ExperienceComponent->CallOrRegister_OnExperienceLoaded(
@@ -52,15 +51,16 @@ UClass* AJoyGameMode::GetDefaultPawnClassForController_Implementation(AControlle
 void AJoyGameMode::OnExperienceLoaded(const UJoyExperienceDefinition* CurrentExperience)
 {
 	// Spawn any players that are already attached
-	//@TODO: Here we're handling only *player* controllers, but in GetDefaultPawnClassForController_Implementation we skipped all controllers
+	//@TODO: Here we're handling only *player* controllers, but in GetDefaultPawnClassForController_Implementation we
+	//skipped all controllers
 	// GetDefaultPawnClassForController_Implementation might only be getting called for players anyways
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (auto* PC = Cast<APlayerController>(*Iterator))
 		{
 			auto* JoyPS = PC->GetPlayerState<AJoyPlayerState>();
-			if (PC->GetPawnOrSpectator() == nullptr || JoyPS == nullptr || JoyPS->GetPawnData<UJoyPawnData>() ==
-				nullptr)
+			if (PC->GetPawnOrSpectator() == nullptr || JoyPS == nullptr ||
+				JoyPS->GetPawnData<UJoyPawnData>() == nullptr)
 			{
 				JoyPS->SetPawnData(CurrentExperience->DefaultPawnData);
 				if (PlayerCanRestart(PC))
@@ -121,7 +121,7 @@ void AJoyGameMode::HandleMatchAssignmentIfNotExpectingOne()
 			if (!ExperienceId.PrimaryAssetType.IsValid())
 			{
 				ExperienceId = FPrimaryAssetId(FPrimaryAssetType(UJoyExperienceDefinition::StaticClass()->GetFName()),
-				                               FName(*ExperienceFromCommandLine));
+					FName(*ExperienceFromCommandLine));
 			}
 			ExperienceIdSource = TEXT("CommandLine");
 		}
@@ -142,8 +142,8 @@ void AJoyGameMode::HandleMatchAssignmentIfNotExpectingOne()
 	if (ExperienceId.IsValid() && !AssetManager.GetPrimaryAssetData(ExperienceId, /*out*/ Dummy))
 	{
 		UE_LOG(LogJoyExperience, Error,
-		       TEXT("EXPERIENCE: Wanted to use %s but couldn't find it, falling back to the default)"),
-		       *ExperienceId.ToString());
+			TEXT("EXPERIENCE: Wanted to use %s but couldn't find it, falling back to the default)"),
+			*ExperienceId.ToString());
 		ExperienceId = FPrimaryAssetId();
 	}
 
@@ -163,7 +163,7 @@ void AJoyGameMode::OnMatchAssignmentGiven(FPrimaryAssetId ExperienceId, const FS
 	if (ExperienceId.IsValid())
 	{
 		UE_LOG(LogJoyExperience, Log, TEXT("Identified experience %s (Source: %s)"), *ExperienceId.ToString(),
-		       *ExperienceIdSource);
+			*ExperienceIdSource);
 
 		auto* ExperienceComponent = GameState->FindComponentByClass<UJoyExperienceManagerComponent>();
 		check(ExperienceComponent);

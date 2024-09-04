@@ -14,12 +14,14 @@ TSharedPtr<FStreamableHandle> FJoyAssetManagerStartupJob::DoJob() const
 
 	if (Handle.IsValid())
 	{
-		Handle->BindUpdateDelegate(FStreamableUpdateDelegate::CreateRaw(this, &FJoyAssetManagerStartupJob::UpdateSubstepProgressFromStreamable));
+		Handle->BindUpdateDelegate(FStreamableUpdateDelegate::CreateRaw(
+			this, &FJoyAssetManagerStartupJob::UpdateSubstepProgressFromStreamable));
 		Handle->WaitUntilComplete(0.0f, false);
 		Handle->BindUpdateDelegate(FStreamableUpdateDelegate());
 	}
 
-	UE_LOG(LogJoy, Display, TEXT("Startup job \"%s\" took %.2f seconds to complete"), *JobName, FPlatformTime::Seconds() - JobStartTime);
+	UE_LOG(LogJoy, Display, TEXT("Startup job \"%s\" took %.2f seconds to complete"), *JobName,
+		FPlatformTime::Seconds() - JobStartTime);
 
 	return Handle;
 }

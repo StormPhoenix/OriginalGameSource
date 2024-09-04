@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Camera/Controller/JoyCameraModifierController.h"
+#include "CoreMinimal.h"
+
 #include "JoyCameraBlueprintLibrary.generated.h"
 
 class UCameraComponent;
@@ -32,8 +33,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = Camera)
 	static FCameraModifyHandle ApplyCameraSettings(AActor* OwnerActor, float Duration, float BlendInTime,
-	                                               float BlendOutTime, FCameraModifiers const& CameraModifiers,
-	                                               bool bNeedManualBreak = false);
+		float BlendOutTime, FCameraModifiers const& CameraModifiers, bool bNeedManualBreak = false);
 
 	UFUNCTION(BlueprintCallable, Category = Camera)
 	static void ApplyCameraSettings_Immediately(AActor* OwnerActor, FCameraModifiers const& CameraModifiers);

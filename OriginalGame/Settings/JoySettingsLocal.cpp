@@ -1,104 +1,93 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "JoySettingsLocal.h"
-#include "Engine/Engine.h"
-#include "EnhancedActionKeyMapping.h"
-#include "Framework/Application/SlateApplication.h"
-#include "Engine/World.h"
-#include "Misc/App.h"
+
 #include "CommonInputSubsystem.h"
-#include "GenericPlatform/GenericPlatformFramePacer.h"
-#include "OriginalGame/Player/JoyLocalPlayer.h"
-#include "PlayerMappableInputConfig.h"
-#include "EnhancedInputSubsystems.h"
-#include "ICommonUIModule.h"
 #include "CommonUISettings.h"
-#include "Widgets/Layout/SSafeZone.h"
-#include "Performance/JoyPerformanceSettings.h"
-#include "DeviceProfiles/DeviceProfileManager.h"
-#include "DeviceProfiles/DeviceProfile.h"
-#include "HAL/PlatformFramePacer.h"
 #include "Development/JoyPlatformEmulationSettings.h"
+#include "DeviceProfiles/DeviceProfile.h"
+#include "DeviceProfiles/DeviceProfileManager.h"
+#include "Engine/Engine.h"
+#include "Engine/World.h"
+#include "EnhancedActionKeyMapping.h"
+#include "EnhancedInputSubsystems.h"
+#include "Framework/Application/SlateApplication.h"
+#include "GenericPlatform/GenericPlatformFramePacer.h"
+#include "HAL/PlatformFramePacer.h"
+#include "ICommonUIModule.h"
+#include "Misc/App.h"
+#include "OriginalGame/Player/JoyLocalPlayer.h"
+#include "Performance/JoyPerformanceSettings.h"
 #include "Performance/JoyPerformanceStatTypes.h"
+#include "PlayerMappableInputConfig.h"
+#include "Widgets/Layout/SSafeZone.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoySettingsLocal)
 
-UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Platform_Trait_BinauralSettingControlledByOS, "Platform.Trait.BinauralSettingControlledByOS");
+UE_DEFINE_GAMEPLAY_TAG_STATIC(
+	TAG_Platform_Trait_BinauralSettingControlledByOS, "Platform.Trait.BinauralSettingControlledByOS");
 
 //////////////////////////////////////////////////////////////////////
 
 #if WITH_EDITOR
 static TAutoConsoleVariable<bool> CVarApplyFrameRateSettingsInPIE(TEXT("Joy.Settings.ApplyFrameRateSettingsInPIE"),
-	false,
-	TEXT("Should we apply frame rate settings in PIE?"),
-	ECVF_Default);
+	false, TEXT("Should we apply frame rate settings in PIE?"), ECVF_Default);
 
-static TAutoConsoleVariable<bool> CVarApplyFrontEndPerformanceOptionsInPIE(TEXT("Joy.Settings.ApplyFrontEndPerformanceOptionsInPIE"),
-	false,
-	TEXT("Do we apply front-end specific performance options in PIE?"),
-	ECVF_Default);
+static TAutoConsoleVariable<bool> CVarApplyFrontEndPerformanceOptionsInPIE(
+	TEXT("Joy.Settings.ApplyFrontEndPerformanceOptionsInPIE"), false,
+	TEXT("Do we apply front-end specific performance options in PIE?"), ECVF_Default);
 
-static TAutoConsoleVariable<bool> CVarApplyDeviceProfilesInPIE(TEXT("Joy.Settings.ApplyDeviceProfilesInPIE"),
-	false,
-	TEXT("Should we apply experience/platform emulated device profiles in PIE?"),
-	ECVF_Default);
+static TAutoConsoleVariable<bool> CVarApplyDeviceProfilesInPIE(TEXT("Joy.Settings.ApplyDeviceProfilesInPIE"), false,
+	TEXT("Should we apply experience/platform emulated device profiles in PIE?"), ECVF_Default);
 #endif
 
 //////////////////////////////////////////////////////////////////////
 // Console frame pacing
 
-static TAutoConsoleVariable<int32> CVarDeviceProfileDrivenTargetFps(
-	TEXT("Joy.DeviceProfile.Console.TargetFPS"),
-	-1,
-	TEXT("Target FPS when being driven by device profile"),
-	ECVF_Default | ECVF_Preview);
+static TAutoConsoleVariable<int32> CVarDeviceProfileDrivenTargetFps(TEXT("Joy.DeviceProfile.Console.TargetFPS"), -1,
+	TEXT("Target FPS when being driven by device profile"), ECVF_Default | ECVF_Preview);
 
-static TAutoConsoleVariable<int32> CVarDeviceProfileDrivenFrameSyncType(
-	TEXT("Joy.DeviceProfile.Console.FrameSyncType"),
-	-1,
-	TEXT("Sync type when being driven by device profile. Corresponds to r.GTSyncType"),
+static TAutoConsoleVariable<int32> CVarDeviceProfileDrivenFrameSyncType(TEXT("Joy.DeviceProfile.Console.FrameSyncType"),
+	-1, TEXT("Sync type when being driven by device profile. Corresponds to r.GTSyncType"),
 	ECVF_Default | ECVF_Preview);
 
 //////////////////////////////////////////////////////////////////////
 // Mobile frame pacing
 
 static TAutoConsoleVariable<int32> CVarDeviceProfileDrivenMobileDefaultFrameRate(
-	TEXT("Joy.DeviceProfile.Mobile.DefaultFrameRate"),
-	30,
-	TEXT("Default FPS when being driven by device profile"),
+	TEXT("Joy.DeviceProfile.Mobile.DefaultFrameRate"), 30, TEXT("Default FPS when being driven by device profile"),
 	ECVF_Default | ECVF_Preview);
 
 static TAutoConsoleVariable<int32> CVarDeviceProfileDrivenMobileMaxFrameRate(
-	TEXT("Joy.DeviceProfile.Mobile.MaxFrameRate"),
-	30,
-	TEXT("Max FPS when being driven by device profile"),
+	TEXT("Joy.DeviceProfile.Mobile.MaxFrameRate"), 30, TEXT("Max FPS when being driven by device profile"),
 	ECVF_Default | ECVF_Preview);
 
 //////////////////////////////////////////////////////////////////////
 
-static TAutoConsoleVariable<FString> CVarMobileQualityLimits(
-	TEXT("Joy.DeviceProfile.Mobile.OverallQualityLimits"),
+static TAutoConsoleVariable<FString> CVarMobileQualityLimits(TEXT("Joy.DeviceProfile.Mobile.OverallQualityLimits"),
 	TEXT(""),
-	TEXT("List of limits on resolution quality of the form \"FPS:MaxQuality,FPS2:MaxQuality2,...\", kicking in when FPS is at or above the threshold"),
+	TEXT(
+		"List of limits on resolution quality of the form \"FPS:MaxQuality,FPS2:MaxQuality2,...\", kicking in when FPS is at or above the threshold"),
 	ECVF_Default | ECVF_Preview);
 
 static TAutoConsoleVariable<FString> CVarMobileResolutionQualityLimits(
-	TEXT("Joy.DeviceProfile.Mobile.ResolutionQualityLimits"),
-	TEXT(""),
-	TEXT("List of limits on resolution quality of the form \"FPS:MaxResQuality,FPS2:MaxResQuality2,...\", kicking in when FPS is at or above the threshold"),
+	TEXT("Joy.DeviceProfile.Mobile.ResolutionQualityLimits"), TEXT(""),
+	TEXT(
+		"List of limits on resolution quality of the form \"FPS:MaxResQuality,FPS2:MaxResQuality2,...\", kicking in when FPS is at or above the threshold"),
 	ECVF_Default | ECVF_Preview);
 
 static TAutoConsoleVariable<FString> CVarMobileResolutionQualityRecommendation(
-	TEXT("Joy.DeviceProfile.Mobile.ResolutionQualityRecommendation"),
-	TEXT("0:75"),
-	TEXT("List of limits on resolution quality of the form \"FPS:Recommendation,FPS2:Recommendation2,...\", kicking in when FPS is at or above the threshold"),
+	TEXT("Joy.DeviceProfile.Mobile.ResolutionQualityRecommendation"), TEXT("0:75"),
+	TEXT(
+		"List of limits on resolution quality of the form \"FPS:Recommendation,FPS2:Recommendation2,...\", kicking in when FPS is at or above the threshold"),
 	ECVF_Default | ECVF_Preview);
 
 //////////////////////////////////////////////////////////////////////
 
 FJoyScalabilitySnapshot::FJoyScalabilitySnapshot()
 {
-	static_assert(sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
+	static_assert(
+		sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
 
 	Qualities.ResolutionQuality = -1.0f;
 	Qualities.ViewDistanceQuality = -1;
@@ -115,7 +104,7 @@ FJoyScalabilitySnapshot::FJoyScalabilitySnapshot()
 
 //////////////////////////////////////////////////////////////////////
 
-template<typename T>
+template <typename T>
 struct TMobileQualityWrapper
 {
 private:
@@ -133,8 +122,7 @@ private:
 
 public:
 	TMobileQualityWrapper(T InDefaultValue, TAutoConsoleVariable<FString>& InWatchedVar)
-		: DefaultValue(InDefaultValue)
-		, WatchedVar(InWatchedVar)
+		: DefaultValue(InDefaultValue), WatchedVar(InWatchedVar)
 	{
 	}
 
@@ -164,7 +152,7 @@ public:
 	T GetLowestValue(T DefaultIfNoPairs)
 	{
 		UpdateCache();
-		
+
 		T Result = DefaultIfNoPairs;
 		bool bFirstValue = true;
 		for (const FLimitPair& Pair : Thresholds)
@@ -179,7 +167,7 @@ public:
 				Result = FMath::Min(Result, Pair.Value);
 			}
 		}
-		
+
 		return Result;
 	}
 
@@ -197,10 +185,12 @@ private:
 			int32 ScanIndex = 0;
 			while (ScanIndex < LastSeenCVarString.Len())
 			{
-				const int32 ColonIndex = LastSeenCVarString.Find(TEXT(":"), ESearchCase::CaseSensitive, ESearchDir::FromStart, ScanIndex);
+				const int32 ColonIndex =
+					LastSeenCVarString.Find(TEXT(":"), ESearchCase::CaseSensitive, ESearchDir::FromStart, ScanIndex);
 				if (ColonIndex > 0)
 				{
-					const int32 CommaIndex = LastSeenCVarString.Find(TEXT(","), ESearchCase::CaseSensitive, ESearchDir::FromStart, ColonIndex);
+					const int32 CommaIndex = LastSeenCVarString.Find(
+						TEXT(","), ESearchCase::CaseSensitive, ESearchDir::FromStart, ColonIndex);
 					const int32 EndOfPairIndex = (CommaIndex != INDEX_NONE) ? CommaIndex : LastSeenCVarString.Len();
 
 					FLimitPair Pair;
@@ -212,10 +202,8 @@ private:
 				}
 				else
 				{
-				
 					UE_LOG(LogConsoleResponse, Error, TEXT("Malformed value for '%s'='%s', expecting a ':'"),
-						*IConsoleManager::Get().FindConsoleObjectName(WatchedVar.AsVariable()),
-						*LastSeenCVarString);
+						*IConsoleManager::Get().FindConsoleObjectName(WatchedVar.AsVariable()), *LastSeenCVarString);
 					Thresholds.Reset();
 					break;
 				}
@@ -229,103 +217,119 @@ private:
 
 namespace JoySettingsHelpers
 {
-	bool HasPlatformTrait(FGameplayTag Tag)
-	{
-		return ICommonUIModule::GetSettings().GetPlatformTraits().HasTag(Tag);
-	}
+bool HasPlatformTrait(FGameplayTag Tag)
+{
+	return ICommonUIModule::GetSettings().GetPlatformTraits().HasTag(Tag);
+}
 
-	// Returns the max level from the integer scalability settings (ignores ResolutionQuality)
-	int32 GetHighestLevelOfAnyScalabilityChannel(const Scalability::FQualityLevels& ScalabilityQuality)
-	{
-		static_assert(sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
+// Returns the max level from the integer scalability settings (ignores ResolutionQuality)
+int32 GetHighestLevelOfAnyScalabilityChannel(const Scalability::FQualityLevels& ScalabilityQuality)
+{
+	static_assert(
+		sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
 
-		int32 MaxScalability =						ScalabilityQuality.ViewDistanceQuality;
-		MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.AntiAliasingQuality);
-		MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.ShadowQuality);
-		MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.GlobalIlluminationQuality);
-		MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.ReflectionQuality);
-		MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.PostProcessQuality);
-		MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.TextureQuality);
-		MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.EffectsQuality);
-		MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.FoliageQuality);
-		MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.ShadingQuality);
+	int32 MaxScalability = ScalabilityQuality.ViewDistanceQuality;
+	MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.AntiAliasingQuality);
+	MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.ShadowQuality);
+	MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.GlobalIlluminationQuality);
+	MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.ReflectionQuality);
+	MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.PostProcessQuality);
+	MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.TextureQuality);
+	MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.EffectsQuality);
+	MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.FoliageQuality);
+	MaxScalability = FMath::Max(MaxScalability, ScalabilityQuality.ShadingQuality);
 
-		return (MaxScalability >= 0) ? MaxScalability : -1;
-	}
+	return (MaxScalability >= 0) ? MaxScalability : -1;
+}
 
-	void FillScalabilitySettingsFromDeviceProfile(FJoyScalabilitySnapshot& Mode, const FString& Suffix = FString())
-	{
-		static_assert(sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
+void FillScalabilitySettingsFromDeviceProfile(FJoyScalabilitySnapshot& Mode, const FString& Suffix = FString())
+{
+	static_assert(
+		sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
 
-		// Default out before filling so we can correctly mark non-overridden scalability values.
-		// It's technically possible to swap device profile when testing so safest to clear and refill
-		Mode = FJoyScalabilitySnapshot();
+	// Default out before filling so we can correctly mark non-overridden scalability values.
+	// It's technically possible to swap device profile when testing so safest to clear and refill
+	Mode = FJoyScalabilitySnapshot();
 
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.ResolutionQuality%s"), *Suffix), Mode.Qualities.ResolutionQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.ViewDistanceQuality%s"), *Suffix), Mode.Qualities.ViewDistanceQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.AntiAliasingQuality%s"), *Suffix), Mode.Qualities.AntiAliasingQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.ShadowQuality%s"), *Suffix), Mode.Qualities.ShadowQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.GlobalIlluminationQuality%s"), *Suffix), Mode.Qualities.GlobalIlluminationQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.ReflectionQuality%s"), *Suffix), Mode.Qualities.ReflectionQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.PostProcessQuality%s"), *Suffix), Mode.Qualities.PostProcessQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.TextureQuality%s"), *Suffix), Mode.Qualities.TextureQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.EffectsQuality%s"), *Suffix), Mode.Qualities.EffectsQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.FoliageQuality%s"), *Suffix), Mode.Qualities.FoliageQuality);
-		Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(FString::Printf(TEXT("sg.ShadingQuality%s"), *Suffix), Mode.Qualities.ShadingQuality);
-	}
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.ResolutionQuality%s"), *Suffix), Mode.Qualities.ResolutionQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.ViewDistanceQuality%s"), *Suffix), Mode.Qualities.ViewDistanceQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.AntiAliasingQuality%s"), *Suffix), Mode.Qualities.AntiAliasingQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.ShadowQuality%s"), *Suffix), Mode.Qualities.ShadowQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.GlobalIlluminationQuality%s"), *Suffix), Mode.Qualities.GlobalIlluminationQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.ReflectionQuality%s"), *Suffix), Mode.Qualities.ReflectionQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.PostProcessQuality%s"), *Suffix), Mode.Qualities.PostProcessQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.TextureQuality%s"), *Suffix), Mode.Qualities.TextureQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.EffectsQuality%s"), *Suffix), Mode.Qualities.EffectsQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.FoliageQuality%s"), *Suffix), Mode.Qualities.FoliageQuality);
+	Mode.bHasOverrides |= UDeviceProfileManager::GetScalabilityCVar(
+		FString::Printf(TEXT("sg.ShadingQuality%s"), *Suffix), Mode.Qualities.ShadingQuality);
+}
 
-	TMobileQualityWrapper<int32> OverallQualityLimits(-1, CVarMobileQualityLimits);
-	TMobileQualityWrapper<float> ResolutionQualityLimits(100.0f, CVarMobileResolutionQualityLimits);
-	TMobileQualityWrapper<float> ResolutionQualityRecommendations(75.0f, CVarMobileResolutionQualityRecommendation);
+TMobileQualityWrapper<int32> OverallQualityLimits(-1, CVarMobileQualityLimits);
+TMobileQualityWrapper<float> ResolutionQualityLimits(100.0f, CVarMobileResolutionQualityLimits);
+TMobileQualityWrapper<float> ResolutionQualityRecommendations(75.0f, CVarMobileResolutionQualityRecommendation);
 
-	int32 GetApplicableOverallQualityLimit(int32 FrameRate)
-	{
-		return OverallQualityLimits.Query(FrameRate);
-	}
+int32 GetApplicableOverallQualityLimit(int32 FrameRate)
+{
+	return OverallQualityLimits.Query(FrameRate);
+}
 
-	float GetApplicableResolutionQualityLimit(int32 FrameRate)
-	{
-		return ResolutionQualityLimits.Query(FrameRate);
-	}
+float GetApplicableResolutionQualityLimit(int32 FrameRate)
+{
+	return ResolutionQualityLimits.Query(FrameRate);
+}
 
-	float GetApplicableResolutionQualityRecommendation(int32 FrameRate)
-	{
-		return ResolutionQualityRecommendations.Query(FrameRate);
-	}
+float GetApplicableResolutionQualityRecommendation(int32 FrameRate)
+{
+	return ResolutionQualityRecommendations.Query(FrameRate);
+}
 
-	int32 ConstrainFrameRateToBeCompatibleWithOverallQuality(int32 FrameRate, int32 OverallQuality)
-	{
-		const UJoyPlatformSpecificRenderingSettings* PlatformSettings = UJoyPlatformSpecificRenderingSettings::Get();
-		const TArray<int32>& PossibleRates = PlatformSettings->MobileFrameRateLimits;
+int32 ConstrainFrameRateToBeCompatibleWithOverallQuality(int32 FrameRate, int32 OverallQuality)
+{
+	const UJoyPlatformSpecificRenderingSettings* PlatformSettings = UJoyPlatformSpecificRenderingSettings::Get();
+	const TArray<int32>& PossibleRates = PlatformSettings->MobileFrameRateLimits;
 
-		// Choose the closest frame rate (without going over) to the user preferred one that is supported and compatible with the desired overall quality
-		int32 LimitIndex = PossibleRates.FindLastByPredicate([=](const int32& TestRate)
+	// Choose the closest frame rate (without going over) to the user preferred one that is supported and compatible
+	// with the desired overall quality
+	int32 LimitIndex = PossibleRates.FindLastByPredicate(
+		[=](const int32& TestRate)
 		{
 			const bool bAtOrBelowDesiredRate = (TestRate <= FrameRate);
 
 			const int32 LimitQuality = GetApplicableResolutionQualityLimit(TestRate);
 			const bool bQualityDoesntExceedLimit = (LimitQuality < 0) || (OverallQuality <= LimitQuality);
-			
+
 			const bool bIsSupported = UJoySettingsLocal::IsSupportedMobileFramePace(TestRate);
 
 			return bAtOrBelowDesiredRate && bQualityDoesntExceedLimit && bIsSupported;
 		});
 
-		return PossibleRates.IsValidIndex(LimitIndex) ? PossibleRates[LimitIndex] : UJoySettingsLocal::GetDefaultMobileFrameRate();
-	}
-
-	// Returns the first frame rate at which overall quality is restricted/limited by the current device profile
-	int32 GetFirstFrameRateWithQualityLimit()
-	{
-		return OverallQualityLimits.GetFirstThreshold();
-	}
-
-	// Returns the lowest quality at which there's a limit on the overall frame rate (or -1 if there is no limit)
-	int32 GetLowestQualityWithFrameRateLimit()
-	{
-		return OverallQualityLimits.GetLowestValue(-1);
-	}
+	return PossibleRates.IsValidIndex(LimitIndex) ? PossibleRates[LimitIndex]
+												  : UJoySettingsLocal::GetDefaultMobileFrameRate();
 }
+
+// Returns the first frame rate at which overall quality is restricted/limited by the current device profile
+int32 GetFirstFrameRateWithQualityLimit()
+{
+	return OverallQualityLimits.GetFirstThreshold();
+}
+
+// Returns the lowest quality at which there's a limit on the overall frame rate (or -1 if there is no limit)
+int32 GetLowestQualityWithFrameRateLimit()
+{
+	return OverallQualityLimits.GetLowestValue(-1);
+}
+}	 // namespace JoySettingsHelpers
 
 //////////////////////////////////////////////////////////////////////
 
@@ -333,7 +337,9 @@ UJoySettingsLocal::UJoySettingsLocal()
 {
 	if (!HasAnyFlags(RF_ClassDefaultObject) && FSlateApplication::IsInitialized())
 	{
-		OnApplicationActivationStateChangedHandle = FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(this, &ThisClass::OnAppActivationStateChanged);
+		OnApplicationActivationStateChangedHandle =
+			FSlateApplication::Get().OnApplicationActivationStateChanged().AddUObject(
+				this, &ThisClass::OnAppActivationStateChanged);
 	}
 
 	SetToDefaults();
@@ -372,7 +378,6 @@ void UJoySettingsLocal::LoadSettings(bool bForceReload)
 	DesiredMobileFrameRateLimit = MobileFrameRateLimit;
 	ClampMobileQuality();
 
-	
 	PerfStatSettingsChangedEvent.Broadcast();
 }
 
@@ -389,7 +394,8 @@ void UJoySettingsLocal::BeginDestroy()
 {
 	if (FSlateApplication::IsInitialized())
 	{
-		FSlateApplication::Get().OnApplicationActivationStateChanged().Remove(OnApplicationActivationStateChangedHandle);
+		FSlateApplication::Get().OnApplicationActivationStateChanged().Remove(
+			OnApplicationActivationStateChangedHandle);
 	}
 
 	Super::BeginDestroy();
@@ -407,7 +413,8 @@ void UJoySettingsLocal::ConfirmVideoMode()
 	SetMobileFPSMode(DesiredMobileFrameRateLimit);
 }
 
-// Combines two limits, always taking the minimum of the two (with special handling for values of <= 0 meaning unlimited)
+// Combines two limits, always taking the minimum of the two (with special handling for values of <= 0 meaning
+// unlimited)
 float CombineFrameRateLimits(float Limit1, float Limit2)
 {
 	if (Limit1 <= 0.0f)
@@ -460,7 +467,7 @@ float UJoySettingsLocal::GetEffectiveFrameRateLimit()
 		}
 	}
 
- 	return EffectiveFrameRateLimit;
+	return EffectiveFrameRateLimit;
 }
 
 int32 UJoySettingsLocal::GetHighestLevelOfAnyScalabilityChannel() const
@@ -468,40 +475,79 @@ int32 UJoySettingsLocal::GetHighestLevelOfAnyScalabilityChannel() const
 	return JoySettingsHelpers::GetHighestLevelOfAnyScalabilityChannel(ScalabilityQuality);
 }
 
-void UJoySettingsLocal::OverrideQualityLevelsToScalabilityMode(const FJoyScalabilitySnapshot& InMode, Scalability::FQualityLevels& InOutLevels)
+void UJoySettingsLocal::OverrideQualityLevelsToScalabilityMode(
+	const FJoyScalabilitySnapshot& InMode, Scalability::FQualityLevels& InOutLevels)
 {
-	static_assert(sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
+	static_assert(
+		sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
 
 	// Overrides any valid (non-negative) settings
-	InOutLevels.ResolutionQuality = (InMode.Qualities.ResolutionQuality >= 0.f) ? InMode.Qualities.ResolutionQuality : InOutLevels.ResolutionQuality;
-	InOutLevels.ViewDistanceQuality = (InMode.Qualities.ViewDistanceQuality >= 0) ? InMode.Qualities.ViewDistanceQuality : InOutLevels.ViewDistanceQuality;
-	InOutLevels.AntiAliasingQuality = (InMode.Qualities.AntiAliasingQuality >= 0) ? InMode.Qualities.AntiAliasingQuality : InOutLevels.AntiAliasingQuality;
-	InOutLevels.ShadowQuality = (InMode.Qualities.ShadowQuality >= 0) ? InMode.Qualities.ShadowQuality : InOutLevels.ShadowQuality;
-	InOutLevels.GlobalIlluminationQuality = (InMode.Qualities.GlobalIlluminationQuality >= 0) ? InMode.Qualities.GlobalIlluminationQuality : InOutLevels.GlobalIlluminationQuality;
-	InOutLevels.ReflectionQuality = (InMode.Qualities.ReflectionQuality >= 0) ? InMode.Qualities.ReflectionQuality : InOutLevels.ReflectionQuality;
-	InOutLevels.PostProcessQuality = (InMode.Qualities.PostProcessQuality >= 0) ? InMode.Qualities.PostProcessQuality : InOutLevels.PostProcessQuality;
-	InOutLevels.TextureQuality = (InMode.Qualities.TextureQuality >= 0) ? InMode.Qualities.TextureQuality : InOutLevels.TextureQuality;
-	InOutLevels.EffectsQuality = (InMode.Qualities.EffectsQuality >= 0) ? InMode.Qualities.EffectsQuality : InOutLevels.EffectsQuality;
-	InOutLevels.FoliageQuality = (InMode.Qualities.FoliageQuality >= 0) ? InMode.Qualities.FoliageQuality : InOutLevels.FoliageQuality;
-	InOutLevels.ShadingQuality = (InMode.Qualities.ShadingQuality >= 0) ? InMode.Qualities.ShadingQuality : InOutLevels.ShadingQuality;
+	InOutLevels.ResolutionQuality = (InMode.Qualities.ResolutionQuality >= 0.f) ? InMode.Qualities.ResolutionQuality
+																				: InOutLevels.ResolutionQuality;
+	InOutLevels.ViewDistanceQuality = (InMode.Qualities.ViewDistanceQuality >= 0) ? InMode.Qualities.ViewDistanceQuality
+																				  : InOutLevels.ViewDistanceQuality;
+	InOutLevels.AntiAliasingQuality = (InMode.Qualities.AntiAliasingQuality >= 0) ? InMode.Qualities.AntiAliasingQuality
+																				  : InOutLevels.AntiAliasingQuality;
+	InOutLevels.ShadowQuality =
+		(InMode.Qualities.ShadowQuality >= 0) ? InMode.Qualities.ShadowQuality : InOutLevels.ShadowQuality;
+	InOutLevels.GlobalIlluminationQuality = (InMode.Qualities.GlobalIlluminationQuality >= 0)
+												? InMode.Qualities.GlobalIlluminationQuality
+												: InOutLevels.GlobalIlluminationQuality;
+	InOutLevels.ReflectionQuality =
+		(InMode.Qualities.ReflectionQuality >= 0) ? InMode.Qualities.ReflectionQuality : InOutLevels.ReflectionQuality;
+	InOutLevels.PostProcessQuality = (InMode.Qualities.PostProcessQuality >= 0) ? InMode.Qualities.PostProcessQuality
+																				: InOutLevels.PostProcessQuality;
+	InOutLevels.TextureQuality =
+		(InMode.Qualities.TextureQuality >= 0) ? InMode.Qualities.TextureQuality : InOutLevels.TextureQuality;
+	InOutLevels.EffectsQuality =
+		(InMode.Qualities.EffectsQuality >= 0) ? InMode.Qualities.EffectsQuality : InOutLevels.EffectsQuality;
+	InOutLevels.FoliageQuality =
+		(InMode.Qualities.FoliageQuality >= 0) ? InMode.Qualities.FoliageQuality : InOutLevels.FoliageQuality;
+	InOutLevels.ShadingQuality =
+		(InMode.Qualities.ShadingQuality >= 0) ? InMode.Qualities.ShadingQuality : InOutLevels.ShadingQuality;
 }
 
-void UJoySettingsLocal::ClampQualityLevelsToDeviceProfile(const Scalability::FQualityLevels& ClampLevels, Scalability::FQualityLevels& InOutLevels)
+void UJoySettingsLocal::ClampQualityLevelsToDeviceProfile(
+	const Scalability::FQualityLevels& ClampLevels, Scalability::FQualityLevels& InOutLevels)
 {
-	static_assert(sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
+	static_assert(
+		sizeof(Scalability::FQualityLevels) == 88, "This function may need to be updated to account for new members");
 
 	// Clamps any valid (non-negative) settings
-	InOutLevels.ResolutionQuality = (ClampLevels.ResolutionQuality >= 0.f) ? FMath::Min(ClampLevels.ResolutionQuality, InOutLevels.ResolutionQuality) : InOutLevels.ResolutionQuality;
-	InOutLevels.ViewDistanceQuality = (ClampLevels.ViewDistanceQuality >= 0) ? FMath::Min(ClampLevels.ViewDistanceQuality, InOutLevels.ViewDistanceQuality) : InOutLevels.ViewDistanceQuality;
-	InOutLevels.AntiAliasingQuality = (ClampLevels.AntiAliasingQuality >= 0) ? FMath::Min(ClampLevels.AntiAliasingQuality, InOutLevels.AntiAliasingQuality) : InOutLevels.AntiAliasingQuality;
-	InOutLevels.ShadowQuality = (ClampLevels.ShadowQuality >= 0) ? FMath::Min(ClampLevels.ShadowQuality, InOutLevels.ShadowQuality) : InOutLevels.ShadowQuality;
-	InOutLevels.GlobalIlluminationQuality = (ClampLevels.GlobalIlluminationQuality >= 0) ? FMath::Min(ClampLevels.GlobalIlluminationQuality, InOutLevels.GlobalIlluminationQuality) : InOutLevels.GlobalIlluminationQuality;
-	InOutLevels.ReflectionQuality = (ClampLevels.ReflectionQuality >= 0) ? FMath::Min(ClampLevels.ReflectionQuality, InOutLevels.ReflectionQuality) : InOutLevels.ReflectionQuality;
-	InOutLevels.PostProcessQuality = (ClampLevels.PostProcessQuality >= 0) ? FMath::Min(ClampLevels.PostProcessQuality, InOutLevels.PostProcessQuality) : InOutLevels.PostProcessQuality;
-	InOutLevels.TextureQuality = (ClampLevels.TextureQuality >= 0) ? FMath::Min(ClampLevels.TextureQuality, InOutLevels.TextureQuality) : InOutLevels.TextureQuality;
-	InOutLevels.EffectsQuality = (ClampLevels.EffectsQuality >= 0) ? FMath::Min(ClampLevels.EffectsQuality, InOutLevels.EffectsQuality) : InOutLevels.EffectsQuality;
-	InOutLevels.FoliageQuality = (ClampLevels.FoliageQuality >= 0) ? FMath::Min(ClampLevels.FoliageQuality, InOutLevels.FoliageQuality) : InOutLevels.FoliageQuality;
-	InOutLevels.ShadingQuality = (ClampLevels.ShadingQuality >= 0) ? FMath::Min(ClampLevels.ShadingQuality, InOutLevels.ShadingQuality) : InOutLevels.ShadingQuality;
+	InOutLevels.ResolutionQuality = (ClampLevels.ResolutionQuality >= 0.f)
+										? FMath::Min(ClampLevels.ResolutionQuality, InOutLevels.ResolutionQuality)
+										: InOutLevels.ResolutionQuality;
+	InOutLevels.ViewDistanceQuality = (ClampLevels.ViewDistanceQuality >= 0)
+										  ? FMath::Min(ClampLevels.ViewDistanceQuality, InOutLevels.ViewDistanceQuality)
+										  : InOutLevels.ViewDistanceQuality;
+	InOutLevels.AntiAliasingQuality = (ClampLevels.AntiAliasingQuality >= 0)
+										  ? FMath::Min(ClampLevels.AntiAliasingQuality, InOutLevels.AntiAliasingQuality)
+										  : InOutLevels.AntiAliasingQuality;
+	InOutLevels.ShadowQuality = (ClampLevels.ShadowQuality >= 0)
+									? FMath::Min(ClampLevels.ShadowQuality, InOutLevels.ShadowQuality)
+									: InOutLevels.ShadowQuality;
+	InOutLevels.GlobalIlluminationQuality =
+		(ClampLevels.GlobalIlluminationQuality >= 0)
+			? FMath::Min(ClampLevels.GlobalIlluminationQuality, InOutLevels.GlobalIlluminationQuality)
+			: InOutLevels.GlobalIlluminationQuality;
+	InOutLevels.ReflectionQuality = (ClampLevels.ReflectionQuality >= 0)
+										? FMath::Min(ClampLevels.ReflectionQuality, InOutLevels.ReflectionQuality)
+										: InOutLevels.ReflectionQuality;
+	InOutLevels.PostProcessQuality = (ClampLevels.PostProcessQuality >= 0)
+										 ? FMath::Min(ClampLevels.PostProcessQuality, InOutLevels.PostProcessQuality)
+										 : InOutLevels.PostProcessQuality;
+	InOutLevels.TextureQuality = (ClampLevels.TextureQuality >= 0)
+									 ? FMath::Min(ClampLevels.TextureQuality, InOutLevels.TextureQuality)
+									 : InOutLevels.TextureQuality;
+	InOutLevels.EffectsQuality = (ClampLevels.EffectsQuality >= 0)
+									 ? FMath::Min(ClampLevels.EffectsQuality, InOutLevels.EffectsQuality)
+									 : InOutLevels.EffectsQuality;
+	InOutLevels.FoliageQuality = (ClampLevels.FoliageQuality >= 0)
+									 ? FMath::Min(ClampLevels.FoliageQuality, InOutLevels.FoliageQuality)
+									 : InOutLevels.FoliageQuality;
+	InOutLevels.ShadingQuality = (ClampLevels.ShadingQuality >= 0)
+									 ? FMath::Min(ClampLevels.ShadingQuality, InOutLevels.ShadingQuality)
+									 : InOutLevels.ShadingQuality;
 }
 
 void UJoySettingsLocal::OnExperienceLoaded()
@@ -669,7 +715,7 @@ void UJoySettingsLocal::ResetToMobileDeviceDefaults()
 	// Reset frame rate
 	DesiredMobileFrameRateLimit = GetDefaultMobileFrameRate();
 	MobileFrameRateLimit = DesiredMobileFrameRateLimit;
-	
+
 	// Reset scalability
 	Scalability::FQualityLevels DefaultLevels = Scalability::GetQualityLevels();
 	OverrideQualityLevelsToScalabilityMode(DeviceDefaultScalabilitySettings, DefaultLevels);
@@ -682,7 +728,8 @@ void UJoySettingsLocal::ResetToMobileDeviceDefaults()
 int32 UJoySettingsLocal::GetMaxSupportedOverallQualityLevel() const
 {
 	const UJoyPlatformSpecificRenderingSettings* PlatformSettings = UJoyPlatformSpecificRenderingSettings::Get();
-	if ((PlatformSettings->FramePacingMode == EJoyFramePacingMode::MobileStyle) && DeviceDefaultScalabilitySettings.bHasOverrides)
+	if ((PlatformSettings->FramePacingMode == EJoyFramePacingMode::MobileStyle) &&
+		DeviceDefaultScalabilitySettings.bHasOverrides)
 	{
 		return JoySettingsHelpers::GetHighestLevelOfAnyScalabilityChannel(DeviceDefaultScalabilitySettings.Qualities);
 	}
@@ -715,7 +762,7 @@ void UJoySettingsLocal::SetDesiredMobileFrameRateLimit(int32 NewLimitFPS)
 
 	DesiredMobileFrameRateLimit = NewLimitFPS;
 
-	ClampMobileFPSQualityLevels(/*bWriteBack=*/ false);
+	ClampMobileFPSQualityLevels(/*bWriteBack=*/false);
 }
 
 void UJoySettingsLocal::ClampMobileFPSQualityLevels(bool bWriteBack)
@@ -733,7 +780,8 @@ void UJoySettingsLocal::ClampMobileFPSQualityLevels(bool bWriteBack)
 			{
 				Scalability::SetQualityLevels(ScalabilityQuality);
 			}
-			UE_LOG(LogConsoleResponse, Log, TEXT("Mobile FPS clamped overall quality (%d -> %d)."), CurrentQualityLevel, QualityLimit);
+			UE_LOG(LogConsoleResponse, Log, TEXT("Mobile FPS clamped overall quality (%d -> %d)."), CurrentQualityLevel,
+				QualityLimit);
 		}
 	}
 }
@@ -758,17 +806,22 @@ void UJoySettingsLocal::ClampMobileQuality()
 		Scalability::SetQualityLevels(CurrentLevels);
 
 		// Clamp quality levels if required at the current frame rate
-		ClampMobileFPSQualityLevels(/*bWriteBack=*/ true);
+		ClampMobileFPSQualityLevels(/*bWriteBack=*/true);
 
 		const int32 MaxMobileFrameRate = GetMaxMobileFrameRate();
 		const int32 DefaultMobileFrameRate = GetDefaultMobileFrameRate();
-		
-		ensureMsgf(DefaultMobileFrameRate <= MaxMobileFrameRate, TEXT("Default mobile frame rate (%d) is higher than the maximum mobile frame rate (%d)!"), DefaultMobileFrameRate, MaxMobileFrameRate);
 
-		// Choose the closest supported frame rate to the user desired setting without going over the device imposed limit
+		ensureMsgf(DefaultMobileFrameRate <= MaxMobileFrameRate,
+			TEXT("Default mobile frame rate (%d) is higher than the maximum mobile frame rate (%d)!"),
+			DefaultMobileFrameRate, MaxMobileFrameRate);
+
+		// Choose the closest supported frame rate to the user desired setting without going over the device imposed
+		// limit
 		const TArray<int32>& PossibleRates = PlatformSettings->MobileFrameRateLimits;
-		const int32 LimitIndex = PossibleRates.FindLastByPredicate([=](const int32& TestRate) { return (TestRate <= DesiredMobileFrameRateLimit) && IsSupportedMobileFramePace(TestRate); });
-		const int32 ActualLimitFPS = PossibleRates.IsValidIndex(LimitIndex) ? PossibleRates[LimitIndex] : GetDefaultMobileFrameRate();
+		const int32 LimitIndex = PossibleRates.FindLastByPredicate([=](const int32& TestRate)
+			{ return (TestRate <= DesiredMobileFrameRateLimit) && IsSupportedMobileFramePace(TestRate); });
+		const int32 ActualLimitFPS =
+			PossibleRates.IsValidIndex(LimitIndex) ? PossibleRates[LimitIndex] : GetDefaultMobileFrameRate();
 
 		ClampMobileResolutionQuality(ActualLimitFPS);
 	}
@@ -785,7 +838,8 @@ void UJoySettingsLocal::ClampMobileResolutionQuality(int32 TargetFPS)
 	GetResolutionScaleInformationEx(CurrentScaleNormalized, CurrentScaleValue, MinScaleValue, MaxScaleValue);
 	if (CurrentScaleValue > MaxMobileResQuality)
 	{
-		UE_LOG(LogConsoleResponse, Log, TEXT("clamping mobile resolution quality max res: %f, %f, %f, %f, %f"), CurrentScaleNormalized, CurrentScaleValue, MinScaleValue, MaxScaleValue, MaxMobileResQuality);
+		UE_LOG(LogConsoleResponse, Log, TEXT("clamping mobile resolution quality max res: %f, %f, %f, %f, %f"),
+			CurrentScaleNormalized, CurrentScaleValue, MinScaleValue, MaxScaleValue, MaxMobileResQuality);
 		SetResolutionScaleValueEx(MaxMobileResQuality);
 	}
 }
@@ -793,8 +847,8 @@ void UJoySettingsLocal::ClampMobileResolutionQuality(int32 TargetFPS)
 void UJoySettingsLocal::RemapMobileResolutionQuality(int32 FromFPS, int32 ToFPS)
 {
 	// Mobile resolution quality slider is a normalized value that is lerped between min quality, max quality.
-	// max quality can change depending on FPS mode. This code remaps the quality when FPS mode changes so that the normalized
-	// value remains the same within the new range.
+	// max quality can change depending on FPS mode. This code remaps the quality when FPS mode changes so that the
+	// normalized value remains the same within the new range.
 	float CurrentScaleNormalized = 0.0f;
 	float CurrentScaleValue = 0.0f;
 	float MinScaleValue = 0.0f;
@@ -802,10 +856,12 @@ void UJoySettingsLocal::RemapMobileResolutionQuality(int32 FromFPS, int32 ToFPS)
 	GetResolutionScaleInformationEx(CurrentScaleNormalized, CurrentScaleValue, MinScaleValue, MaxScaleValue);
 	float FromMaxMobileResQuality = JoySettingsHelpers::GetApplicableResolutionQualityLimit(FromFPS);
 	float ToMaxMobileResQuality = JoySettingsHelpers::GetApplicableResolutionQualityLimit(ToFPS);
-	float FromMobileScaledNormalizedValue = (CurrentScaleValue - MinScaleValue) / (FromMaxMobileResQuality - MinScaleValue);
+	float FromMobileScaledNormalizedValue =
+		(CurrentScaleValue - MinScaleValue) / (FromMaxMobileResQuality - MinScaleValue);
 	float ToResQuality = FMath::Lerp(MinScaleValue, ToMaxMobileResQuality, FromMobileScaledNormalizedValue);
 
-	UE_LOG(LogConsoleResponse, Log, TEXT("Remap mobile resolution quality %f, %f, (%d,%d)"), CurrentScaleValue, ToResQuality, FromFPS, ToFPS);
+	UE_LOG(LogConsoleResponse, Log, TEXT("Remap mobile resolution quality %f, %f, (%d,%d)"), CurrentScaleValue,
+		ToResQuality, FromFPS, ToFPS);
 
 	SetResolutionScaleValueEx(ToResQuality);
 }
@@ -845,7 +901,7 @@ bool UJoySettingsLocal::ShouldRunAutoBenchmarkAtStartup() const
 void UJoySettingsLocal::RunAutoBenchmark(bool bSaveImmediately)
 {
 	RunHardwareBenchmark();
-	
+
 	// Always apply, optionally save
 	ApplyScalabilitySettings();
 
@@ -919,7 +975,8 @@ void UJoySettingsLocal::SetOverallScalabilityLevel(int32 Value)
 		ScalabilityQuality.ResolutionQuality = CurrentMobileResolutionQuality;
 
 		// Changing the overall quality can end up adjusting the frame rate on mobile since there are limits
-		const int32 ConstrainedFrameRateLimit = JoySettingsHelpers::ConstrainFrameRateToBeCompatibleWithOverallQuality(DesiredMobileFrameRateLimit, Value);
+		const int32 ConstrainedFrameRateLimit =
+			JoySettingsHelpers::ConstrainFrameRateToBeCompatibleWithOverallQuality(DesiredMobileFrameRateLimit, Value);
 		if (ConstrainedFrameRateLimit != DesiredMobileFrameRateLimit)
 		{
 			SetDesiredMobileFrameRateLimit(ConstrainedFrameRateLimit);
@@ -946,18 +1003,20 @@ FName UJoySettingsLocal::GetControllerPlatform() const
 	return ControllerPlatform;
 }
 
-void UJoySettingsLocal::RegisterInputConfig(ECommonInputType Type, const UPlayerMappableInputConfig* NewConfig, const bool bIsActive)
+void UJoySettingsLocal::RegisterInputConfig(
+	ECommonInputType Type, const UPlayerMappableInputConfig* NewConfig, const bool bIsActive)
 {
 	if (NewConfig)
 	{
-		const int32 ExistingConfigIdx = RegisteredInputConfigs.IndexOfByPredicate( [&NewConfig](const FLoadedMappableConfigPair& Pair) { return Pair.Config == NewConfig; } );
+		const int32 ExistingConfigIdx = RegisteredInputConfigs.IndexOfByPredicate(
+			[&NewConfig](const FLoadedMappableConfigPair& Pair) { return Pair.Config == NewConfig; });
 		if (ExistingConfigIdx == INDEX_NONE)
 		{
 			const int32 NumAdded = RegisteredInputConfigs.Add(FLoadedMappableConfigPair(NewConfig, Type, bIsActive));
 			if (NumAdded != INDEX_NONE)
 			{
 				OnInputConfigRegistered.Broadcast(RegisteredInputConfigs[NumAdded]);
-			}	
+			}
 		}
 	}
 }
@@ -966,13 +1025,13 @@ int32 UJoySettingsLocal::UnregisterInputConfig(const UPlayerMappableInputConfig*
 {
 	if (ConfigToRemove)
 	{
-		const int32 Index = RegisteredInputConfigs.IndexOfByPredicate( [&ConfigToRemove](const FLoadedMappableConfigPair& Pair) { return Pair.Config == ConfigToRemove; } );
+		const int32 Index = RegisteredInputConfigs.IndexOfByPredicate(
+			[&ConfigToRemove](const FLoadedMappableConfigPair& Pair) { return Pair.Config == ConfigToRemove; });
 		if (Index != INDEX_NONE)
 		{
 			RegisteredInputConfigs.RemoveAt(Index);
 			return 1;
 		}
-			
 	}
 	return INDEX_NONE;
 }
@@ -989,17 +1048,18 @@ const UPlayerMappableInputConfig* UJoySettingsLocal::GetInputConfigByName(FName 
 	return nullptr;
 }
 
-void UJoySettingsLocal::GetRegisteredInputConfigsOfType(ECommonInputType Type, TArray<FLoadedMappableConfigPair>& OutArray) const
+void UJoySettingsLocal::GetRegisteredInputConfigsOfType(
+	ECommonInputType Type, TArray<FLoadedMappableConfigPair>& OutArray) const
 {
 	OutArray.Empty();
 
-	// If "Count" is passed in then 
+	// If "Count" is passed in then
 	if (Type == ECommonInputType::Count)
 	{
 		OutArray = RegisteredInputConfigs;
 		return;
 	}
-	
+
 	for (const FLoadedMappableConfigPair& Pair : RegisteredInputConfigs)
 	{
 		if (Pair.Type == Type)
@@ -1045,13 +1105,14 @@ void UJoySettingsLocal::GetAllMappingNamesFromKey(const FKey InKey, TArray<FName
 	}
 }
 
-void UJoySettingsLocal::AddOrUpdateCustomKeyboardBindings(const FName MappingName, const FKey NewKey, UJoyLocalPlayer* LocalPlayer)
+void UJoySettingsLocal::AddOrUpdateCustomKeyboardBindings(
+	const FName MappingName, const FKey NewKey, UJoyLocalPlayer* LocalPlayer)
 {
 	if (MappingName == NAME_None)
 	{
 		return;
 	}
-	
+
 	if (InputConfigName != TEXT("Custom"))
 	{
 		// Copy Presets.
@@ -1067,9 +1128,9 @@ void UJoySettingsLocal::AddOrUpdateCustomKeyboardBindings(const FName MappingNam
 				}
 			}
 		}
-		
+
 		InputConfigName = TEXT("Custom");
-	} 
+	}
 
 	if (FKey* ExistingMapping = CustomKeyboardConfig.Find(MappingName))
 	{
@@ -1082,7 +1143,8 @@ void UJoySettingsLocal::AddOrUpdateCustomKeyboardBindings(const FName MappingNam
 	}
 
 	// Tell the enhanced input subsystem for this local player that we should remap some input! Woo
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
 	{
 		Subsystem->AddPlayerMappedKeyInSlot(MappingName, NewKey);
 	}
@@ -1090,7 +1152,8 @@ void UJoySettingsLocal::AddOrUpdateCustomKeyboardBindings(const FName MappingNam
 
 void UJoySettingsLocal::ResetKeybindingToDefault(const FName MappingName, UJoyLocalPlayer* LocalPlayer)
 {
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
 	{
 		Subsystem->RemoveAllPlayerMappedKeysForMapping(MappingName);
 	}
@@ -1098,12 +1161,12 @@ void UJoySettingsLocal::ResetKeybindingToDefault(const FName MappingName, UJoyLo
 
 void UJoySettingsLocal::ResetKeybindingsToDefault(UJoyLocalPlayer* LocalPlayer)
 {
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
 	{
 		Subsystem->RemoveAllPlayerMappedKeys();
 	}
 }
-
 
 void UJoySettingsLocal::OnAppActivationStateChanged(bool bIsActive)
 {
@@ -1123,16 +1186,19 @@ void UJoySettingsLocal::UpdateGameModeDeviceProfileAndFps()
 	UDeviceProfileManager& Manager = UDeviceProfileManager::Get();
 
 	const UJoyPlatformSpecificRenderingSettings* PlatformSettings = UJoyPlatformSpecificRenderingSettings::Get();
-	const TArray<FJoyQualityDeviceProfileVariant>& UserFacingVariants = PlatformSettings->UserFacingDeviceProfileOptions;
+	const TArray<FJoyQualityDeviceProfileVariant>& UserFacingVariants =
+		PlatformSettings->UserFacingDeviceProfileOptions;
 
 	//@TODO: Might want to allow specific experiences to specify a suffix to attempt to use as well
-	// The code below will handle searching with this suffix (alone or in conjunction with the frame rate), but nothing sets it right now
+	// The code below will handle searching with this suffix (alone or in conjunction with the frame rate), but nothing
+	// sets it right now
 	FString ExperienceSuffix;
 
 	// Make sure the chosen setting is supported for the current display, walking down the list to try fallbacks
 	const int32 PlatformMaxRefreshRate = FPlatformMisc::GetMaxRefreshRate();
 
-	int32 SuffixIndex = UserFacingVariants.IndexOfByPredicate([&](const FJoyQualityDeviceProfileVariant& Data){ return Data.DeviceProfileSuffix == UserChosenDeviceProfileSuffix; });
+	int32 SuffixIndex = UserFacingVariants.IndexOfByPredicate([&](const FJoyQualityDeviceProfileVariant& Data)
+		{ return Data.DeviceProfileSuffix == UserChosenDeviceProfileSuffix; });
 	while (UserFacingVariants.IsValidIndex(SuffixIndex))
 	{
 		if (PlatformMaxRefreshRate >= UserFacingVariants[SuffixIndex].MinRefreshRate)
@@ -1145,14 +1211,16 @@ void UJoySettingsLocal::UpdateGameModeDeviceProfileAndFps()
 		}
 	}
 
-	const FString EffectiveUserSuffix = UserFacingVariants.IsValidIndex(SuffixIndex) ? UserFacingVariants[SuffixIndex].DeviceProfileSuffix : PlatformSettings->DefaultDeviceProfileSuffix;
+	const FString EffectiveUserSuffix = UserFacingVariants.IsValidIndex(SuffixIndex)
+											? UserFacingVariants[SuffixIndex].DeviceProfileSuffix
+											: PlatformSettings->DefaultDeviceProfileSuffix;
 
 	// Build up a list of names to try
 	const bool bHadUserSuffix = !EffectiveUserSuffix.IsEmpty();
 	const bool bHadExperienceSuffix = !ExperienceSuffix.IsEmpty();
 
 	FString BasePlatformName = UDeviceProfileManager::GetPlatformDeviceProfileName();
-	FName PlatformName; // Default unless in editor
+	FName PlatformName;	   // Default unless in editor
 #if WITH_EDITOR
 	if (GIsEditor)
 	{
@@ -1192,7 +1260,7 @@ void UJoySettingsLocal::UpdateGameModeDeviceProfileAndFps()
 		if (Manager.HasLoadableProfileName(TestProfileName, PlatformName))
 		{
 			ActualProfileToApply = TestProfileName;
-			UDeviceProfile* Profile = Manager.FindProfile(TestProfileName, /*bCreateOnFail=*/ false);
+			UDeviceProfile* Profile = Manager.FindProfile(TestProfileName, /*bCreateOnFail=*/false);
 			if (Profile == nullptr)
 			{
 				Profile = Manager.CreateProfile(TestProfileName, TEXT(""), TestProfileName, *PlatformName.ToString());
@@ -1203,8 +1271,11 @@ void UJoySettingsLocal::UpdateGameModeDeviceProfileAndFps()
 		}
 	}
 
-	UE_LOG(LogConsoleResponse, Log, TEXT("UpdateGameModeDeviceProfileAndFps MaxRefreshRate=%d, ExperienceSuffix='%s', UserPicked='%s'->'%s', PlatformBase='%s', AppliedActual='%s'"), 
-		PlatformMaxRefreshRate, *ExperienceSuffix, *UserChosenDeviceProfileSuffix, *EffectiveUserSuffix, *BasePlatformName, *ActualProfileToApply);
+	UE_LOG(LogConsoleResponse, Log,
+		TEXT(
+			"UpdateGameModeDeviceProfileAndFps MaxRefreshRate=%d, ExperienceSuffix='%s', UserPicked='%s'->'%s', PlatformBase='%s', AppliedActual='%s'"),
+		PlatformMaxRefreshRate, *ExperienceSuffix, *UserChosenDeviceProfileSuffix, *EffectiveUserSuffix,
+		*BasePlatformName, *ActualProfileToApply);
 
 	// Apply the device profile if it's different to what we currently have
 	if (ActualProfileToApply != CurrentAppliedDeviceProfileOverrideSuffix)
@@ -1233,7 +1304,8 @@ void UJoySettingsLocal::UpdateGameModeDeviceProfileAndFps()
 					if (GIsEditor)
 					{
 #if ALLOW_OTHER_PLATFORM_CONFIG
-						UE_LOG(LogConsoleResponse, Log, TEXT("Overriding *preview* device profile to %s"), *ActualProfileToApply);
+						UE_LOG(LogConsoleResponse, Log, TEXT("Overriding *preview* device profile to %s"),
+							*ActualProfileToApply);
 						Manager.SetPreviewDeviceProfile(NewDeviceProfile);
 
 						// Reload the default settings from the pretend profile
@@ -1253,15 +1325,15 @@ void UJoySettingsLocal::UpdateGameModeDeviceProfileAndFps()
 
 	switch (PlatformSettings->FramePacingMode)
 	{
-	case EJoyFramePacingMode::MobileStyle:
-		UpdateMobileFramePacing();
-		break;
-	case EJoyFramePacingMode::ConsoleStyle:
-		UpdateConsoleFramePacing();
-		break;
-	case EJoyFramePacingMode::DesktopStyle:
-		UpdateDesktopFramePacing();
-		break;
+		case EJoyFramePacingMode::MobileStyle:
+			UpdateMobileFramePacing();
+			break;
+		case EJoyFramePacingMode::ConsoleStyle:
+			UpdateConsoleFramePacing();
+			break;
+		case EJoyFramePacingMode::DesktopStyle:
+			UpdateDesktopFramePacing();
+			break;
 	}
 }
 
@@ -1307,20 +1379,23 @@ void UJoySettingsLocal::UpdateMobileFramePacing()
 	// Choose the closest supported frame rate to the user desired setting without going over the device imposed limit
 	const UJoyPlatformSpecificRenderingSettings* PlatformSettings = UJoyPlatformSpecificRenderingSettings::Get();
 	const TArray<int32>& PossibleRates = PlatformSettings->MobileFrameRateLimits;
-	const int32 LimitIndex = PossibleRates.FindLastByPredicate([=](const int32& TestRate) { return (TestRate <= MobileFrameRateLimit) && IsSupportedMobileFramePace(TestRate); });
-	const int32 TargetFPS = PossibleRates.IsValidIndex(LimitIndex) ? PossibleRates[LimitIndex] : GetDefaultMobileFrameRate();
+	const int32 LimitIndex = PossibleRates.FindLastByPredicate([=](const int32& TestRate)
+		{ return (TestRate <= MobileFrameRateLimit) && IsSupportedMobileFramePace(TestRate); });
+	const int32 TargetFPS =
+		PossibleRates.IsValidIndex(LimitIndex) ? PossibleRates[LimitIndex] : GetDefaultMobileFrameRate();
 
 	UE_LOG(LogConsoleResponse, Log, TEXT("Setting frame pace to %d Hz."), TargetFPS);
 	FPlatformRHIFramePacer::SetFramePace(TargetFPS);
 
 	ClampMobileQuality();
 
-	UpdateDynamicResFrameTime((float)TargetFPS);
+	UpdateDynamicResFrameTime((float) TargetFPS);
 }
 
 void UJoySettingsLocal::UpdateDynamicResFrameTime(float TargetFPS)
 {
-	static IConsoleVariable* CVarDyResFrameTimeBudget = IConsoleManager::Get().FindConsoleVariable(TEXT("r.DynamicRes.FrameTimeBudget"));
+	static IConsoleVariable* CVarDyResFrameTimeBudget =
+		IConsoleManager::Get().FindConsoleVariable(TEXT("r.DynamicRes.FrameTimeBudget"));
 	if (CVarDyResFrameTimeBudget)
 	{
 		if (ensure(TargetFPS > 0.0f))
@@ -1330,4 +1405,3 @@ void UJoySettingsLocal::UpdateDynamicResFrameTime(float TargetFPS)
 		}
 	}
 }
-

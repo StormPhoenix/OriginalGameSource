@@ -2,16 +2,17 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "ModularPlayerController.h"
 #include "Camera/JoyPlayerCameraManager.h"
+#include "CoreMinimal.h"
 #include "Gameplay/TimeDilation/JoyTimeDilationManageSubsystem.h"
+#include "ModularPlayerController.h"
+
 #include "JoyPlayerController.generated.h"
 
 class AJoyCharacter;
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnPlayerTargetSwitchFinished, AJoyCharacter* FromCharacter,
-                                     AJoyCharacter* ToCharacter);
+DECLARE_MULTICAST_DELEGATE_TwoParams(
+	FOnPlayerTargetSwitchFinished, AJoyCharacter* FromCharacter, AJoyCharacter* ToCharacter);
 
 USTRUCT(BlueprintType)
 struct FJoyCharacterSwitchExtraParam
@@ -52,7 +53,7 @@ struct FCharacterSwitchSpec
 };
 
 /**
- * 
+ *
  */
 UCLASS(Config = Game, Meta = (ShortTooltip = "The base player controller class used by this project."))
 class ORIGINALGAME_API AJoyPlayerController : public AModularPlayerController
@@ -70,8 +71,8 @@ public:
 		return bDuringPlayerSwitching;
 	}
 
-	void SwitchCharacter(AJoyCharacter* PreviousCharacter, AJoyCharacter* TargetCharacter,
-	                     FJoyCharacterSwitchExtraParam ExtraParam);
+	void SwitchCharacter(
+		AJoyCharacter* PreviousCharacter, AJoyCharacter* TargetCharacter, FJoyCharacterSwitchExtraParam ExtraParam);
 
 	UFUNCTION()
 	void OnCharacterSwitchFinished(AActor* ViewTarget, AActor* PendingViewTarget);

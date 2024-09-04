@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ModularAIController.h"
+
 #include "JoyPlayerBotController.generated.h"
 
 UCLASS(Blueprintable)

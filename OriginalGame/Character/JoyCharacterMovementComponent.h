@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/CharacterMovementComponent.h"
+
 #include "JoyCharacterMovementComponent.generated.h"
 
 UCLASS(Config = Game)
@@ -18,6 +19,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

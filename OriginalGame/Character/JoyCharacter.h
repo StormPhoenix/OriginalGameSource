@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ModularCharacter.h"
+
 #include "JoyCharacter.generated.h"
 
 class UJoyCameraComponent;

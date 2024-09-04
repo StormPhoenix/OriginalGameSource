@@ -3,9 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "JoySpectatorBase.h"
 #include "Input/JoyInputBlocker.h"
 #include "Input/JoyInputReceiver.h"
+#include "JoySpectatorBase.h"
+
 #include "JoySpectator.generated.h"
 
 UCLASS()
@@ -32,7 +33,7 @@ public:
 	void RegisterInputReceiver(const TScriptInterface<IJoyInputReceiver> Receiver);
 
 	void UnregisterInputReceiver(const TScriptInterface<IJoyInputReceiver> Receiver);
-	
+
 	void RegisterInputBlocker(const TScriptInterface<IJoyInputBlocker> Blocker);
 
 	void UnregisterInputBlocker(const TScriptInterface<IJoyInputBlocker> Blocker);

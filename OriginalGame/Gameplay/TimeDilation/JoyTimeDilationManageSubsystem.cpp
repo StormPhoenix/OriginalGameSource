@@ -1,8 +1,8 @@
 ﻿#include "JoyTimeDilationManageSubsystem.h"
 
 #include "Character/JoyCharacter.h"
-#include "JoyLogChannels.h"
 #include "GameFramework/WorldSettings.h"
+#include "JoyLogChannels.h"
 #include "Kismet/GameplayStatics.h"
 
 FJoyTimeDilationHandle::FJoyTimeDilationHandle(int64 const Seq) : SequenceID(Seq)
@@ -33,7 +33,7 @@ UJoyTimeDilationManageSubsystem* UJoyTimeDilationManageSubsystem::GetTimeDilatio
 	const UObject* WorldContextObject)
 {
 	if (UWorld const* World =
-		GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
+			GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
 	{
 		return UJoyTimeDilationManageSubsystem::Get(World);
 	}
@@ -53,7 +53,8 @@ void UJoyTimeDilationManageSubsystem::Tick(float)
 		return;
 	}
 
-	TArray<FJoyTimeDilationRequestCache> TempRequestCaches;;
+	TArray<FJoyTimeDilationRequestCache> TempRequestCaches;
+	;
 	std::swap(RequestCaches, TempRequestCaches);
 
 	for (FJoyTimeDilationRequestCache& Req : TempRequestCaches)
@@ -306,8 +307,8 @@ void UJoyTimeDilationManageSubsystem::SetGlobalTimeDilationByCache(FJoyTimeDilat
 	}
 
 	UE_LOG(LogJoy, Warning,
-	       TEXT("SetGlobalTimeDilation: Time Dilation must be between %f and %f. Clamped value to that range."),
-	       WorldSettings->MinGlobalTimeDilation, WorldSettings->MaxGlobalTimeDilation);
+		TEXT("SetGlobalTimeDilation: Time Dilation must be between %f and %f. Clamped value to that range."),
+		WorldSettings->MinGlobalTimeDilation, WorldSettings->MaxGlobalTimeDilation);
 	Cache.CurrentDilation = ActualTimeDilation;
 }
 
@@ -329,8 +330,7 @@ bool UJoyTimeDilationManageSubsystem::AddGlobalTimeDilationImpl(
 }
 
 bool UJoyTimeDilationManageSubsystem::AddActorTimeDilationImpl(FJoyTimeDilationHandle const Handle, AActor* Actor,
-                                                               float const TimeDilation, bool const bOverride,
-                                                               bool const bUseAbsoluteValue)
+	float const TimeDilation, bool const bOverride, bool const bUseAbsoluteValue)
 {
 	if (!Actor)
 	{

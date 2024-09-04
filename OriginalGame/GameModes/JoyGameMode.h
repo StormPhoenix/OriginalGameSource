@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ModularGameMode.h"
+
 #include "JoyGameMode.generated.h"
 
 class UJoyPawnData;
@@ -14,7 +15,8 @@ class UJoyExperienceDefinition;
  *
  * This is called after the player has finished initialization
  */
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnJoyGameModePlayerInitialized, AGameModeBase* /*GameMode*/, AController* /*NewPlayer*/);
+DECLARE_MULTICAST_DELEGATE_TwoParams(
+	FOnJoyGameModePlayerInitialized, AGameModeBase* /*GameMode*/, AController* /*NewPlayer*/);
 
 UCLASS(Config = Game, Meta = (ShortTooltip = "The base game mode class used by this project."))
 class ORIGINALGAME_API AJoyGameMode : public AModularGameModeBase
@@ -33,13 +35,14 @@ public:
 	//~End of AGameModeBase interface
 
 	FOnJoyGameModePlayerInitialized OnGameModePlayerInitialized;
+
 protected:
 	const UJoyPawnData* GetPawnDataForController(const AController* InController) const;
-	
+
 	void OnExperienceLoaded(const UJoyExperienceDefinition* CurrentExperience);
-	
+
 	bool IsExperienceLoaded() const;
-	
+
 	void OnMatchAssignmentGiven(FPrimaryAssetId ExperienceId, const FString& ExperienceIdSource);
 
 	void HandleMatchAssignmentIfNotExpectingOne();

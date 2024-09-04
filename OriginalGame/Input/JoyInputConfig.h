@@ -22,7 +22,6 @@ struct FJoyInputAction
 	GENERATED_BODY()
 
 public:
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<const UInputAction> InputAction = nullptr;
 
@@ -41,7 +40,6 @@ class UJoyInputConfig : public UDataAsset
 	GENERATED_BODY()
 
 public:
-
 	UJoyInputConfig(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION(BlueprintCallable, Category = "Joy|Pawn")
@@ -51,11 +49,13 @@ public:
 	const UInputAction* FindAbilityInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound = true) const;
 
 public:
-	// List of input actions used by the owner.  These input actions are mapped to a gameplay tag and must be manually bound.
+	// List of input actions used by the owner.  These input actions are mapped to a gameplay tag and must be manually
+	// bound.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (TitleProperty = "InputAction"))
 	TArray<FJoyInputAction> NativeInputActions;
 
-	// List of input actions used by the owner.  These input actions are mapped to a gameplay tag and are automatically bound to abilities with matching input tags.
+	// List of input actions used by the owner.  These input actions are mapped to a gameplay tag and are automatically
+	// bound to abilities with matching input tags.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (TitleProperty = "InputAction"))
 	TArray<FJoyInputAction> AbilityInputActions;
 };

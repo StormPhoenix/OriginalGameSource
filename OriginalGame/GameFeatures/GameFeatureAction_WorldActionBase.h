@@ -33,7 +33,8 @@ private:
 	void HandleGameInstanceStart(UGameInstance* GameInstance, FGameFeatureStateChangeContext ChangeContext);
 
 	/** Override with the action-specific logic */
-	virtual void AddToWorld(const FWorldContext& WorldContext, const FGameFeatureStateChangeContext& ChangeContext) PURE_VIRTUAL(UGameFeatureAction_WorldActionBase::AddToWorld,);
+	virtual void AddToWorld(const FWorldContext& WorldContext, const FGameFeatureStateChangeContext& ChangeContext)
+		PURE_VIRTUAL(UGameFeatureAction_WorldActionBase::AddToWorld, );
 
 private:
 	TMap<FGameFeatureStateChangeContext, FDelegateHandle> GameInstanceStartHandles;

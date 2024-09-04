@@ -1,8 +1,7 @@
 ﻿#include "JoyInputBlocker.h"
 
-bool UJoyInputBlocker::BlockMoveInput(
-	TConstArrayView<TObjectPtr<UObject>> const& Blockers,
-	UObject* InputReceiver, FInputActionValue const& InputActionValue)
+bool UJoyInputBlocker::BlockMoveInput(TConstArrayView<TObjectPtr<UObject>> const& Blockers, UObject* InputReceiver,
+	FInputActionValue const& InputActionValue)
 {
 	for (UObject* Blocker : Blockers)
 	{
@@ -21,8 +20,7 @@ bool UJoyInputBlocker::BlockMoveInput(
 }
 
 bool UJoyInputBlocker::BlockAbilityTagPressInput(
-	TConstArrayView<TObjectPtr<UObject>> const& Blockers,
-	UObject* InputReceiver, FGameplayTag const& InputTag)
+	TConstArrayView<TObjectPtr<UObject>> const& Blockers, UObject* InputReceiver, FGameplayTag const& InputTag)
 {
 	for (UObject* Blocker : Blockers)
 	{
@@ -41,8 +39,7 @@ bool UJoyInputBlocker::BlockAbilityTagPressInput(
 }
 
 bool UJoyInputBlocker::BlockAbilityTagReleaseInput(
-	TConstArrayView<TObjectPtr<UObject>> const& Blockers,
-	UObject* InputReceiver, FGameplayTag const& InputTag)
+	TConstArrayView<TObjectPtr<UObject>> const& Blockers, UObject* InputReceiver, FGameplayTag const& InputTag)
 {
 	for (UObject* Blocker : Blockers)
 	{
@@ -60,9 +57,8 @@ bool UJoyInputBlocker::BlockAbilityTagReleaseInput(
 	return false;
 }
 
-bool UJoyInputBlocker::BlockLookMoveInput(
-	TConstArrayView<TObjectPtr<UObject>> const& Blockers,
-	UObject* InputReceiver, const FInputActionValue& InputActionValue)
+bool UJoyInputBlocker::BlockLookMoveInput(TConstArrayView<TObjectPtr<UObject>> const& Blockers, UObject* InputReceiver,
+	const FInputActionValue& InputActionValue)
 {
 	for (UObject* Blocker : Blockers)
 	{
@@ -81,8 +77,7 @@ bool UJoyInputBlocker::BlockLookMoveInput(
 	return false;
 }
 
-bool UJoyInputBlocker::BlockMouseScrollInput(
-	TConstArrayView<TObjectPtr<UObject>> const& Blockers,
+bool UJoyInputBlocker::BlockMouseScrollInput(TConstArrayView<TObjectPtr<UObject>> const& Blockers,
 	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {
 	for (UObject* Blocker : Blockers)

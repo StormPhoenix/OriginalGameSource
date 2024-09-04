@@ -2,12 +2,11 @@
 
 #include "JoyCameraBlueprintLibrary.h"
 
-#include "JoyGameBlueprintLibrary.h"
 #include "Camera/JoyCameraComponent.h"
 #include "Camera/JoyPlayerCameraManager.h"
+#include "JoyGameBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/JoyPlayerController.h"
-
 
 void UJoyCameraBlueprintLibrary::ApplyCameraSettings_Immediately(
 	AActor* OwnerActor, FCameraModifiers const& CameraModifiers)
@@ -36,9 +35,7 @@ void UJoyCameraBlueprintLibrary::ApplyCameraSettings_Immediately(
 }
 
 FCameraModifyHandle UJoyCameraBlueprintLibrary::ApplyCameraSettings(AActor* OwnerActor, float Duration,
-                                                                    float BlendInTime, float BlendOutTime,
-                                                                    FCameraModifiers const& CameraModifiers,
-                                                                    bool bNeedManualBreak)
+	float BlendInTime, float BlendOutTime, FCameraModifiers const& CameraModifiers, bool bNeedManualBreak)
 {
 	if (OwnerActor == nullptr)
 	{
@@ -108,7 +105,7 @@ bool UJoyCameraBlueprintLibrary::CheckTargetInsideScreen(const UObject* WorldCon
 		if (UGameplayStatics::ProjectWorldToScreen(PlayerController, Target->GetActorLocation(), TargetScreenPosition))
 		{
 			return TargetScreenPosition.X >= 0 && TargetScreenPosition.X <= ViewportSizeX &&
-				TargetScreenPosition.Y >= 0 && TargetScreenPosition.Y <= ViewportSizeY;
+				   TargetScreenPosition.Y >= 0 && TargetScreenPosition.Y <= ViewportSizeY;
 		}
 	}
 

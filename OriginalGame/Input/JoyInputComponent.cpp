@@ -14,7 +14,8 @@ UJoyInputComponent::UJoyInputComponent(const FObjectInitializer& ObjectInitializ
 {
 }
 
-void UJoyInputComponent::AddInputMappings(const UJoyInputConfig* InputConfig, UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
+void UJoyInputComponent::AddInputMappings(
+	const UJoyInputConfig* InputConfig, UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 {
 	check(InputConfig);
 	check(InputSubsystem);
@@ -24,7 +25,7 @@ void UJoyInputComponent::AddInputMappings(const UJoyInputConfig* InputConfig, UE
 
 	// Add any registered input mappings from the settings!
 	if (const UJoySettingsLocal* LocalSettings = UJoySettingsLocal::Get())
-	{	
+	{
 		// Tell enhanced input about any custom keymappings that the player may have customized
 		for (const TPair<FName, FKey>& Pair : LocalSettings->GetCustomPlayerInputConfig())
 		{
@@ -36,14 +37,15 @@ void UJoyInputComponent::AddInputMappings(const UJoyInputConfig* InputConfig, UE
 	}
 }
 
-void UJoyInputComponent::RemoveInputMappings(const UJoyInputConfig* InputConfig, UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
+void UJoyInputComponent::RemoveInputMappings(
+	const UJoyInputConfig* InputConfig, UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 {
 	check(InputConfig);
 	check(InputSubsystem);
 
 	UJoyLocalPlayer* LocalPlayer = InputSubsystem->GetLocalPlayer<UJoyLocalPlayer>();
 	check(LocalPlayer);
-	
+
 	if (UJoySettingsLocal* LocalSettings = UJoySettingsLocal::Get())
 	{
 		// Remove any registered input contexts
@@ -52,7 +54,7 @@ void UJoyInputComponent::RemoveInputMappings(const UJoyInputConfig* InputConfig,
 		{
 			InputSubsystem->RemovePlayerMappableConfig(Pair.Config);
 		}
-		
+
 		// Clear any player mapped keys from enhanced input
 		for (const TPair<FName, FKey>& Pair : LocalSettings->GetCustomPlayerInputConfig())
 		{

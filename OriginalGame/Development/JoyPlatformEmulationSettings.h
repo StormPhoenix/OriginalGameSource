@@ -4,6 +4,7 @@
 
 #include "Engine/DeveloperSettingsBackedByCVars.h"
 #include "GameplayTagContainer.h"
+
 #include "JoyPlatformEmulationSettings.generated.h"
 
 struct FPropertyChangedEvent;
@@ -11,7 +12,7 @@ struct FPropertyChangedEvent;
 /**
  * Platform emulation settings
  */
-UCLASS(config=EditorPerProjectUserSettings, MinimalAPI)
+UCLASS(config = EditorPerProjectUserSettings, MinimalAPI)
 class UJoyPlatformEmulationSettings : public UDeveloperSettingsBackedByCVars
 {
 	GENERATED_BODY()
@@ -27,33 +28,39 @@ public:
 	FName GetPretendPlatformName() const;
 
 private:
-	UPROPERTY(EditAnywhere, config, Category=PlatformEmulation, meta=(Categories="Input,Platform.Trait"))
+	UPROPERTY(EditAnywhere, config, Category = PlatformEmulation, meta = (Categories = "Input,Platform.Trait"))
 	FGameplayTagContainer AdditionalPlatformTraitsToEnable;
 
-	UPROPERTY(EditAnywhere, config, Category=PlatformEmulation, meta=(Categories="Input,Platform.Trait"))
+	UPROPERTY(EditAnywhere, config, Category = PlatformEmulation, meta = (Categories = "Input,Platform.Trait"))
 	FGameplayTagContainer AdditionalPlatformTraitsToSuppress;
 
-	UPROPERTY(EditAnywhere, config, Category=PlatformEmulation, meta=(GetOptions=GetKnownPlatformIds))
+	UPROPERTY(EditAnywhere, config, Category = PlatformEmulation, meta = (GetOptions = GetKnownPlatformIds))
 	FName PretendPlatform;
 
-	// The base device profile to pretend we are using when emulating device-specific device profiles applied from UJoySettingsLocal
-	UPROPERTY(EditAnywhere, config, Category=PlatformEmulation, meta=(GetOptions=GetKnownDeviceProfiles, EditCondition=bApplyDeviceProfilesInPIE))
+	// The base device profile to pretend we are using when emulating device-specific device profiles applied from
+	// UJoySettingsLocal
+	UPROPERTY(EditAnywhere, config, Category = PlatformEmulation,
+		meta = (GetOptions = GetKnownDeviceProfiles, EditCondition = bApplyDeviceProfilesInPIE))
 	FName PretendBaseDeviceProfile;
 
 	// Do we apply desktop-style frame rate settings in PIE?
 	// (frame rate limits are an engine-wide setting so it's not always desirable to have enabled in the editor)
-	// You may also want to disable the editor preference "Use Less CPU when in Background" if testing background frame rate limits
-	UPROPERTY(EditAnywhere, config, Category=PlatformEmulation, meta=(ConsoleVariable="Joy.Settings.ApplyFrameRateSettingsInPIE"))
+	// You may also want to disable the editor preference "Use Less CPU when in Background" if testing background frame
+	// rate limits
+	UPROPERTY(EditAnywhere, config, Category = PlatformEmulation,
+		meta = (ConsoleVariable = "Joy.Settings.ApplyFrameRateSettingsInPIE"))
 	bool bApplyFrameRateSettingsInPIE = false;
 
 	// Do we apply front-end specific performance options in PIE?
 	// Most engine performance/scalability settings they drive are global, so if one PIE window
 	// is in the front-end and the other is in-game one will win and the other gets stuck with those settings
-	UPROPERTY(EditAnywhere, config, Category=PlatformEmulation, meta=(ConsoleVariable="Joy.Settings.ApplyFrontEndPerformanceOptionsInPIE"))
+	UPROPERTY(EditAnywhere, config, Category = PlatformEmulation,
+		meta = (ConsoleVariable = "Joy.Settings.ApplyFrontEndPerformanceOptionsInPIE"))
 	bool bApplyFrontEndPerformanceOptionsInPIE = false;
 
 	// Should we apply experience/platform emulated device profiles in PIE?
-	UPROPERTY(EditAnywhere, config, Category=PlatformEmulation, meta=(InlineEditConditionToggle, ConsoleVariable="Joy.Settings.ApplyDeviceProfilesInPIE"))
+	UPROPERTY(EditAnywhere, config, Category = PlatformEmulation,
+		meta = (InlineEditConditionToggle, ConsoleVariable = "Joy.Settings.ApplyDeviceProfilesInPIE"))
 	bool bApplyDeviceProfilesInPIE = false;
 
 #if WITH_EDITOR

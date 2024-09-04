@@ -16,20 +16,14 @@ static FString SHARED_SETTINGS_SLOT_NAME = TEXT("SharedGameSettings");
 
 namespace JoySettingsSharedCVars
 {
-	static float DefaultGamepadLeftStickInnerDeadZone = 0.25f;
-	static FAutoConsoleVariableRef CVarGamepadLeftStickInnerDeadZone(
-		TEXT("gpad.DefaultLeftStickInnerDeadZone"),
-		DefaultGamepadLeftStickInnerDeadZone,
-		TEXT("Gamepad left stick inner deadzone")
-	);
+static float DefaultGamepadLeftStickInnerDeadZone = 0.25f;
+static FAutoConsoleVariableRef CVarGamepadLeftStickInnerDeadZone(TEXT("gpad.DefaultLeftStickInnerDeadZone"),
+	DefaultGamepadLeftStickInnerDeadZone, TEXT("Gamepad left stick inner deadzone"));
 
-	static float DefaultGamepadRightStickInnerDeadZone = 0.25f;
-	static FAutoConsoleVariableRef CVarGamepadRightStickInnerDeadZone(
-		TEXT("gpad.DefaultRightStickInnerDeadZone"),
-		DefaultGamepadRightStickInnerDeadZone,
-		TEXT("Gamepad right stick inner deadzone")
-	);	
-}
+static float DefaultGamepadRightStickInnerDeadZone = 0.25f;
+static FAutoConsoleVariableRef CVarGamepadRightStickInnerDeadZone(TEXT("gpad.DefaultRightStickInnerDeadZone"),
+	DefaultGamepadRightStickInnerDeadZone, TEXT("Gamepad right stick inner deadzone"));
+}	 // namespace JoySettingsSharedCVars
 
 UJoySettingsShared::UJoySettingsShared()
 {
@@ -42,7 +36,7 @@ UJoySettingsShared::UJoySettingsShared()
 void UJoySettingsShared::Initialize(UJoyLocalPlayer* LocalPlayer)
 {
 	check(LocalPlayer);
-	
+
 	OwningPlayer = LocalPlayer;
 }
 
@@ -59,13 +53,15 @@ void UJoySettingsShared::SaveSettings()
 	// If the save game exists, load it.
 	if (UGameplayStatics::DoesSaveGameExist(SHARED_SETTINGS_SLOT_NAME, LocalPlayer->GetLocalPlayerIndex()))
 	{
-		USaveGame* Slot = UGameplayStatics::LoadGameFromSlot(SHARED_SETTINGS_SLOT_NAME, LocalPlayer->GetLocalPlayerIndex());
+		USaveGame* Slot =
+			UGameplayStatics::LoadGameFromSlot(SHARED_SETTINGS_SLOT_NAME, LocalPlayer->GetLocalPlayerIndex());
 		SharedSettings = Cast<UJoySettingsShared>(Slot);
 	}
-	
+
 	if (SharedSettings == nullptr)
 	{
-		SharedSettings = Cast<UJoySettingsShared>(UGameplayStatics::CreateSaveGameObject(UJoySettingsShared::StaticClass()));
+		SharedSettings =
+			Cast<UJoySettingsShared>(UGameplayStatics::CreateSaveGameObject(UJoySettingsShared::StaticClass()));
 	}
 
 	SharedSettings->Initialize(const_cast<UJoyLocalPlayer*>(LocalPlayer));
@@ -87,7 +83,7 @@ void UJoySettingsShared::SetColorBlindStrength(int32 InColorBlindStrength)
 	{
 		ColorBlindStrength = InColorBlindStrength;
 		FSlateApplication::Get().GetRenderer()->SetColorVisionDeficiencyType(
-			(EColorVisionDeficiency)(int32)ColorBlindMode, (int32)ColorBlindStrength, true, false);
+			(EColorVisionDeficiency) (int32) ColorBlindMode, (int32) ColorBlindStrength, true, false);
 	}
 }
 
@@ -102,7 +98,7 @@ void UJoySettingsShared::SetColorBlindMode(EColorBlindMode InMode)
 	{
 		ColorBlindMode = InMode;
 		FSlateApplication::Get().GetRenderer()->SetColorVisionDeficiencyType(
-			(EColorVisionDeficiency)(int32)ColorBlindMode, (int32)ColorBlindStrength, true, false);
+			(EColorVisionDeficiency) (int32) ColorBlindMode, (int32) ColorBlindStrength, true, false);
 	}
 }
 
@@ -125,7 +121,8 @@ void UJoySettingsShared::ApplyBackgroundAudioSettings()
 {
 	if (OwningPlayer && OwningPlayer->IsPrimaryPlayer())
 	{
-		FApp::SetUnfocusedVolumeMultiplier((AllowAudioInBackground != EJoyAllowBackgroundAudioSetting::Off) ? 1.0f : 0.0f);
+		FApp::SetUnfocusedVolumeMultiplier(
+			(AllowAudioInBackground != EJoyAllowBackgroundAudioSetting::Off) ? 1.0f : 0.0f);
 	}
 }
 
@@ -149,7 +146,8 @@ void UJoySettingsShared::ApplyCultureSettings()
 	}
 	else if (!PendingCulture.IsEmpty())
 	{
-		// SetCurrentCulture may trigger PendingCulture to be cleared (if a culture change is broadcast) so we take a copy of it to work with
+		// SetCurrentCulture may trigger PendingCulture to be cleared (if a culture change is broadcast) so we take a
+		// copy of it to work with
 		const FString CultureToApply = PendingCulture;
 		if (FInternationalization::Get().SetCurrentCulture(CultureToApply))
 		{
@@ -210,6 +208,4 @@ void UJoySettingsShared::ResetToDefaultCulture()
 
 void UJoySettingsShared::ApplyInputSensitivity()
 {
-	
 }
-

@@ -5,6 +5,7 @@
 #include "Engine/AssetManager.h"
 #include "JoyAssetManagerStartupJob.h"
 #include "Templates/SubclassOf.h"
+
 #include "JoyAssetManager.generated.h"
 
 class UJoyGameData;
@@ -15,13 +16,12 @@ struct FJoyBundles
 	static const FName Equipped;
 };
 
-
 /**
  * UJoyAssetManager
  *
  *	Game implementation of the asset manager that overrides functionality and stores game-specific types.
- *	It is expected that most games will want to override AssetManager as it provides a good place for game-specific loading logic.
- *	This class is used by setting 'AssetManagerClassName' in DefaultEngine.ini.
+ *	It is expected that most games will want to override AssetManager as it provides a good place for game-specific
+ *loading logic. This class is used by setting 'AssetManagerClassName' in DefaultEngine.ini.
  */
 UCLASS(Config = Game)
 class UJoyAssetManager : public UAssetManager
@@ -29,18 +29,19 @@ class UJoyAssetManager : public UAssetManager
 	GENERATED_BODY()
 
 public:
-
 	UJoyAssetManager();
 
 	// Returns the AssetManager singleton object.
 	static UJoyAssetManager& Get();
 
-	// Returns the asset referenced by a TSoftObjectPtr.  This will synchronously load the asset if it's not already loaded.
-	template<typename AssetType>
+	// Returns the asset referenced by a TSoftObjectPtr.  This will synchronously load the asset if it's not already
+	// loaded.
+	template <typename AssetType>
 	static AssetType* GetAsset(const TSoftObjectPtr<AssetType>& AssetPointer, bool bKeepInMemory = true);
 
-	// Returns the subclass referenced by a TSoftClassPtr.  This will synchronously load the asset if it's not already loaded.
-	template<typename AssetType>
+	// Returns the subclass referenced by a TSoftClassPtr.  This will synchronously load the asset if it's not already
+	// loaded.
+	template <typename AssetType>
 	static TSubclassOf<AssetType> GetSubclass(const TSoftClassPtr<AssetType>& AssetPointer, bool bKeepInMemory = true);
 
 	// Logs all assets currently loaded and tracked by the asset manager.
@@ -75,7 +76,6 @@ private:
 	TArray<FJoyAssetManagerStartupJob> StartupJobs;
 
 private:
-	
 	// Assets loaded and tracked by the asset manager.
 	UPROPERTY()
 	TSet<TObjectPtr<const UObject>> LoadedAssets;
@@ -84,8 +84,7 @@ private:
 	FCriticalSection LoadedAssetsCritical;
 };
 
-
-template<typename AssetType>
+template <typename AssetType>
 AssetType* UJoyAssetManager::GetAsset(const TSoftObjectPtr<AssetType>& AssetPointer, bool bKeepInMemory)
 {
 	AssetType* LoadedAsset = nullptr;
@@ -111,7 +110,7 @@ AssetType* UJoyAssetManager::GetAsset(const TSoftObjectPtr<AssetType>& AssetPoin
 	return LoadedAsset;
 }
 
-template<typename AssetType>
+template <typename AssetType>
 TSubclassOf<AssetType> UJoyAssetManager::GetSubclass(const TSoftClassPtr<AssetType>& AssetPointer, bool bKeepInMemory)
 {
 	TSubclassOf<AssetType> LoadedSubclass;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
+
 #include "JoyExperienceDefinition.generated.h"
 
 class UGameFeatureAction;
@@ -37,14 +38,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
 	TArray<FString> GameFeaturesToEnable;
 
-	UPROPERTY(EditDefaultsOnly, Category=Gameplay)
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
 	TObjectPtr<const UJoyPawnData> DefaultPawnData;
 
 	// List of actions to perform as this experience is loaded/activated/deactivated/unloaded
-	UPROPERTY(EditDefaultsOnly, Instanced, Category="Actions")
+	UPROPERTY(EditDefaultsOnly, Instanced, Category = "Actions")
 	TArray<TObjectPtr<UGameFeatureAction>> Actions;
 
 	// List of additional action sets to compose into this experience
-	UPROPERTY(EditDefaultsOnly, Category=Gameplay)
+	UPROPERTY(EditDefaultsOnly, Category = Gameplay)
 	TArray<TObjectPtr<UJoyExperienceActionSet>> ActionSets;
 };

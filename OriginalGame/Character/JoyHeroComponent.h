@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Components/GameFrameworkInitStateInterface.h"
 #include "Components/PawnComponent.h"
+#include "CoreMinimal.h"
+
 #include "JoyHeroComponent.generated.h"
 
-
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ORIGINALGAME_API UJoyHeroComponent : public UPawnComponent, public IGameFrameworkInitStateInterface
 {
 	GENERATED_BODY()
@@ -20,6 +20,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+
 #include "JoyGameBlueprintLibrary.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class ORIGINALGAME_API UJoyGameBlueprintLibrary : public UBlueprintFunctionLibrary
@@ -20,13 +21,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Input", meta = (WorldContext = "WorldContextObject"))
 	static void RegisterInputReceiver(const UObject* WorldContextObject, UObject* Receiver);
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Input", meta = (WorldContext = "WorldContextObject"))
 	static void UnregisterInputReceiver(const UObject* WorldContextObject, UObject* Receiver);
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Input", meta = (WorldContext = "WorldContextObject"))
 	static void RegisterInputBlocker(const UObject* WorldContextObject, UObject* Blocker);
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Input", meta = (WorldContext = "WorldContextObject"))
 	static void UnregisterInputBlocker(const UObject* WorldContextObject, UObject* Blocker);
 };

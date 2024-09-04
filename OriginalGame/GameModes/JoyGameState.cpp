@@ -7,8 +7,8 @@
 #include "GameFramework/PlayerState.h"
 #include "GameModes/JoyExperienceManagerComponent.h"
 #include "Messages/JoyVerbMessage.h"
-#include "Player/JoyPlayerState.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/JoyPlayerState.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyGameState)
 
@@ -17,14 +17,13 @@ class FLifetimeProperty;
 
 extern ENGINE_API float GAverageFPS;
 
-
-AJoyGameState::AJoyGameState(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+AJoyGameState::AJoyGameState(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
-	ExperienceManagerComponent = CreateDefaultSubobject<UJoyExperienceManagerComponent>(TEXT("ExperienceManagerComponent"));
+	ExperienceManagerComponent =
+		CreateDefaultSubobject<UJoyExperienceManagerComponent>(TEXT("ExperienceManagerComponent"));
 }
 
 void AJoyGameState::PreInitializeComponents()

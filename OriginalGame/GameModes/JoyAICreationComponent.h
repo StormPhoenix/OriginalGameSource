@@ -2,15 +2,16 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Components/GameStateComponent.h"
+#include "CoreMinimal.h"
+
 #include "JoyAICreationComponent.generated.h"
 
 class AJoyAISpawner;
 class UJoyExperienceDefinition;
 class UJoyPawnData;
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class ORIGINALGAME_API UJoyAICreationComponent : public UGameStateComponent
 {
 	GENERATED_BODY()
@@ -24,8 +25,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(
+		float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 	void OnExperienceLoaded(const UJoyExperienceDefinition* Experience);

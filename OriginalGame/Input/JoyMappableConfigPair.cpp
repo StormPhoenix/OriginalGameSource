@@ -4,9 +4,9 @@
 
 #include "CommonUISettings.h"
 #include "ICommonUIModule.h"
-#include "PlayerMappableInputConfig.h"
 #include "OriginalGame/Settings/JoySettingsLocal.h"
 #include "OriginalGame/System/JoyAssetManager.h"
+#include "PlayerMappableInputConfig.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyMappableConfigPair)
 
@@ -40,9 +40,9 @@ bool FMappableConfigPair::RegisterPair(const FMappableConfigPair& Pair)
 		{
 			Settings->RegisterInputConfig(Pair.Type, LoadedConfig, false);
 			return true;
-		}	
+		}
 	}
-	
+
 	return false;
 }
 
@@ -58,4 +58,3 @@ void FMappableConfigPair::UnregisterPair(const FMappableConfigPair& Pair)
 		}
 	}
 }
-

@@ -6,7 +6,6 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyInputConfig)
 
-
 UJoyInputConfig::UJoyInputConfig(const FObjectInitializer& ObjectInitializer)
 {
 }
@@ -23,7 +22,8 @@ const UInputAction* UJoyInputConfig::FindNativeInputActionForTag(const FGameplay
 
 	if (bLogNotFound)
 	{
-		UE_LOG(LogJoy, Error, TEXT("Can't find NativeInputAction for InputTag [%s] on InputConfig [%s]."), *InputTag.ToString(), *GetNameSafe(this));
+		UE_LOG(LogJoy, Error, TEXT("Can't find NativeInputAction for InputTag [%s] on InputConfig [%s]."),
+			*InputTag.ToString(), *GetNameSafe(this));
 	}
 
 	return nullptr;
@@ -41,7 +41,8 @@ const UInputAction* UJoyInputConfig::FindAbilityInputActionForTag(const FGamepla
 
 	if (bLogNotFound)
 	{
-		UE_LOG(LogJoy, Error, TEXT("Can't find AbilityInputAction for InputTag [%s] on InputConfig [%s]."), *InputTag.ToString(), *GetNameSafe(this));
+		UE_LOG(LogJoy, Error, TEXT("Can't find AbilityInputAction for InputTag [%s] on InputConfig [%s]."),
+			*InputTag.ToString(), *GetNameSafe(this));
 	}
 
 	return nullptr;

@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "JoyAISpawner.h"
 
-#include "JoyPawnData.h"
 #include "Components/BillboardComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
+#include "JoyPawnData.h"
 #include "UObject/ConstructorHelpers.h"
 
 AJoyAISpawner::AJoyAISpawner()
@@ -17,7 +16,7 @@ AJoyAISpawner::AJoyAISpawner()
 #if WITH_EDITORONLY_DATA
 	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PreviewMesh"));
 	Mesh->SetupAttachment(RootComponent);
-	
+
 	SpriteComponent = CreateEditorOnlyDefaultSubobject<UBillboardComponent>(TEXT("Sprite"));
 	if (!IsRunningCommandlet())
 	{
@@ -30,8 +29,8 @@ AJoyAISpawner::AJoyAISpawner()
 
 			FConstructorStatics()
 				: DecalTexture(TEXT("/Engine/EditorResources/Spawn_Point"))
-				  , ID_Formation(TEXT("Formation"))
-				  , NAME_Formation(NSLOCTEXT("SpriteCategory", "Formation", "Formation"))
+				, ID_Formation(TEXT("Formation"))
+				, NAME_Formation(NSLOCTEXT("SpriteCategory", "Formation", "Formation"))
 			{
 			}
 		};
@@ -51,7 +50,7 @@ AJoyAISpawner::AJoyAISpawner()
 			SpriteComponent->bIsScreenSizeScaled = true;
 		}
 	}
-#endif // WITH_EDITORONLY_DATA
+#endif	  // WITH_EDITORONLY_DATA
 }
 
 void AJoyAISpawner::BeginPlay()
@@ -81,7 +80,7 @@ void AJoyAISpawner::ReloadPawnData() const
 	if (ACharacter const* CharacterCDO = Cast<ACharacter>(PawnData->PawnClass->GetDefaultObject()))
 	{
 		CapsuleComponent->InitCapsuleSize(CharacterCDO->GetCapsuleComponent()->GetScaledCapsuleRadius(),
-		                                  CharacterCDO->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+			CharacterCDO->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
 
 #if WITH_EDITOR
 		if (GetWorld() && !GetWorld()->HasBegunPlay())
@@ -96,9 +95,8 @@ void AJoyAISpawner::ReloadPawnData() const
 #if WITH_EDITOR
 void AJoyAISpawner::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	FName const PropertyName = PropertyChangedEvent.Property != nullptr
-		                           ? PropertyChangedEvent.Property->GetFName()
-		                           : NAME_None;
+	FName const PropertyName =
+		PropertyChangedEvent.Property != nullptr ? PropertyChangedEvent.Property->GetFName() : NAME_None;
 	if (PropertyName == GET_MEMBER_NAME_CHECKED(ThisClass, PawnData))
 	{
 		ReloadPawnData();

@@ -40,7 +40,6 @@ class UJoySettingsLocal : public UGameUserSettings
 	GENERATED_BODY()
 
 public:
-
 	UJoySettingsLocal();
 
 	static UJoySettingsLocal* Get();
@@ -68,8 +67,10 @@ public:
 
 public:
 	void SetShouldUseFrontendPerformanceSettings(bool bInFrontEnd);
+
 protected:
 	bool ShouldUseFrontendPerformanceSettings() const;
+
 private:
 	bool bInFrontEndForPerformancePurposes = false;
 
@@ -78,13 +79,16 @@ private:
 public:
 	/** Returns the display mode for the specified performance stat */
 	EJoyStatDisplayMode GetPerfStatDisplayState(EJoyDisplayablePerformanceStat Stat) const;
-	
+
 	/** Sets the display mode for the specified performance stat */
 	void SetPerfStatDisplayState(EJoyDisplayablePerformanceStat Stat, EJoyStatDisplayMode DisplayMode);
 
 	/** Fired when the display state for a performance stat has changed, or the settings are applied */
 	DECLARE_EVENT(UJoySettingsLocal, FPerfStatSettingsChanged);
-	FPerfStatSettingsChanged& OnPerfStatDisplayStateChanged() { return PerfStatSettingsChangedEvent; }
+	FPerfStatSettingsChanged& OnPerfStatDisplayStateChanged()
+	{
+		return PerfStatSettingsChangedEvent;
+	}
 
 private:
 	// List of stats to display in the HUD
@@ -104,7 +108,7 @@ public:
 
 private:
 	void ApplyDisplayGamma();
-	
+
 	UPROPERTY(Config)
 	float DisplayGamma = 2.2;
 
@@ -145,7 +149,6 @@ private:
 	//////////////////////////////////////////////////////////////////
 	// Display - Mobile quality settings
 public:
-	
 	static int32 GetDefaultMobileFrameRate();
 	static int32 GetMaxMobileFrameRate();
 
@@ -169,17 +172,22 @@ private:
 
 	void ClampMobileFPSQualityLevels(bool bWriteBack);
 	void ClampMobileQuality();
-	
+
 	int32 GetHighestLevelOfAnyScalabilityChannel() const;
 
 	/* Modifies the input levels based on the active mode's overrides */
-	void OverrideQualityLevelsToScalabilityMode(const FJoyScalabilitySnapshot& InMode, Scalability::FQualityLevels& InOutLevels);
+	void OverrideQualityLevelsToScalabilityMode(
+		const FJoyScalabilitySnapshot& InMode, Scalability::FQualityLevels& InOutLevels);
 
 	/* Clamps the input levels based on the active device profile's default allowed levels */
-	void ClampQualityLevelsToDeviceProfile(const Scalability::FQualityLevels& ClampLevels, Scalability::FQualityLevels& InOutLevels);
+	void ClampQualityLevelsToDeviceProfile(
+		const Scalability::FQualityLevels& ClampLevels, Scalability::FQualityLevels& InOutLevels);
 
 public:
-	int32 GetDesiredMobileFrameRateLimit() const { return DesiredMobileFrameRateLimit; }
+	int32 GetDesiredMobileFrameRateLimit() const
+	{
+		return DesiredMobileFrameRateLimit;
+	}
 
 	void SetDesiredMobileFrameRateLimit(int32 NewLimitFPS);
 
@@ -194,7 +202,6 @@ private:
 	int32 DesiredMobileFrameRateLimit = 0;
 
 private:
-
 	//////////////////////////////////////////////////////////////////
 	// Display - Console quality presets
 public:
@@ -238,19 +245,29 @@ public:
 	void RunAutoBenchmark(bool bSaveImmediately);
 
 	void ApplyScalabilitySettings();
+
 private:
 public:
 	UFUNCTION()
-	bool IsSafeZoneSet() const { return SafeZoneScale != -1; }
+	bool IsSafeZoneSet() const
+	{
+		return SafeZoneScale != -1;
+	}
 	UFUNCTION()
-	float GetSafeZone() const { return SafeZoneScale >= 0 ? SafeZoneScale : 0; }
+	float GetSafeZone() const
+	{
+		return SafeZoneScale >= 0 ? SafeZoneScale : 0;
+	}
 	UFUNCTION()
-	void SetSafeZone(float Value) { SafeZoneScale = Value; ApplySafeZoneScale(); }
+	void SetSafeZone(float Value)
+	{
+		SafeZoneScale = Value;
+		ApplySafeZoneScale();
+	}
 
 	void ApplySafeZoneScale();
+
 public:
-
-
 	// Sets the controller representation to use, a single platform might support multiple kinds of controllers.  For
 	// example, Win64 games could be played with both an XBox or Playstation controller.
 	UFUNCTION()
@@ -265,13 +282,13 @@ public:
 
 	/** Delegate called when a registered input config has been activated */
 	FInputConfigDelegate OnInputConfigActivated;
-	
+
 	/** Delegate called when a registered input config has been deactivate */
 	FInputConfigDelegate OnInputConfigDeactivated;
-	
+
 	/** Register the given input config with the settings to make it available to the player. */
 	void RegisterInputConfig(ECommonInputType Type, const UPlayerMappableInputConfig* NewConfig, const bool bIsActive);
-	
+
 	/** Unregister the given input config. Returns the number of configs removed. */
 	int32 UnregisterInputConfig(const UPlayerMappableInputConfig* ConfigToRemove);
 
@@ -280,11 +297,14 @@ public:
 	const UPlayerMappableInputConfig* GetInputConfigByName(FName ConfigName) const;
 
 	/** Get all currently registered input configs */
-	const TArray<FLoadedMappableConfigPair>& GetAllRegisteredInputConfigs() const { return RegisteredInputConfigs; }
+	const TArray<FLoadedMappableConfigPair>& GetAllRegisteredInputConfigs() const
+	{
+		return RegisteredInputConfigs;
+	}
 
 	/**
 	 * Get all registered input configs that match the input type.
-	 * 
+	 *
 	 * @param Type		The type of config to get, ECommonInputType::Count will include all configs.
 	 * @param OutArray	Array to be populated with the current registered input configs that match the type
 	 */
@@ -292,7 +312,7 @@ public:
 
 	/**
 	 * Returns the display name of any actions with that key bound to it
-	 * 
+	 *
 	 * @param InKey The key to check for current mappings of
 	 * @param OutActionNames Array to store display names of actions of bound keys
 	 */
@@ -300,7 +320,7 @@ public:
 
 	/**
 	 * Maps the given keyboard setting to the new key
-	 * 
+	 *
 	 * @param MappingName	The name of the FPlayerMappableKeyOptions that you would like to change
 	 * @param NewKey		The new key to bind this option to
 	 * @param LocalPlayer   local player to reset the keybinding on
@@ -308,8 +328,8 @@ public:
 	void AddOrUpdateCustomKeyboardBindings(const FName MappingName, const FKey NewKey, UJoyLocalPlayer* LocalPlayer);
 
 	/**
-	 * Resets keybinding to its default value in its input mapping context 
-	 * 
+	 * Resets keybinding to its default value in its input mapping context
+	 *
 	 * @param MappingName	The name of the FPlayerMappableKeyOptions that you would like to change
 	 * @param LocalPlayer   local player to reset the keybinding on
 	 */
@@ -320,7 +340,10 @@ public:
 	 */
 	void ResetKeybindingsToDefault(UJoyLocalPlayer* LocalPlayer);
 
-	const TMap<FName, FKey>& GetCustomPlayerInputConfig() const { return CustomKeyboardConfig; }
+	const TMap<FName, FKey>& GetCustomPlayerInputConfig() const
+	{
+		return CustomKeyboardConfig;
+	}
 
 private:
 	UPROPERTY(Config)
@@ -340,15 +363,15 @@ private:
 	/** The name of the current input config that the user has selected. */
 	UPROPERTY(Config)
 	FName InputConfigName = TEXT("Default");
-	
+
 	/**
 	 * Array of currently registered input configs. This is populated by game feature plugins
-	 * 
+	 *
 	 * @see UGameFeatureAction_AddInputConfig
 	 */
 	UPROPERTY(VisibleAnywhere)
 	TArray<FLoadedMappableConfigPair> RegisteredInputConfigs;
-	
+
 	/** Array of custom key mappings that have been set by the player. Empty by default. */
 	UPROPERTY(Config)
 	TMap<FName, FKey> CustomKeyboardConfig;

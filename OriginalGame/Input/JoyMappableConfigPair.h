@@ -17,11 +17,11 @@ struct FLoadedMappableConfigPair
 	GENERATED_BODY()
 
 	FLoadedMappableConfigPair() = default;
-	FLoadedMappableConfigPair(const UPlayerMappableInputConfig* InConfig, ECommonInputType InType, const bool InIsActive)
-		: Config(InConfig)
-		, Type(InType)
-		, bIsActive(InIsActive)
-	{}
+	FLoadedMappableConfigPair(
+		const UPlayerMappableInputConfig* InConfig, ECommonInputType InType, const bool InIsActive)
+		: Config(InConfig), Type(InType), bIsActive(InIsActive)
+	{
+	}
 
 	/** The player mappable input config that should be applied to the Enhanced Input subsystem */
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
@@ -41,9 +41,9 @@ USTRUCT()
 struct FMappableConfigPair
 {
 	GENERATED_BODY()
-	
+
 	FMappableConfigPair() = default;
-	
+
 	UPROPERTY(EditAnywhere)
 	TSoftObjectPtr<UPlayerMappableInputConfig> Config;
 
@@ -57,9 +57,9 @@ struct FMappableConfigPair
 
 	/**
 	 * Container of platform traits that must be set in order for this input to be activated.
-	 * 
+	 *
 	 * If the platform does not have one of the traits specified it can still be registered, but cannot
-	 * be activated. 
+	 * be activated.
 	 */
 	UPROPERTY(EditAnywhere)
 	FGameplayTagContainer DependentPlatformTraits;
@@ -78,7 +78,7 @@ struct FMappableConfigPair
 
 	/** Returns true if this config pair can be activated based on the current platform traits and settings. */
 	bool CanBeActivated() const;
-	
+
 	/**
 	 * Registers the given config mapping with the local settings
 	 */

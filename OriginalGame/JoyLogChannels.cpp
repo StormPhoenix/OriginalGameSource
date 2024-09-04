@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "JoyLogChannels.h"
+
 #include "GameFramework/Actor.h"
 
 DEFINE_LOG_CATEGORY(LogJoy);

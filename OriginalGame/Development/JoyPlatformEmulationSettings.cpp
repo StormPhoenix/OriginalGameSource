@@ -1,13 +1,14 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "JoyPlatformEmulationSettings.h"
+
 #include "CommonUIVisibilitySubsystem.h"
+#include "DeviceProfiles/DeviceProfile.h"
+#include "DeviceProfiles/DeviceProfileManager.h"
 #include "Engine/PlatformSettingsManager.h"
+#include "Framework/Notifications/NotificationManager.h"
 #include "Misc/App.h"
 #include "Widgets/Notifications/SNotificationList.h"
-#include "Framework/Notifications/NotificationManager.h"
-#include "DeviceProfiles/DeviceProfileManager.h"
-#include "DeviceProfiles/DeviceProfile.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyPlatformEmulationSettings)
 
@@ -59,10 +60,9 @@ void UJoyPlatformEmulationSettings::OnPlayInEditorStarted() const
 	// Show a notification toast to remind the user that there's a tag enable override set
 	if (!AdditionalPlatformTraitsToEnable.IsEmpty())
 	{
-		FNotificationInfo Info(FText::Format(
-			LOCTEXT("PlatformTraitEnableActive", "Platform Trait Override\nEnabling {0}"),
-			FText::AsCultureInvariant(AdditionalPlatformTraitsToEnable.ToStringSimple())
-		));
+		FNotificationInfo Info(
+			FText::Format(LOCTEXT("PlatformTraitEnableActive", "Platform Trait Override\nEnabling {0}"),
+				FText::AsCultureInvariant(AdditionalPlatformTraitsToEnable.ToStringSimple())));
 		Info.ExpireDuration = 3.0f;
 		FSlateNotificationManager::Get().AddNotification(Info);
 	}
@@ -70,10 +70,9 @@ void UJoyPlatformEmulationSettings::OnPlayInEditorStarted() const
 	// Show a notification toast to remind the user that there's a tag suppression override set
 	if (!AdditionalPlatformTraitsToSuppress.IsEmpty())
 	{
-		FNotificationInfo Info(FText::Format(
-			LOCTEXT("PlatformTraitSuppressionActive", "Platform Trait Override\nSuppressing {0}"),
-			FText::AsCultureInvariant(AdditionalPlatformTraitsToSuppress.ToStringSimple())
-		));
+		FNotificationInfo Info(
+			FText::Format(LOCTEXT("PlatformTraitSuppressionActive", "Platform Trait Override\nSuppressing {0}"),
+				FText::AsCultureInvariant(AdditionalPlatformTraitsToSuppress.ToStringSimple())));
 		Info.ExpireDuration = 3.0f;
 		FSlateNotificationManager::Get().AddNotification(Info);
 	}
@@ -81,10 +80,9 @@ void UJoyPlatformEmulationSettings::OnPlayInEditorStarted() const
 	// Show a notification toast to remind the user that there's a platform override set
 	if (PretendPlatform != NAME_None)
 	{
-		FNotificationInfo Info(FText::Format(
-			LOCTEXT("PlatformOverrideActive", "Platform Override Active\nPretending to be {0}"),
-			FText::FromName(PretendPlatform)
-		));
+		FNotificationInfo Info(
+			FText::Format(LOCTEXT("PlatformOverrideActive", "Platform Override Active\nPretending to be {0}"),
+				FText::FromName(PretendPlatform)));
 		Info.ExpireDuration = 3.0f;
 		FSlateNotificationManager::Get().AddNotification(Info);
 	}
@@ -92,7 +90,8 @@ void UJoyPlatformEmulationSettings::OnPlayInEditorStarted() const
 
 void UJoyPlatformEmulationSettings::ApplySettings()
 {
-	UCommonUIVisibilitySubsystem::SetDebugVisibilityConditions(AdditionalPlatformTraitsToEnable, AdditionalPlatformTraitsToSuppress);
+	UCommonUIVisibilitySubsystem::SetDebugVisibilityConditions(
+		AdditionalPlatformTraitsToEnable, AdditionalPlatformTraitsToSuppress);
 
 	if (GIsEditor && PretendPlatform != LastAppliedPretendPlatform)
 	{
@@ -127,7 +126,7 @@ TArray<FName> UJoyPlatformEmulationSettings::GetKnownPlatformIds() const
 TArray<FName> UJoyPlatformEmulationSettings::GetKnownDeviceProfiles() const
 {
 	TArray<FName> Results;
-	
+
 #if WITH_EDITOR
 	const UDeviceProfileManager& Manager = UDeviceProfileManager::Get();
 	Results.Reserve(Manager.Profiles.Num() + 1);
@@ -162,9 +161,10 @@ void UJoyPlatformEmulationSettings::PickReasonableBaseDeviceProfile()
 {
 	// First see if our pretend device profile is already compatible, if so we don't need to do anything
 	UDeviceProfileManager& Manager = UDeviceProfileManager::Get();
-	if (UDeviceProfile* ProfilePtr = Manager.FindProfile(PretendBaseDeviceProfile.ToString(), /*bCreateOnFail=*/ false))
+	if (UDeviceProfile* ProfilePtr = Manager.FindProfile(PretendBaseDeviceProfile.ToString(), /*bCreateOnFail=*/false))
 	{
-		const bool bIsCompatible = (PretendPlatform == NAME_None) || (ProfilePtr->DeviceType == PretendPlatform.ToString());
+		const bool bIsCompatible =
+			(PretendPlatform == NAME_None) || (ProfilePtr->DeviceType == PretendPlatform.ToString());
 		if (!bIsCompatible)
 		{
 			PretendBaseDeviceProfile = NAME_None;
@@ -182,7 +182,8 @@ void UJoyPlatformEmulationSettings::PickReasonableBaseDeviceProfile()
 			if (Profile->DeviceType == PretendPlatformStr)
 			{
 				const FName TestName = Profile->GetFName();
-				if ((ShortestMatchingProfileName == NAME_None) || (TestName.GetStringLength() < ShortestMatchingProfileName.GetStringLength()))
+				if ((ShortestMatchingProfileName == NAME_None) ||
+					(TestName.GetStringLength() < ShortestMatchingProfileName.GetStringLength()))
 				{
 					ShortestMatchingProfileName = TestName;
 				}
@@ -193,4 +194,3 @@ void UJoyPlatformEmulationSettings::PickReasonableBaseDeviceProfile()
 }
 
 #undef LOCTEXT_NAMESPACE
-

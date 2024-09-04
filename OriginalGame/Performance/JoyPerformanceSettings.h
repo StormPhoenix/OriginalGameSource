@@ -42,7 +42,7 @@ struct FJoyPerformanceStatGroup
 
 	// A query on platform traits to determine whether or not it will be possible
 	// to show a set of stats
-	UPROPERTY(EditAnywhere, meta=(Categories = "Input,Platform.Trait"))
+	UPROPERTY(EditAnywhere, meta = (Categories = "Input,Platform.Trait"))
 	FGameplayTagQuery VisibilityQuery;
 
 	// The set of stats to allow if the query passes
@@ -60,11 +60,12 @@ enum class EJoyFramePacingMode : uint8
 	// Limits handled by choosing present intervals driven by device profiles
 	ConsoleStyle,
 
-	// Limits handled by a user-facing choice of frame rate from among ones allowed by device profiles for the specific device
+	// Limits handled by a user-facing choice of frame rate from among ones allowed by device profiles for the specific
+	// device
 	MobileStyle
 };
 
-UCLASS(config=Game, defaultconfig)
+UCLASS(config = Game, defaultconfig)
 class UJoyPlatformSpecificRenderingSettings : public UPlatformSettings
 {
 	GENERATED_BODY()
@@ -80,7 +81,7 @@ public:
 	// UserFacingDeviceProfileOptions unless there is only one for the current platform
 	//
 	// Note that this will usually be set from platform-specific ini files, not via the UI
-	UPROPERTY(EditAnywhere, Config, Category=DeviceProfiles)
+	UPROPERTY(EditAnywhere, Config, Category = DeviceProfiles)
 	FString DefaultDeviceProfileSuffix;
 
 	// The list of device profile variations to allow users to choose from in settings
@@ -90,25 +91,27 @@ public:
 	//   previous entries until we find one that works
 	//
 	// Note that this will usually be set from platform-specific ini files, not via the UI
-	UPROPERTY(EditAnywhere, Config, Category=DeviceProfiles)
+	UPROPERTY(EditAnywhere, Config, Category = DeviceProfiles)
 	TArray<FJoyQualityDeviceProfileVariant> UserFacingDeviceProfileOptions;
 
 	// Does the platform support granular video quality settings?
-	UPROPERTY(EditAnywhere, Config, Category=VideoSettings)
+	UPROPERTY(EditAnywhere, Config, Category = VideoSettings)
 	bool bSupportsGranularVideoQualitySettings = true;
 
-	// Does the platform support running the automatic quality benchmark (typically this should only be true if bSupportsGranularVideoQualitySettings is also true)
-	UPROPERTY(EditAnywhere, Config, Category=VideoSettings)
+	// Does the platform support running the automatic quality benchmark (typically this should only be true if
+	// bSupportsGranularVideoQualitySettings is also true)
+	UPROPERTY(EditAnywhere, Config, Category = VideoSettings)
 	bool bSupportsAutomaticVideoQualityBenchmark = true;
 
 	// How is frame pacing controlled
-	UPROPERTY(EditAnywhere, Config, Category=VideoSettings)
+	UPROPERTY(EditAnywhere, Config, Category = VideoSettings)
 	EJoyFramePacingMode FramePacingMode = EJoyFramePacingMode::DesktopStyle;
 
 	// Potential frame rates to display for mobile
 	// Note: This is further limited by Joy.DeviceProfile.Mobile.MaxFrameRate from the
 	// platform-specific device profile and what the platform frame pacer reports as supported
-	UPROPERTY(EditAnywhere, Config, Category=VideoSettings, meta=(EditCondition="FramePacingMode==EJoyFramePacingMode::MobileStyle", ForceUnits=Hz))
+	UPROPERTY(EditAnywhere, Config, Category = VideoSettings,
+		meta = (EditCondition = "FramePacingMode==EJoyFramePacingMode::MobileStyle", ForceUnits = Hz))
 	TArray<int32> MobileFrameRateLimits;
 };
 
@@ -117,7 +120,7 @@ public:
 /**
  * Project-specific performance profile settings.
  */
-UCLASS(config=Game, defaultconfig, meta=(DisplayName="Joy Performance Settings"))
+UCLASS(config = Game, defaultconfig, meta = (DisplayName = "Joy Performance Settings"))
 class UJoyPerformanceSettings : public UDeveloperSettingsBackedByCVars
 {
 	GENERATED_BODY()
@@ -134,10 +137,10 @@ private:
 public:
 	// The list of frame rates to allow users to choose from in the various
 	// "frame rate limit" video settings on desktop platforms
-	UPROPERTY(EditAnywhere, Config, Category=Performance, meta=(ForceUnits=Hz))
+	UPROPERTY(EditAnywhere, Config, Category = Performance, meta = (ForceUnits = Hz))
 	TArray<int32> DesktopFrameRateLimits;
 
 	// The list of performance stats that can be enabled in Options by the user
-	UPROPERTY(EditAnywhere, Config, Category=Stats)
+	UPROPERTY(EditAnywhere, Config, Category = Stats)
 	TArray<FJoyPerformanceStatGroup> UserFacingPerformanceStats;
 };

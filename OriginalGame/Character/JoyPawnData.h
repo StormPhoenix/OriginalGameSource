@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Input/JoyInputConfig.h"
+
 #include "JoyPawnData.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS(BlueprintType, Const,
 	Meta = (DisplayName = "Original Game Pawn Data", ShortTooltip = "Data asset used to define a Pawn."))

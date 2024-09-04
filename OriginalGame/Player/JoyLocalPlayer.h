@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CommonLocalPlayer.h"
+
 #include "JoyLocalPlayer.generated.h"
 
 class APlayerController;
@@ -23,7 +24,6 @@ class ORIGINALGAME_API UJoyLocalPlayer : public UCommonLocalPlayer
 	GENERATED_BODY()
 
 public:
-
 	UJoyLocalPlayer();
 
 	//~UObject interface
@@ -48,7 +48,7 @@ public:
 
 protected:
 	void OnAudioOutputDeviceChanged(const FString& InAudioOutputDeviceId);
-	
+
 	UFUNCTION()
 	void OnCompletedAudioDeviceSwap(const FSwapAudioOutputResult& SwapResult);
 

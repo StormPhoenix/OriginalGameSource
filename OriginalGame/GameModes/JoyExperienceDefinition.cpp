@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "JoyExperienceDefinition.h"
+
 #include "GameFeatureAction.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyExperienceDefinition)
@@ -14,7 +15,8 @@ UJoyExperienceDefinition::UJoyExperienceDefinition()
 #if WITH_EDITOR
 EDataValidationResult UJoyExperienceDefinition::IsDataValid(TArray<FText>& ValidationErrors)
 {
-	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(ValidationErrors), EDataValidationResult::Valid);
+	EDataValidationResult Result =
+		CombineDataValidationResults(Super::IsDataValid(ValidationErrors), EDataValidationResult::Valid);
 
 	int32 EntryIndex = 0;
 	for (UGameFeatureAction* Action : Actions)
@@ -27,7 +29,8 @@ EDataValidationResult UJoyExperienceDefinition::IsDataValid(TArray<FText>& Valid
 		else
 		{
 			Result = EDataValidationResult::Invalid;
-			ValidationErrors.Add(FText::Format(LOCTEXT("ActionEntryIsNull", "Null entry at index {0} in Actions"), FText::AsNumber(EntryIndex)));
+			ValidationErrors.Add(FText::Format(
+				LOCTEXT("ActionEntryIsNull", "Null entry at index {0} in Actions"), FText::AsNumber(EntryIndex)));
 		}
 
 		++EntryIndex;
@@ -47,10 +50,11 @@ EDataValidationResult UJoyExperienceDefinition::IsDataValid(TArray<FText>& Valid
 
 		if (FirstNativeParent != ParentClass)
 		{
-			ValidationErrors.Add(FText::Format(LOCTEXT("ExperienceInheritenceIsUnsupported", "Blueprint subclasses of Blueprint experiences is not currently supported (use composition via ActionSets instead). Parent class was {0} but should be {1}."), 
+			ValidationErrors.Add(FText::Format(
+				LOCTEXT("ExperienceInheritenceIsUnsupported",
+					"Blueprint subclasses of Blueprint experiences is not currently supported (use composition via ActionSets instead). Parent class was {0} but should be {1}."),
 				FText::AsCultureInvariant(GetPathNameSafe(ParentClass)),
-				FText::AsCultureInvariant(GetPathNameSafe(FirstNativeParent))
-			));
+				FText::AsCultureInvariant(GetPathNameSafe(FirstNativeParent))));
 			Result = EDataValidationResult::Invalid;
 		}
 	}
@@ -72,7 +76,6 @@ void UJoyExperienceDefinition::UpdateAssetBundleData()
 		}
 	}
 }
-#endif // WITH_EDITORONLY_DATA
+#endif	  // WITH_EDITORONLY_DATA
 
 #undef LOCTEXT_NAMESPACE
-

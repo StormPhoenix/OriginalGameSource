@@ -1,13 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "JoySpectator.h"
 
 #include "GameplayTagContainer.h"
-#include "JoyCharacter.h"
 #include "Input/JoyInputBlocker.h"
 #include "Input/JoyInputReceiver.h"
-
+#include "JoyCharacter.h"
 
 AJoySpectator::AJoySpectator()
 {

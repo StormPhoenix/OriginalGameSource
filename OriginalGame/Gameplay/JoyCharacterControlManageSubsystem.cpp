@@ -1,11 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "JoyCharacterControlManageSubsystem.h"
 
+#include "Character/JoyCharacter.h"
 #include "JoyGameBlueprintLibrary.h"
 #include "JoyLogChannels.h"
-#include "Character/JoyCharacter.h"
 #include "Player/JoyPlayerController.h"
 
 UJoyCharacterControlManageSubsystem* UJoyCharacterControlManageSubsystem::Get(const UWorld* World)
@@ -22,7 +21,7 @@ UJoyCharacterControlManageSubsystem* UJoyCharacterControlManageSubsystem::GetCha
 	const UObject* WorldContextObject)
 {
 	if (UWorld const* World =
-		GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
+			GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
 	{
 		return UJoyCharacterControlManageSubsystem::Get(World);
 	}
@@ -30,8 +29,8 @@ UJoyCharacterControlManageSubsystem* UJoyCharacterControlManageSubsystem::GetCha
 	return nullptr;
 }
 
-AJoyCharacter* UJoyCharacterControlManageSubsystem::SwitchToCharacter(AJoyCharacter* TargetCharacter,
-                                                                      FJoyCharacterSwitchExtraParam ExtraParam)
+AJoyCharacter* UJoyCharacterControlManageSubsystem::SwitchToCharacter(
+	AJoyCharacter* TargetCharacter, FJoyCharacterSwitchExtraParam ExtraParam)
 {
 	if (!ControlState.bPlayerControllerCallbackBound)
 	{
@@ -59,11 +58,11 @@ AJoyCharacter* UJoyCharacterControlManageSubsystem::SwitchToCharacter(AJoyCharac
 	return nullptr;
 }
 
-void UJoyCharacterControlManageSubsystem::OnCharacterSwitchFinished(AJoyCharacter* PreviousCharacter,
-                                                                    AJoyCharacter* TargetCharacter)
+void UJoyCharacterControlManageSubsystem::OnCharacterSwitchFinished(
+	AJoyCharacter* PreviousCharacter, AJoyCharacter* TargetCharacter)
 {
-	if (PreviousCharacter == ControlState.CurrentControlCharacter && TargetCharacter == ControlState.
-		TargetCharacterSwitchTo)
+	if (PreviousCharacter == ControlState.CurrentControlCharacter &&
+		TargetCharacter == ControlState.TargetCharacterSwitchTo)
 	{
 		ControlState.LastControlCharacter = ControlState.CurrentControlCharacter;
 		ControlState.CurrentControlCharacter = ControlState.TargetCharacterSwitchTo;
@@ -71,7 +70,9 @@ void UJoyCharacterControlManageSubsystem::OnCharacterSwitchFinished(AJoyCharacte
 	}
 	else
 	{
-		UE_LOG(LogJoy, Error, TEXT("角色控制权切换过程出错：切换结束时回调接口返回的切换对象与 UJoyCharacterControlManageSubsystem 中保存的不一致。"));
+		UE_LOG(LogJoy, Error,
+			TEXT(
+				"角色控制权切换过程出错：切换结束时回调接口返回的切换对象与 UJoyCharacterControlManageSubsystem 中保存的不一致。"));
 	}
 }
 

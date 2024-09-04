@@ -3,8 +3,8 @@
 #include "JoyPerformanceSettings.h"
 
 #include "Engine/PlatformSettingsManager.h"
-#include "Misc/EnumRange.h"
 #include "JoyPerformanceStatTypes.h"
+#include "Misc/EnumRange.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyPerformanceSettings)
 
@@ -12,7 +12,7 @@
 
 UJoyPlatformSpecificRenderingSettings::UJoyPlatformSpecificRenderingSettings()
 {
-	MobileFrameRateLimits.Append({ 20, 30, 45, 60, 90, 120 });
+	MobileFrameRateLimits.Append({20, 30, 45, 60, 90, 120});
 }
 
 const UJoyPlatformSpecificRenderingSettings* UJoyPlatformSpecificRenderingSettings::Get()
@@ -30,7 +30,7 @@ UJoyPerformanceSettings::UJoyPerformanceSettings()
 
 	CategoryName = TEXT("Game");
 
-	DesktopFrameRateLimits.Append({ 30, 60, 120, 144, 160, 165, 180, 200, 240, 360 });
+	DesktopFrameRateLimits.Append({30, 60, 120, 144, 160, 165, 180, 200, 240, 360});
 
 	// Default to all stats are allowed
 	FJoyPerformanceStatGroup& StatGroup = UserFacingPerformanceStats.AddDefaulted_GetRef();
@@ -39,4 +39,3 @@ UJoyPerformanceSettings::UJoyPerformanceSettings()
 		StatGroup.AllowedStats.Add(PerfStat);
 	}
 }
-

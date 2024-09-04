@@ -1,20 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "JoyAICreationComponent.h"
 
 #include "AIController.h"
-#include "EngineUtils.h"
-#include "JoyExperienceManagerComponent.h"
-#include "JoyGameMode.h"
 #include "Character/JoyAISpawner.h"
 #include "Character/JoyPawnData.h"
+#include "EngineUtils.h"
 #include "GameFramework/PlayerState.h"
+#include "JoyExperienceManagerComponent.h"
+#include "JoyGameMode.h"
 #include "Player/JoyPlayerState.h"
 
-
-UJoyAICreationComponent::UJoyAICreationComponent(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+UJoyAICreationComponent::UJoyAICreationComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -25,8 +22,7 @@ void UJoyAICreationComponent::BeginPlay()
 
 	if (auto* GameState = GetGameStateChecked<AGameStateBase>())
 	{
-		auto* ExperienceComponent =
-			GameState->FindComponentByClass<UJoyExperienceManagerComponent>();
+		auto* ExperienceComponent = GameState->FindComponentByClass<UJoyExperienceManagerComponent>();
 		check(ExperienceComponent);
 
 		// Low Priority Execution When Experience Full Loaded.
@@ -89,9 +85,8 @@ void UJoyAICreationComponent::SpawnFromAISpawner(AJoyAISpawner* Spawner) const
 	}
 }
 
-
-void UJoyAICreationComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                            FActorComponentTickFunction* ThisTickFunction)
+void UJoyAICreationComponent::TickComponent(
+	float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }

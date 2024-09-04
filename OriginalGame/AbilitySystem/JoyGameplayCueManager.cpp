@@ -1,13 +1,14 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "JoyGameplayCueManager.h"
-#include "Engine/AssetManager.h"
-#include "JoyLogChannels.h"
-#include "GameplayCueSet.h"
+
 #include "AbilitySystemGlobals.h"
-#include "GameplayTagsManager.h"
-#include "UObject/UObjectThreadContext.h"
 #include "Async/Async.h"
+#include "Engine/AssetManager.h"
+#include "GameplayCueSet.h"
+#include "GameplayTagsManager.h"
+#include "JoyLogChannels.h"
+#include "UObject/UObjectThreadContext.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyGameplayCueManager)
 
@@ -20,7 +21,8 @@ enum class EJoyEditorLoadMode
 
 	// Outside of editor: Async loads as cue tag are registered
 	// In editor: Async loads when cues are invoked
-	//   Note: This can cause some 'why didn't I see the effect for X' issues in PIE and is good for iteration speed but otherwise bad for designers
+	//   Note: This can cause some 'why didn't I see the effect for X' issues in PIE and is good for iteration speed but
+	//   otherwise bad for designers
 	PreloadAsCuesAreReferenced_GameOnly,
 
 	// Async loads as cue tag are registered
@@ -29,13 +31,12 @@ enum class EJoyEditorLoadMode
 
 namespace JoyGameplayCueManagerCvars
 {
-	static FAutoConsoleCommand CVarDumpGameplayCues(
-		TEXT("Joy.DumpGameplayCues"),
-		TEXT("Shows all assets that were loaded via JoyGameplayCueManager and are currently in memory."),
-		FConsoleCommandWithArgsDelegate::CreateStatic(UJoyGameplayCueManager::DumpGameplayCues));
+static FAutoConsoleCommand CVarDumpGameplayCues(TEXT("Joy.DumpGameplayCues"),
+	TEXT("Shows all assets that were loaded via JoyGameplayCueManager and are currently in memory."),
+	FConsoleCommandWithArgsDelegate::CreateStatic(UJoyGameplayCueManager::DumpGameplayCues));
 
-	static EJoyEditorLoadMode LoadMode = EJoyEditorLoadMode::LoadUpfront;
-}
+static EJoyEditorLoadMode LoadMode = EJoyEditorLoadMode::LoadUpfront;
+}	 // namespace JoyGameplayCueManagerCvars
 
 const bool bPreloadEvenInEditor = true;
 
@@ -44,15 +45,22 @@ const bool bPreloadEvenInEditor = true;
 struct FGameplayCueTagThreadSynchronizeGraphTask : public FAsyncGraphTaskBase
 {
 	TFunction<void()> TheTask;
-	FGameplayCueTagThreadSynchronizeGraphTask(TFunction<void()>&& Task) : TheTask(MoveTemp(Task)) { }
-	void DoTask(ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) { TheTask(); }
-	ENamedThreads::Type GetDesiredThread() { return ENamedThreads::GameThread; }
+	FGameplayCueTagThreadSynchronizeGraphTask(TFunction<void()>&& Task) : TheTask(MoveTemp(Task))
+	{
+	}
+	void DoTask(ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent)
+	{
+		TheTask();
+	}
+	ENamedThreads::Type GetDesiredThread()
+	{
+		return ENamedThreads::GameThread;
+	}
 };
 
 //////////////////////////////////////////////////////////////////////
 
-UJoyGameplayCueManager::UJoyGameplayCueManager(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+UJoyGameplayCueManager::UJoyGameplayCueManager(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 }
 
@@ -73,20 +81,22 @@ void UJoyGameplayCueManager::LoadAlwaysLoadedCues()
 	if (ShouldDelayLoadGameplayCues())
 	{
 		UGameplayTagsManager& TagManager = UGameplayTagsManager::Get();
-	
+
 		//@TODO: Try to collect these by filtering GameplayCue. tags out of native gameplay tags?
 		TArray<FName> AdditionalAlwaysLoadedCueTags;
 
 		for (const FName& CueTagName : AdditionalAlwaysLoadedCueTags)
 		{
-			FGameplayTag CueTag = TagManager.RequestGameplayTag(CueTagName, /*ErrorIfNotFound=*/ false);
+			FGameplayTag CueTag = TagManager.RequestGameplayTag(CueTagName, /*ErrorIfNotFound=*/false);
 			if (CueTag.IsValid())
 			{
 				ProcessTagToPreload(CueTag, nullptr);
 			}
 			else
 			{
-				UE_LOG(LogJoy, Warning, TEXT("UJoyGameplayCueManager::AdditionalAlwaysLoadedCueTags contains invalid tag %s"), *CueTagName.ToString());
+				UE_LOG(LogJoy, Warning,
+					TEXT("UJoyGameplayCueManager::AdditionalAlwaysLoadedCueTags contains invalid tag %s"),
+					*CueTagName.ToString());
 			}
 		}
 	}
@@ -96,18 +106,18 @@ bool UJoyGameplayCueManager::ShouldAsyncLoadRuntimeObjectLibraries() const
 {
 	switch (JoyGameplayCueManagerCvars::LoadMode)
 	{
-	case EJoyEditorLoadMode::LoadUpfront:
-		return true;
-	case EJoyEditorLoadMode::PreloadAsCuesAreReferenced_GameOnly:
+		case EJoyEditorLoadMode::LoadUpfront:
+			return true;
+		case EJoyEditorLoadMode::PreloadAsCuesAreReferenced_GameOnly:
 #if WITH_EDITOR
-		if (GIsEditor)
-		{
-			return false;
-		}
+			if (GIsEditor)
+			{
+				return false;
+			}
 #endif
-		break;
-	case EJoyEditorLoadMode::PreloadAsCuesAreReferenced:
-		break;
+			break;
+		case EJoyEditorLoadMode::PreloadAsCuesAreReferenced:
+			break;
 	}
 
 	return !ShouldDelayLoadGameplayCues();
@@ -162,7 +172,8 @@ void UJoyGameplayCueManager::DumpGameplayCues(const TArray<FString>& Args)
 	{
 		for (const FGameplayCueNotifyData& CueData : GCM->RuntimeGameplayCueObjectLibrary.CueSet->GameplayCueData)
 		{
-			if (CueData.LoadedGameplayCueClass && !GCM->AlwaysLoadedCues.Contains(CueData.LoadedGameplayCueClass) && !GCM->PreloadedCues.Contains(CueData.LoadedGameplayCueClass))
+			if (CueData.LoadedGameplayCueClass && !GCM->AlwaysLoadedCues.Contains(CueData.LoadedGameplayCueClass) &&
+				!GCM->PreloadedCues.Contains(CueData.LoadedGameplayCueClass))
 			{
 				NumMissingCuesLoaded++;
 				UE_LOG(LogJoy, Log, TEXT("  %s"), *CueData.LoadedGameplayCueClass->GetPathName());
@@ -174,7 +185,8 @@ void UJoyGameplayCueManager::DumpGameplayCues(const TArray<FString>& Args)
 	UE_LOG(LogJoy, Log, TEXT("  ... %d cues in always loaded list"), GCM->AlwaysLoadedCues.Num());
 	UE_LOG(LogJoy, Log, TEXT("  ... %d cues in preloaded list"), GCM->PreloadedCues.Num());
 	UE_LOG(LogJoy, Log, TEXT("  ... %d cues loaded on demand"), NumMissingCuesLoaded);
-	UE_LOG(LogJoy, Log, TEXT("  ... %d cues in total"), GCM->AlwaysLoadedCues.Num() + GCM->PreloadedCues.Num() + NumMissingCuesLoaded);
+	UE_LOG(LogJoy, Log, TEXT("  ... %d cues in total"),
+		GCM->AlwaysLoadedCues.Num() + GCM->PreloadedCues.Num() + NumMissingCuesLoaded);
 }
 
 void UJoyGameplayCueManager::OnGameplayTagLoaded(const FGameplayTag& Tag)
@@ -186,13 +198,15 @@ void UJoyGameplayCueManager::OnGameplayTagLoaded(const FGameplayTag& Tag)
 	LoadedGameplayTagsToProcess.Emplace(Tag, OwningObject);
 	if (bStartTask)
 	{
-		TGraphTask<FGameplayCueTagThreadSynchronizeGraphTask>::CreateTask().ConstructAndDispatchWhenReady([]()
+		TGraphTask<FGameplayCueTagThreadSynchronizeGraphTask>::CreateTask().ConstructAndDispatchWhenReady(
+			[]()
 			{
 				if (GIsRunning)
 				{
 					if (UJoyGameplayCueManager* StrongThis = Get())
 					{
-						// If we are garbage collecting we cannot call StaticFindObject (or a few other static uobject functions), so we'll just wait until the GC is over and process the tags then
+						// If we are garbage collecting we cannot call StaticFindObject (or a few other static uobject
+						// functions), so we'll just wait until the GC is over and process the tags then
 						if (IsGarbageCollecting())
 						{
 							StrongThis->bProcessLoadedTagsAfterGC = true;
@@ -244,7 +258,9 @@ void UJoyGameplayCueManager::ProcessLoadedTags()
 		}
 		else
 		{
-			UE_LOG(LogJoy, Warning, TEXT("UJoyGameplayCueManager::OnGameplayTagLoaded processed loaded tag(s) but RuntimeGameplayCueObjectLibrary.CueSet was null. Skipping processing."));
+			UE_LOG(LogJoy, Warning,
+				TEXT(
+					"UJoyGameplayCueManager::OnGameplayTagLoaded processed loaded tag(s) but RuntimeGameplayCueObjectLibrary.CueSet was null. Skipping processing."));
 		}
 	}
 }
@@ -253,18 +269,18 @@ void UJoyGameplayCueManager::ProcessTagToPreload(const FGameplayTag& Tag, UObjec
 {
 	switch (JoyGameplayCueManagerCvars::LoadMode)
 	{
-	case EJoyEditorLoadMode::LoadUpfront:
-		return;
-	case EJoyEditorLoadMode::PreloadAsCuesAreReferenced_GameOnly:
-#if WITH_EDITOR
-		if (GIsEditor)
-		{
+		case EJoyEditorLoadMode::LoadUpfront:
 			return;
-		}
+		case EJoyEditorLoadMode::PreloadAsCuesAreReferenced_GameOnly:
+#if WITH_EDITOR
+			if (GIsEditor)
+			{
+				return;
+			}
 #endif
-		break;
-	case EJoyEditorLoadMode::PreloadAsCuesAreReferenced:
-		break;
+			break;
+		case EJoyEditorLoadMode::PreloadAsCuesAreReferenced:
+			break;
 	}
 
 	check(RuntimeGameplayCueObjectLibrary.CueSet);
@@ -283,12 +299,16 @@ void UJoyGameplayCueManager::ProcessTagToPreload(const FGameplayTag& Tag, UObjec
 		{
 			bool bAlwaysLoadedCue = OwningObject == nullptr;
 			TWeakObjectPtr<UObject> WeakOwner = OwningObject;
-			StreamableManager.RequestAsyncLoad(CueData.GameplayCueNotifyObj, FStreamableDelegate::CreateUObject(this, &ThisClass::OnPreloadCueComplete, CueData.GameplayCueNotifyObj, WeakOwner, bAlwaysLoadedCue), FStreamableManager::DefaultAsyncLoadPriority, false, false, TEXT("GameplayCueManager"));
+			StreamableManager.RequestAsyncLoad(CueData.GameplayCueNotifyObj,
+				FStreamableDelegate::CreateUObject(
+					this, &ThisClass::OnPreloadCueComplete, CueData.GameplayCueNotifyObj, WeakOwner, bAlwaysLoadedCue),
+				FStreamableManager::DefaultAsyncLoadPriority, false, false, TEXT("GameplayCueManager"));
 		}
 	}
 }
 
-void UJoyGameplayCueManager::OnPreloadCueComplete(FSoftObjectPath Path, TWeakObjectPtr<UObject> OwningObject, bool bAlwaysLoadedCue)
+void UJoyGameplayCueManager::OnPreloadCueComplete(
+	FSoftObjectPath Path, TWeakObjectPtr<UObject> OwningObject, bool bAlwaysLoadedCue)
 {
 	if (bAlwaysLoadedCue || OwningObject.IsValid())
 	{
@@ -310,7 +330,8 @@ void UJoyGameplayCueManager::RegisterPreloadedCue(UClass* LoadedGameplayCueClass
 		PreloadedCues.Remove(LoadedGameplayCueClass);
 		PreloadedCueReferencers.Remove(LoadedGameplayCueClass);
 	}
-	else if ((OwningObject != LoadedGameplayCueClass) && (OwningObject != LoadedGameplayCueClass->GetDefaultObject()) && !AlwaysLoadedCues.Contains(LoadedGameplayCueClass))
+	else if ((OwningObject != LoadedGameplayCueClass) && (OwningObject != LoadedGameplayCueClass->GetDefaultObject()) &&
+			 !AlwaysLoadedCues.Contains(LoadedGameplayCueClass))
 	{
 		PreloadedCues.Add(LoadedGameplayCueClass);
 		TSet<FObjectKey>& ReferencerSet = PreloadedCueReferencers.FindOrAdd(LoadedGameplayCueClass);
@@ -359,18 +380,18 @@ void UJoyGameplayCueManager::UpdateDelayLoadDelegateListeners()
 
 	switch (JoyGameplayCueManagerCvars::LoadMode)
 	{
-	case EJoyEditorLoadMode::LoadUpfront:
-		return;
-	case EJoyEditorLoadMode::PreloadAsCuesAreReferenced_GameOnly:
-#if WITH_EDITOR
-		if (GIsEditor)
-		{
+		case EJoyEditorLoadMode::LoadUpfront:
 			return;
-		}
+		case EJoyEditorLoadMode::PreloadAsCuesAreReferenced_GameOnly:
+#if WITH_EDITOR
+			if (GIsEditor)
+			{
+				return;
+			}
 #endif
-		break;
-	case EJoyEditorLoadMode::PreloadAsCuesAreReferenced:
-		break;
+			break;
+		case EJoyEditorLoadMode::PreloadAsCuesAreReferenced:
+			break;
 	}
 
 	UGameplayTagsManager::Get().OnGameplayTagLoadedDelegate.AddUObject(this, &ThisClass::OnGameplayTagLoaded);
@@ -400,7 +421,7 @@ void UJoyGameplayCueManager::RefreshGameplayCuePrimaryAsset()
 	FAssetBundleData BundleData;
 	BundleData.AddBundleAssetsTruncated(UFortAssetManager_LoadStateClient, CuePaths);
 
-	FPrimaryAssetId PrimaryAssetId = FPrimaryAssetId(UFortAssetManager_GameplayCueRefsType, UFortAssetManager_GameplayCueRefsName);
+	FPrimaryAssetId PrimaryAssetId =
+		FPrimaryAssetId(UFortAssetManager_GameplayCueRefsType, UFortAssetManager_GameplayCueRefsName);
 	UAssetManager::Get().AddDynamicAsset(PrimaryAssetId, FSoftObjectPath(), BundleData);
 }
-

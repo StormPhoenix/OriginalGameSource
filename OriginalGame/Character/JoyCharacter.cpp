@@ -1,15 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "JoyCharacter.h"
 
-#include "JoyCharacterMovementComponent.h"
 #include "Camera/JoyCameraComponent.h"
+#include "JoyCharacterMovementComponent.h"
 #include "OriginalGame/Player/JoyPlayerState.h"
 
 AJoyCharacter::AJoyCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UJoyCharacterMovementComponent>(
-		ACharacter::CharacterMovementComponentName))
+		  ACharacter::CharacterMovementComponentName))
 {
 	PrimaryActorTick.bCanEverTick = true;
 

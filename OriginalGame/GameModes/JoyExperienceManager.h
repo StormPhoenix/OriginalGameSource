@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Subsystems/EngineSubsystem.h"
+
 #include "JoyExperienceManager.generated.h"
 
 /**
@@ -20,8 +21,13 @@ public:
 	static void NotifyOfPluginActivation(const FString PluginURL);
 	static bool RequestToDeactivatePlugin(const FString PluginURL);
 #else
-	static void NotifyOfPluginActivation(const FString PluginURL) {}
-	static bool RequestToDeactivatePlugin(const FString PluginURL) { return true; }
+	static void NotifyOfPluginActivation(const FString PluginURL)
+	{
+	}
+	static bool RequestToDeactivatePlugin(const FString PluginURL)
+	{
+		return true;
+	}
 #endif
 
 private:

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "JoyAISpawner.generated.h"
 
 class UJoyPawnData;
@@ -26,11 +27,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<USkeletalMeshComponent> Mesh{nullptr};
-	
+
 	UPROPERTY()
 	TObjectPtr<UBillboardComponent> SpriteComponent{nullptr};
 #endif

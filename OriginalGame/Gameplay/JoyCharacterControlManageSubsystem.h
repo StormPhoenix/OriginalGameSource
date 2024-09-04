@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+
 #include "JoyCharacterControlManageSubsystem.generated.h"
 
 class AJoyPlayerController;
@@ -29,7 +30,7 @@ struct FCharacterControlState
 };
 
 /**
- * 
+ *
  */
 UCLASS()
 class ORIGINALGAME_API UJoyCharacterControlManageSubsystem : public UGameInstanceSubsystem

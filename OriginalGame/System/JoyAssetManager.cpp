@@ -1,13 +1,14 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "JoyAssetManager.h"
-#include "JoyLogChannels.h"
-#include "AbilitySystemGlobals.h"
-#include "Misc/App.h"
-#include "Stats/StatsMisc.h"
-#include "Engine/Engine.h"
+
 #include "AbilitySystem/JoyGameplayCueManager.h"
+#include "AbilitySystemGlobals.h"
+#include "Engine/Engine.h"
+#include "JoyLogChannels.h"
+#include "Misc/App.h"
 #include "Misc/ScopedSlowTask.h"
+#include "Stats/StatsMisc.h"
 #include "System/JoyAssetManagerStartupJob.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyAssetManager)
@@ -16,15 +17,16 @@ const FName FJoyBundles::Equipped("Equipped");
 
 //////////////////////////////////////////////////////////////////////
 
-static FAutoConsoleCommand CVarDumpLoadedAssets(
-	TEXT("Joy.DumpLoadedAssets"),
+static FAutoConsoleCommand CVarDumpLoadedAssets(TEXT("Joy.DumpLoadedAssets"),
 	TEXT("Shows all assets that were loaded via the asset manager and are currently in memory."),
-	FConsoleCommandDelegate::CreateStatic(UJoyAssetManager::DumpLoadedAssets)
-);
+	FConsoleCommandDelegate::CreateStatic(UJoyAssetManager::DumpLoadedAssets));
 
 //////////////////////////////////////////////////////////////////////
 
-#define STARTUP_JOB_WEIGHTED(JobFunc, JobWeight) StartupJobs.Add(FJoyAssetManagerStartupJob(#JobFunc, [this](const FJoyAssetManagerStartupJob& StartupJob, TSharedPtr<FStreamableHandle>& LoadHandle){JobFunc;}, JobWeight))
+#define STARTUP_JOB_WEIGHTED(JobFunc, JobWeight)                                                                  \
+	StartupJobs.Add(FJoyAssetManagerStartupJob(                                                                   \
+		#JobFunc, [this](const FJoyAssetManagerStartupJob& StartupJob, TSharedPtr<FStreamableHandle>& LoadHandle) \
+		{ JobFunc; }, JobWeight))
 #define STARTUP_JOB(JobFunc) STARTUP_JOB_WEIGHTED(JobFunc, 1.f)
 
 //////////////////////////////////////////////////////////////////////
@@ -42,7 +44,8 @@ UJoyAssetManager& UJoyAssetManager::Get()
 		return *Singleton;
 	}
 
-	UE_LOG(LogJoy, Fatal, TEXT("Invalid AssetManagerClassName in DefaultEngine.ini.  It must be set to JoyAssetManager!"));
+	UE_LOG(
+		LogJoy, Fatal, TEXT("Invalid AssetManagerClassName in DefaultEngine.ini.  It must be set to JoyAssetManager!"));
 
 	// Fatal error above prevents this from being called.
 	return *NewObject<UJoyAssetManager>();
@@ -56,7 +59,9 @@ UObject* UJoyAssetManager::SynchronousLoadAsset(const FSoftObjectPath& AssetPath
 
 		if (ShouldLogAssetLoads())
 		{
-			LogTimePtr = MakeUnique<FScopeLogTime>(*FString::Printf(TEXT("Synchronously loaded asset [%s]"), *AssetPath.ToString()), nullptr, FScopeLogTime::ScopeLog_Seconds);
+			LogTimePtr = MakeUnique<FScopeLogTime>(
+				*FString::Printf(TEXT("Synchronously loaded asset [%s]"), *AssetPath.ToString()), nullptr,
+				FScopeLogTime::ScopeLog_Seconds);
 		}
 
 		if (UAssetManager::IsValid())
@@ -156,10 +161,12 @@ void UJoyAssetManager::DoAllStartupJobs()
 			for (FJoyAssetManagerStartupJob& StartupJob : StartupJobs)
 			{
 				const float JobValue = StartupJob.JobWeight;
-				StartupJob.SubstepProgressDelegate.BindLambda([This = this, AccumulatedJobValue, JobValue, TotalJobValue](float NewProgress)
+				StartupJob.SubstepProgressDelegate.BindLambda(
+					[This = this, AccumulatedJobValue, JobValue, TotalJobValue](float NewProgress)
 					{
 						const float SubstepAdjustment = FMath::Clamp(NewProgress, 0.0f, 1.0f) * JobValue;
-						const float OverallPercentWithSubstep = (AccumulatedJobValue + SubstepAdjustment) / TotalJobValue;
+						const float OverallPercentWithSubstep =
+							(AccumulatedJobValue + SubstepAdjustment) / TotalJobValue;
 
 						This->UpdateInitialGameContentLoadPercent(OverallPercentWithSubstep);
 					});
@@ -181,7 +188,8 @@ void UJoyAssetManager::DoAllStartupJobs()
 
 	StartupJobs.Empty();
 
-	UE_LOG(LogJoy, Display, TEXT("All startup jobs took %.2f seconds to complete"), FPlatformTime::Seconds() - AllStartupJobsStartTime);
+	UE_LOG(LogJoy, Display, TEXT("All startup jobs took %.2f seconds to complete"),
+		FPlatformTime::Seconds() - AllStartupJobsStartTime);
 }
 
 void UJoyAssetManager::UpdateInitialGameContentLoadPercent(float GameContentPercent)

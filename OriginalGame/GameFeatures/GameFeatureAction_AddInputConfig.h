@@ -4,6 +4,7 @@
 
 #include "GameFeatureAction_WorldActionBase.h"
 #include "UObject/WeakObjectPtr.h"
+
 #include "GameFeatureAction_AddInputConfig.generated.h"
 
 struct FMappableConfigPair;
@@ -13,7 +14,7 @@ struct FComponentRequestHandle;
 
 /**
  * Registers a Player Mappable Input config to the Game User Settings
- * 
+ *
  * Expects that local players are set up to use the EnhancedInput system.
  */
 UCLASS(meta = (DisplayName = "Add Input Config"))
@@ -36,7 +37,8 @@ public:
 	//~End of UObject interface
 
 private:
-	/** A way for us to keep references to any delegate handles that are needed and track the pawns that have been modified */
+	/** A way for us to keep references to any delegate handles that are needed and track the pawns that have been
+	 * modified */
 	struct FPerContextData
 	{
 		TArray<TSharedPtr<FComponentRequestHandle>> ExtensionRequestHandles;
@@ -47,8 +49,8 @@ private:
 	TMap<FGameFeatureStateChangeContext, FPerContextData> ContextData;
 
 	//~ Begin UGameFeatureAction_WorldActionBase interface
-	virtual void AddToWorld(const FWorldContext& WorldContext,
-	                        const FGameFeatureStateChangeContext& ChangeContext) override;
+	virtual void AddToWorld(
+		const FWorldContext& WorldContext, const FGameFeatureStateChangeContext& ChangeContext) override;
 	//~ End UGameFeatureAction_WorldActionBase interface
 
 	/** Reset the active data on this game feature, clearing references to any pawns and delegate handles. */

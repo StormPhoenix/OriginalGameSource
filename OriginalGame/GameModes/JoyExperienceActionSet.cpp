@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "JoyExperienceActionSet.h"
+
 #include "GameFeatureAction.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyExperienceActionSet)
@@ -14,7 +15,8 @@ UJoyExperienceActionSet::UJoyExperienceActionSet()
 #if WITH_EDITOR
 EDataValidationResult UJoyExperienceActionSet::IsDataValid(TArray<FText>& ValidationErrors)
 {
-	EDataValidationResult Result = CombineDataValidationResults(Super::IsDataValid(ValidationErrors), EDataValidationResult::Valid);
+	EDataValidationResult Result =
+		CombineDataValidationResults(Super::IsDataValid(ValidationErrors), EDataValidationResult::Valid);
 
 	int32 EntryIndex = 0;
 	for (UGameFeatureAction* Action : Actions)
@@ -27,7 +29,8 @@ EDataValidationResult UJoyExperienceActionSet::IsDataValid(TArray<FText>& Valida
 		else
 		{
 			Result = EDataValidationResult::Invalid;
-			ValidationErrors.Add(FText::Format(LOCTEXT("ActionEntryIsNull", "Null entry at index {0} in Actions"), FText::AsNumber(EntryIndex)));
+			ValidationErrors.Add(FText::Format(
+				LOCTEXT("ActionEntryIsNull", "Null entry at index {0} in Actions"), FText::AsNumber(EntryIndex)));
 		}
 
 		++EntryIndex;
@@ -50,7 +53,6 @@ void UJoyExperienceActionSet::UpdateAssetBundleData()
 		}
 	}
 }
-#endif // WITH_EDITORONLY_DATA
+#endif	  // WITH_EDITORONLY_DATA
 
 #undef LOCTEXT_NAMESPACE
-

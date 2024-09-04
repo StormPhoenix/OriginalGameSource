@@ -1,22 +1,21 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "JoySpectatorBase.h"
 
-#include "EnhancedInputSubsystems.h"
-#include "JoyGameplayTags.h"
-#include "JoyPawnData.h"
 #include "Components/GameFrameworkComponentManager.h"
+#include "EnhancedInputSubsystems.h"
 #include "GameFramework/PlayerController.h"
 #include "Input/JoyInputComponent.h"
+#include "JoyGameplayTags.h"
+#include "JoyPawnData.h"
 #include "Player/JoyLocalPlayer.h"
 #include "Player/JoyPlayerState.h"
 
 namespace JoySpectator
 {
-	static constexpr float LookYawRate = 300.0f;
-	static constexpr float LookPitchRate = 165.0f;
-};
+static constexpr float LookYawRate = 300.0f;
+static constexpr float LookPitchRate = 165.0f;
+};	  // namespace JoySpectator
 
 const FName AJoySpectatorBase::Name_BindInputsNow("BindInputsNow");
 const FName AJoySpectatorBase::Name_ActorFeatureName("Spectator");
@@ -55,8 +54,8 @@ void AJoySpectatorBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	UGameFrameworkComponentManager::SendGameFrameworkComponentExtensionEvent(this, Name_BindInputsNow);
 }
 
-void AJoySpectatorBase::BindDefaultInputMappings(UEnhancedInputLocalPlayerSubsystem* EnhanceInput,
-                                                 UInputComponent* InInputComponent)
+void AJoySpectatorBase::BindDefaultInputMappings(
+	UEnhancedInputLocalPlayerSubsystem* EnhanceInput, UInputComponent* InInputComponent)
 {
 	AJoyPlayerState const* JoyPlayerState = Cast<AJoyPlayerState>(GetPlayerState());
 	if (!JoyPlayerState)
@@ -78,9 +77,7 @@ void AJoySpectatorBase::BindDefaultInputMappings(UEnhancedInputLocalPlayerSubsys
 
 	UJoyInputComponent* JoyIC = Cast<UJoyInputComponent>(InInputComponent);
 	if (!(ensureMsgf(JoyIC,
-	                 TEXT(
-		                 "Unexpected Input Component class! Input component must be UJoyInputComponent or a subclass of it."
-	                 ))))
+			TEXT("Unexpected Input Component class! Input component must be UJoyInputComponent or a subclass of it."))))
 	{
 		return;
 	}
@@ -97,14 +94,14 @@ void AJoySpectatorBase::BindDefaultInputMappings_Impl(UJoyInputComponent* JoyIC,
 	// will be triggered directly by these input actions Triggered events.
 	TArray<uint32> BindHandles;
 	JoyIC->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityInputTagPressed,
-	                          &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
+		&ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 
 	JoyIC->BindNativeAction(InputConfig, JoyGameplayTags::InputTag_Move, ETriggerEvent::Triggered, this,
-	                        &ThisClass::Input_Move, /*bLogIfNotFound=*/false);
+		&ThisClass::Input_Move, /*bLogIfNotFound=*/false);
 	JoyIC->BindNativeAction(InputConfig, JoyGameplayTags::InputTag_Look_Mouse, ETriggerEvent::Triggered, this,
-	                        &ThisClass::Input_LookMove, /*bLogIfNotFound=*/false);
+		&ThisClass::Input_LookMove, /*bLogIfNotFound=*/false);
 	JoyIC->BindNativeAction(InputConfig, JoyGameplayTags::InputTag_Look_Stick, ETriggerEvent::Triggered, this,
-	                        &ThisClass::Input_LookStick, /*bLogIfNotFound=*/false);
+		&ThisClass::Input_LookStick, /*bLogIfNotFound=*/false);
 }
 
 void AJoySpectatorBase::Input_AbilityInputTagPressed(FGameplayTag InputTag)

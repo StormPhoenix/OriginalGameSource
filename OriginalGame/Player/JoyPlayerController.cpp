@@ -1,18 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "JoyPlayerController.h"
 
-#include "JoyPlayerBotController.h"
-#include "JoyPlayerState.h"
+#include "Camera/CameraMode/JoyCameraMode_PlayerSwitching.h"
 #include "Camera/JoyCameraComponent.h"
 #include "Camera/JoyPlayerCameraManager.h"
-#include "Camera/CameraMode/JoyCameraMode_PlayerSwitching.h"
 #include "Character/JoyCharacter.h"
+#include "JoyPlayerBotController.h"
+#include "JoyPlayerState.h"
 #include "Utils/JoyCameraBlueprintLibrary.h"
 
-AJoyPlayerController::AJoyPlayerController(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+AJoyPlayerController::AJoyPlayerController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 }
 
@@ -21,9 +19,8 @@ AJoyPlayerState* AJoyPlayerController::GetJoyPlayerState() const
 	return CastChecked<AJoyPlayerState>(PlayerState, ECastCheckedType::NullAllowed);
 }
 
-void AJoyPlayerController::SwitchCharacter(AJoyCharacter* PreviousCharacter,
-                                           AJoyCharacter* TargetCharacter,
-                                           FJoyCharacterSwitchExtraParam ExtraParam)
+void AJoyPlayerController::SwitchCharacter(
+	AJoyCharacter* PreviousCharacter, AJoyCharacter* TargetCharacter, FJoyCharacterSwitchExtraParam ExtraParam)
 {
 	if (CheckDuringCharacterSwitching())
 	{
@@ -50,8 +47,8 @@ void AJoyPlayerController::ApplyTimeDilation(float TimeDilation)
 	ResetTimeDilation();
 	if (auto* TimeSys = UJoyTimeDilationManageSubsystem::GetTimeDilationManageSubsystem(this))
 	{
-		TimeDilationHandle = TimeSys->AddGlobalTimeDilation(
-			TimeDilation,TEXT("AJoyPlayerController::ApplyTimeDilation"));
+		TimeDilationHandle =
+			TimeSys->AddGlobalTimeDilation(TimeDilation, TEXT("AJoyPlayerController::ApplyTimeDilation"));
 	}
 }
 
