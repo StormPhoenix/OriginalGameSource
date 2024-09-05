@@ -41,7 +41,9 @@ APawn* AJoyGameMode::SpawnDefaultPawnAtTransform_Implementation(
 {
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.Instigator = GetInstigator();
-	SpawnInfo.ObjectFlags |= RF_Transient;	  // We never want to save default player pawns into a map
+	SpawnInfo.ObjectFlags |= RF_Transient;
+	SpawnInfo.bDeferConstruction = true;
+	
 	UClass* PawnClass = GetDefaultPawnClassForController(NewPlayer);
 	if (APawn* SpawnedPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo))
 	{
