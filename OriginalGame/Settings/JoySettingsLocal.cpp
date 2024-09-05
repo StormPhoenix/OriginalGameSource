@@ -818,7 +818,7 @@ void UJoySettingsLocal::ClampMobileQuality()
 		// Choose the closest supported frame rate to the user desired setting without going over the device imposed
 		// limit
 		const TArray<int32>& PossibleRates = PlatformSettings->MobileFrameRateLimits;
-		const int32 LimitIndex = PossibleRates.FindLastByPredicate([=](const int32& TestRate)
+		const int32 LimitIndex = PossibleRates.FindLastByPredicate([=, this](const int32& TestRate)
 			{ return (TestRate <= DesiredMobileFrameRateLimit) && IsSupportedMobileFramePace(TestRate); });
 		const int32 ActualLimitFPS =
 			PossibleRates.IsValidIndex(LimitIndex) ? PossibleRates[LimitIndex] : GetDefaultMobileFrameRate();
@@ -830,7 +830,7 @@ void UJoySettingsLocal::ClampMobileQuality()
 void UJoySettingsLocal::ClampMobileResolutionQuality(int32 TargetFPS)
 {
 	// Clamp mobile resolution quality
-	float MaxMobileResQuality = JoySettingsHelpers::GetApplicableResolutionQualityLimit(TargetFPS);
+	const float MaxMobileResQuality = JoySettingsHelpers::GetApplicableResolutionQualityLimit(TargetFPS);
 	float CurrentScaleNormalized = 0.0f;
 	float CurrentScaleValue = 0.0f;
 	float MinScaleValue = 0.0f;
@@ -1379,7 +1379,7 @@ void UJoySettingsLocal::UpdateMobileFramePacing()
 	// Choose the closest supported frame rate to the user desired setting without going over the device imposed limit
 	const UJoyPlatformSpecificRenderingSettings* PlatformSettings = UJoyPlatformSpecificRenderingSettings::Get();
 	const TArray<int32>& PossibleRates = PlatformSettings->MobileFrameRateLimits;
-	const int32 LimitIndex = PossibleRates.FindLastByPredicate([=](const int32& TestRate)
+	const int32 LimitIndex = PossibleRates.FindLastByPredicate([=, this](const int32& TestRate)
 		{ return (TestRate <= MobileFrameRateLimit) && IsSupportedMobileFramePace(TestRate); });
 	const int32 TargetFPS =
 		PossibleRates.IsValidIndex(LimitIndex) ? PossibleRates[LimitIndex] : GetDefaultMobileFrameRate();
