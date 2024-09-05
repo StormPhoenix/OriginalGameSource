@@ -4,6 +4,7 @@
 
 #include "Camera/JoyCameraComponent.h"
 #include "JoyCharacterMovementComponent.h"
+#include "JoyPawnExtensionComponent.h"
 #include "OriginalGame/Player/JoyPlayerState.h"
 
 AJoyCharacter::AJoyCharacter(const FObjectInitializer& ObjectInitializer)
@@ -27,6 +28,10 @@ AJoyCharacter::AJoyCharacter(const FObjectInitializer& ObjectInitializer)
 	JoyMoveComp->bCanWalkOffLedgesWhenCrouching = true;
 	JoyMoveComp->SetCrouchedHalfHeight(65.0f);
 
+	PawnExtComponent = CreateDefaultSubobject<UJoyPawnExtensionComponent>(TEXT("PawnExtensionComponent"));
+	PawnExtComponent->OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemInitialized));
+	PawnExtComponent->OnAbilitySystemUninitialized_Register(FSimpleMulticastDelegate::FDelegate::CreateUObject(this, &ThisClass::OnAbilitySystemUninitialized));
+	
 	JoyCameraComponent = CreateDefaultSubobject<UJoyCameraComponent>(TEXT("CameraComponent"));
 }
 

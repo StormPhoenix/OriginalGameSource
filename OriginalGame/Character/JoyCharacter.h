@@ -8,6 +8,7 @@
 #include "JoyCharacter.generated.h"
 
 class UJoyCameraComponent;
+class UJoyPawnExtensionComponent;
 
 UCLASS(Config = Game, Meta = (ShortTooltip = "The base character pawn class used by this project."))
 class ORIGINALGAME_API AJoyCharacter : public AModularCharacter
@@ -25,6 +26,13 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void OnAbilitySystemInitialized()
+	{
+	}
+	virtual void OnAbilitySystemUninitialized()
+	{
+	}
+
 public:
 	virtual void Tick(float DeltaTime) override;
 
@@ -34,4 +42,7 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Joy|Character", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UJoyCameraComponent> JoyCameraComponent{nullptr};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Joy|Character", Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UJoyPawnExtensionComponent> PawnExtComponent;
 };
