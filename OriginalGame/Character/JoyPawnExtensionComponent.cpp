@@ -12,7 +12,7 @@
 #include "JoyLogChannels.h"
 #include "Net/UnrealNetwork.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(LyraPawnExtensionComponent)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(JoyPawnExtensionComponent)
 
 class FLifetimeProperty;
 class UActorComponent;
@@ -43,11 +43,11 @@ void UJoyPawnExtensionComponent::OnRegister()
 	Super::OnRegister();
 
 	const APawn* Pawn = GetPawn<APawn>();
-	ensureAlwaysMsgf((Pawn != nullptr), TEXT("LyraPawnExtensionComponent on [%s] can only be added to Pawn actors."), *GetNameSafe(GetOwner()));
+	ensureAlwaysMsgf((Pawn != nullptr), TEXT("JoyPawnExtensionComponent on [%s] can only be added to Pawn actors."), *GetNameSafe(GetOwner()));
 
 	TArray<UActorComponent*> PawnExtensionComponents;
 	Pawn->GetComponents(UJoyPawnExtensionComponent::StaticClass(), PawnExtensionComponents);
-	ensureAlwaysMsgf((PawnExtensionComponents.Num() == 1), TEXT("Only one LyraPawnExtensionComponent should exist on [%s]."), *GetNameSafe(GetOwner()));
+	ensureAlwaysMsgf((PawnExtensionComponents.Num() == 1), TEXT("Only one JoyPawnExtensionComponent should exist on [%s]."), *GetNameSafe(GetOwner()));
 
 	// Register with the init state system early, this will only work if this is a game world
 	RegisterInitStateFeature();

@@ -12,5 +12,11 @@ public class OriginalGameEditorTarget : TargetRules
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
 		CppStandard = CppStandardVersion.Default;
 		ExtraModuleNames.AddRange( new string[] { "OriginalGame" } );
+		RegisterModulesCreatedByRider();
+	}
+
+	private void RegisterModulesCreatedByRider()
+	{
+		ExtraModuleNames.AddRange(new string[] { "OriginalGameEditor" });
 	}
 }
