@@ -3,6 +3,7 @@
 #include "JoyGameMode.h"
 
 #include "Character/JoyPawnData.h"
+#include "Character/JoyPawnExtensionComponent.h"
 #include "Character/JoySpectatorBase.h"
 #include "Development/JoyDeveloperSettings.h"
 #include "JoyExperienceDefinition.h"
@@ -10,14 +11,12 @@
 #include "JoyGameState.h"
 #include "JoyLogChannels.h"
 #include "JoyWorldSettings.h"
-#include "Kismet/GameplayStatics.h"
 #include "Player/JoyPlayerController.h"
 #include "Player/JoyPlayerSpawningManagerComponent.h"
 #include "Player/JoyPlayerState.h"
 #include "System/JoyAssetManager.h"
 
-AJoyGameMode::AJoyGameMode(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+AJoyGameMode::AJoyGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	GameStateClass = AJoyGameState::StaticClass();
 	PlayerControllerClass = AJoyPlayerController::StaticClass();
@@ -37,6 +36,41 @@ void AJoyGameMode::InitGameState()
 		FOnJoyExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
 }
 
+APawn* AJoyGameMode::SpawnDefaultPawnAtTransform_Implementation(
+	AController* NewPlayer, const FTransform& SpawnTransform)
+{
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.Instigator = GetInstigator();
+	SpawnInfo.ObjectFlags |= RF_Transient;	  // We never want to save default player pawns into a map
+	UClass* PawnClass = GetDefaultPawnClassForController(NewPlayer);
+	if (APawn* SpawnedPawn = GetWorld()->SpawnActor<APawn>(PawnClass, SpawnTransform, SpawnInfo))
+	{
+		if (UJoyPawnExtensionComponent* PawnExtComp =
+				UJoyPawnExtensionComponent::FindPawnExtensionComponent(SpawnedPawn))
+		{
+			if (const UJoyPawnData* PawnData = GetPawnDataForController(NewPlayer))
+			{
+				PawnExtComp->SetPawnData(PawnData);
+			}
+			else
+			{
+				UE_LOG(LogJoy, Error, TEXT("Game mode was unable to set PawnData on the spawned pawn [%s]."),
+					*GetNameSafe(SpawnedPawn));
+			}
+		}
+		SpawnedPawn->FinishSpawning(SpawnTransform);
+		return SpawnedPawn;
+	}
+	else
+	{
+		UE_LOG(LogGameMode, Warning,
+			TEXT("AJoyGameMode SpawnDefaultPawnAtTransform: Couldn't spawn Pawn of type %s at %s"),
+			*GetNameSafe(PawnClass), *SpawnTransform.ToHumanReadableString());
+	}
+
+	return nullptr;
+}
+
 UClass* AJoyGameMode::GetDefaultPawnClassForController_Implementation(AController* InController)
 {
 	if (const UJoyPawnData* PawnData = GetPawnDataForController(InController))
@@ -52,17 +86,13 @@ UClass* AJoyGameMode::GetDefaultPawnClassForController_Implementation(AControlle
 
 void AJoyGameMode::OnExperienceLoaded(const UJoyExperienceDefinition* CurrentExperience)
 {
-	// Spawn any players that are already attached
-	//@TODO: Here we're handling only *player* controllers, but in GetDefaultPawnClassForController_Implementation we
-	//skipped all controllers
-	// GetDefaultPawnClassForController_Implementation might only be getting called for players anyways
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (auto* PC = Cast<APlayerController>(*Iterator))
 		{
 			auto* JoyPS = PC->GetPlayerState<AJoyPlayerState>();
 			if (PC->GetPawnOrSpectator() == nullptr || JoyPS == nullptr ||
-			    JoyPS->GetPawnData<UJoyPawnData>() == nullptr)
+				JoyPS->GetPawnData<UJoyPawnData>() == nullptr)
 			{
 				JoyPS->SetPawnData(CurrentExperience->DefaultPawnData);
 				if (PlayerCanRestart(PC))
@@ -180,7 +210,7 @@ void AJoyGameMode::OnMatchAssignmentGiven(FPrimaryAssetId ExperienceId, const FS
 void AJoyGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
 {
 	if (UJoyPlayerSpawningManagerComponent* PlayerSpawningComponent =
-		GameState->FindComponentByClass<UJoyPlayerSpawningManagerComponent>())
+			GameState->FindComponentByClass<UJoyPlayerSpawningManagerComponent>())
 	{
 		PlayerSpawningComponent->FinishRestartPlayer(NewPlayer, StartRotation);
 	}

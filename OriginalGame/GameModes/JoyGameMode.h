@@ -30,6 +30,8 @@ public:
 	void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	void InitGameState() override;
 	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
+	virtual APawn* SpawnDefaultPawnAtTransform_Implementation(
+		AController* NewPlayer, const FTransform& SpawnTransform) override;
 	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 	virtual void GenericPlayerInitialization(AController* NewPlayer) override;
 	//~End of AGameModeBase interface
