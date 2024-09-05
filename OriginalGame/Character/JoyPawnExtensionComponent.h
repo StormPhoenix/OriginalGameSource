@@ -54,7 +54,7 @@ public:
 
 	/** Gets the current ability system component, which may be owned by a different actor */
 	UFUNCTION(BlueprintPure, Category = "Joy|Pawn")
-	UJoyAbilitySystemComponent* GetLyraAbilitySystemComponent() const { return AbilitySystemComponent; }
+	UJoyAbilitySystemComponent* GetJoyAbilitySystemComponent() const { return AbilitySystemComponent; }
 
 	/** Should be called by the owning pawn to become the avatar of the ability system. */
 	void InitializeAbilitySystem(UJoyAbilitySystemComponent* InASC, AActor* InOwnerActor);

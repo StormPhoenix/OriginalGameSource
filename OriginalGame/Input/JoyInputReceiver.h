@@ -51,7 +51,7 @@ public:
 	virtual void ReceiveAbilityTagReleaseInput_Implementation(UObject* InputReceiver, FGameplayTag const& InputTag);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "Joy|Input")
-	void ReceiveLookMouseInput(UObject* InputReceiver, const FInputActionValue& InputActionValue);
-	virtual void ReceiveLookMouseInput_Implementation(
+	void ReceiveLookMoveInput(UObject* InputReceiver, const FInputActionValue& InputActionValue);
+	virtual void ReceiveLookMoveInput_Implementation(
 		UObject* InputReceiver, const FInputActionValue& InputActionValue);
 };

@@ -31,7 +31,7 @@ void UJoyCameraModeStack::UpdateCameraStack()
 {
 	/**
 	 * 首先检查有哪些 CameraMode 需要被移除
-	 * 针对 Lyra 设计的 CameraStack，处于栈内的 Camera Mode 会被自动移除，所以我们只负责处理栈顶的 Camera Mode，
+	 * 针对 Joy 设计的 CameraStack，处于栈内的 Camera Mode 会被自动移除，所以我们只负责处理栈顶的 Camera Mode，
 	 * 同时，我们要保证 Camera Stack 内的 Camera Mode 数量要 >= 1，所以只处理当栈长度大于 1 的情况
 	 */
 

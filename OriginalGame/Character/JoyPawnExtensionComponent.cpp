@@ -11,6 +11,7 @@
 #include "JoyPawnData.h"
 #include "JoyLogChannels.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/JoyPlayerState.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyPawnExtensionComponent)
 
@@ -43,11 +44,13 @@ void UJoyPawnExtensionComponent::OnRegister()
 	Super::OnRegister();
 
 	const APawn* Pawn = GetPawn<APawn>();
-	ensureAlwaysMsgf((Pawn != nullptr), TEXT("JoyPawnExtensionComponent on [%s] can only be added to Pawn actors."), *GetNameSafe(GetOwner()));
+	ensureAlwaysMsgf((Pawn != nullptr), TEXT("JoyPawnExtensionComponent on [%s] can only be added to Pawn actors."),
+		*GetNameSafe(GetOwner()));
 
 	TArray<UActorComponent*> PawnExtensionComponents;
 	Pawn->GetComponents(UJoyPawnExtensionComponent::StaticClass(), PawnExtensionComponents);
-	ensureAlwaysMsgf((PawnExtensionComponents.Num() == 1), TEXT("Only one JoyPawnExtensionComponent should exist on [%s]."), *GetNameSafe(GetOwner()));
+	ensureAlwaysMsgf((PawnExtensionComponents.Num() == 1),
+		TEXT("Only one JoyPawnExtensionComponent should exist on [%s]."), *GetNameSafe(GetOwner()));
 
 	// Register with the init state system early, this will only work if this is a game world
 	RegisterInitStateFeature();
@@ -59,7 +62,7 @@ void UJoyPawnExtensionComponent::BeginPlay()
 
 	// Listen for changes to all features
 	BindOnActorInitStateChanged(NAME_None, FGameplayTag(), false);
-	
+
 	// Notifies state manager that we have spawned, then try rest of default initialization
 	ensure(TryToChangeInitState(JoyGameplayTags::InitState_Spawned));
 	CheckDefaultInitialization();
@@ -86,7 +89,8 @@ void UJoyPawnExtensionComponent::SetPawnData(const UJoyPawnData* InPawnData)
 
 	if (PawnData)
 	{
-		UE_LOG(LogJoy, Error, TEXT("Trying to set PawnData [%s] on pawn [%s] that already has valid PawnData [%s]."), *GetNameSafe(InPawnData), *GetNameSafe(Pawn), *GetNameSafe(PawnData));
+		UE_LOG(LogJoy, Error, TEXT("Trying to set PawnData [%s] on pawn [%s] that already has valid PawnData [%s]."),
+			*GetNameSafe(InPawnData), *GetNameSafe(Pawn), *GetNameSafe(PawnData));
 		return;
 	}
 
@@ -122,7 +126,8 @@ void UJoyPawnExtensionComponent::InitializeAbilitySystem(UJoyAbilitySystemCompon
 	APawn* Pawn = GetPawnChecked<APawn>();
 	AActor* ExistingAvatar = InASC->GetAvatarActor();
 
-	UE_LOG(LogJoy, Verbose, TEXT("Setting up ASC [%s] on pawn [%s] owner [%s], existing [%s] "), *GetNameSafe(InASC), *GetNameSafe(Pawn), *GetNameSafe(InOwnerActor), *GetNameSafe(ExistingAvatar));
+	UE_LOG(LogJoy, Verbose, TEXT("Setting up ASC [%s] on pawn [%s] owner [%s], existing [%s] "), *GetNameSafe(InASC),
+		*GetNameSafe(Pawn), *GetNameSafe(InOwnerActor), *GetNameSafe(ExistingAvatar));
 
 	if ((ExistingAvatar != nullptr) && (ExistingAvatar != Pawn))
 	{
@@ -222,13 +227,17 @@ void UJoyPawnExtensionComponent::CheckDefaultInitialization()
 	// Before checking our progress, try progressing any other features we might depend on
 	CheckDefaultInitializationForImplementers();
 
-	static const TArray<FGameplayTag> StateChain = { JoyGameplayTags::InitState_Spawned, JoyGameplayTags::InitState_DataAvailable, JoyGameplayTags::InitState_DataInitialized, JoyGameplayTags::InitState_GameplayReady };
+	static const TArray<FGameplayTag> StateChain = {JoyGameplayTags::InitState_Spawned,
+	                                                JoyGameplayTags::InitState_DataAvailable,
+	                                                JoyGameplayTags::InitState_DataInitialized,
+	                                                JoyGameplayTags::InitState_GameplayReady};
 
 	// This will try to progress from spawned (which is only set in BeginPlay) through the data initialization stages until it gets to gameplay ready
 	ContinueInitStateChain(StateChain);
 }
 
-bool UJoyPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
+bool UJoyPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState,
+	FGameplayTag DesiredState) const
 {
 	check(Manager);
 
@@ -263,12 +272,14 @@ bool UJoyPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManag
 
 		return true;
 	}
-	else if (CurrentState == JoyGameplayTags::InitState_DataAvailable && DesiredState == JoyGameplayTags::InitState_DataInitialized)
+	else if (CurrentState == JoyGameplayTags::InitState_DataAvailable && DesiredState ==
+	         JoyGameplayTags::InitState_DataInitialized)
 	{
 		// Transition to initialize if all features have their data available
 		return Manager->HaveAllFeaturesReachedInitState(Pawn, JoyGameplayTags::InitState_DataAvailable);
 	}
-	else if (CurrentState == JoyGameplayTags::InitState_DataInitialized && DesiredState == JoyGameplayTags::InitState_GameplayReady)
+	else if (CurrentState == JoyGameplayTags::InitState_DataInitialized && DesiredState ==
+	         JoyGameplayTags::InitState_GameplayReady)
 	{
 		return true;
 	}
@@ -276,10 +287,16 @@ bool UJoyPawnExtensionComponent::CanChangeInitState(UGameFrameworkComponentManag
 	return false;
 }
 
-void UJoyPawnExtensionComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
+void UJoyPawnExtensionComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager,
+	FGameplayTag CurrentState, FGameplayTag DesiredState)
 {
 	if (DesiredState == JoyGameplayTags::InitState_DataInitialized)
 	{
+		if (AJoyPlayerState* JoyPS = GetPlayerState<AJoyPlayerState>())
+		{
+			// InitializeAbilitySystem(JoyPS->GetJoyAbilitySystemComponent());
+		}
+
 		// This is currently all handled by other components listening to this state change
 	}
 }
@@ -296,7 +313,8 @@ void UJoyPawnExtensionComponent::OnActorInitStateChanged(const FActorInitStateCh
 	}
 }
 
-void UJoyPawnExtensionComponent::OnAbilitySystemInitialized_RegisterAndCall(FSimpleMulticastDelegate::FDelegate Delegate)
+void UJoyPawnExtensionComponent::OnAbilitySystemInitialized_RegisterAndCall(
+	FSimpleMulticastDelegate::FDelegate Delegate)
 {
 	if (!OnAbilitySystemInitialized.IsBoundToObject(Delegate.GetUObject()))
 	{
@@ -316,4 +334,3 @@ void UJoyPawnExtensionComponent::OnAbilitySystemUninitialized_Register(FSimpleMu
 		OnAbilitySystemUninitialized.Add(Delegate);
 	}
 }
-

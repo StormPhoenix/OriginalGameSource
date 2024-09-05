@@ -54,7 +54,7 @@ void UJoyInputReceiver::ReceiveLookMoveInput(TConstArrayView<TObjectPtr<UObject>
 			continue;
 		}
 
-		IJoyInputReceiver::Execute_ReceiveLookMouseInput(Receiver, InputReceiver, InputActionValue);
+		IJoyInputReceiver::Execute_ReceiveLookMoveInput(Receiver, InputReceiver, InputActionValue);
 	}
 }
 
@@ -72,7 +72,7 @@ void IJoyInputReceiver::ReceiveMoveInput_Implementation(
 {
 }
 
-void IJoyInputReceiver::ReceiveLookMouseInput_Implementation(
+void IJoyInputReceiver::ReceiveLookMoveInput_Implementation(
 	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {
 }

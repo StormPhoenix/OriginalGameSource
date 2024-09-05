@@ -10,7 +10,7 @@ class AController;
 class APlayerController;
 class APlayerState;
 class APlayerStart;
-class ALyraPlayerStart;
+class AJoyPlayerStart;
 class AActor;
 
 /**

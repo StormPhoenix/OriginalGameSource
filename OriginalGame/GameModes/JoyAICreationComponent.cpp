@@ -11,6 +11,7 @@
 #include "JoyExperienceManagerComponent.h"
 #include "JoyGameMode.h"
 #include "Character/JoyCharacter.h"
+#include "Character/JoyPawnExtensionComponent.h"
 #include "Gameplay/JoyCharacterControlManageSubsystem.h"
 #include "Player/JoyPlayerController.h"
 #include "Player/JoyPlayerState.h"
@@ -114,6 +115,14 @@ AController* UJoyAICreationComponent::SpawnFromPawnData(const UJoyPawnData* Pawn
 		else
 		{
 			GameMode->RestartPlayer(NewController);
+		}
+
+		if (NewController->GetPawn() != nullptr)
+		{
+			if (auto* PawnExtComponent = NewController->GetPawn()->FindComponentByClass<UJoyPawnExtensionComponent>())
+			{
+				PawnExtComponent->CheckDefaultInitialization();
+			}
 		}
 	}
 

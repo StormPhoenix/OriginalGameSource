@@ -15,7 +15,9 @@ void UJoyGameBlueprintLibrary::RegisterInputReceiver(const UObject* WorldContext
 {
 	if (const auto* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
 	{
-		if (auto* JoySpectator = Cast<AJoySpectator>(PC->GetSpectatorPawn()))
+		// @TODO 为什么不能用 GetSpectatorPawn
+		// if (auto* JoySpectator = Cast<AJoySpectator>(PC->GetSpectatorPawn()))
+		if (auto* JoySpectator = Cast<AJoySpectator>(PC->GetPawn()))
 		{
 			JoySpectator->RegisterInputReceiver(Receiver);
 		}

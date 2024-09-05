@@ -8,6 +8,7 @@
 #include "JoyCharacterBlueprintLibrary.generated.h"
 
 class ACharacter;
+class AJoyHeroCharacter;
 
 /**
  *
@@ -18,6 +19,9 @@ class ORIGINALGAME_API UJoyCharacterBlueprintLibrary : public UBlueprintFunction
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category = Camera)
+	UFUNCTION(BlueprintCallable, Category = Character)
 	static float GetCharacterRadiusXY(ACharacter* Avatar);
+
+	UFUNCTION(BlueprintCallable, Category = Character)
+	static bool CheckCharacterControlled(AJoyHeroCharacter* HeroCharacter);
 };
