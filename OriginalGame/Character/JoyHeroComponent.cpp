@@ -2,23 +2,23 @@
 
 #include "JoyHeroComponent.h"
 
+#include "Components/GameFrameworkComponentDelegates.h"
+#include "Components/GameFrameworkComponentManager.h"
+#include "GameFramework/PlayerState.h"
+#include "Gameplay/JoyCharacterControlManageSubsystem.h"
+#include "InputActionValue.h"
 #include "JoyCharacter.h"
 #include "JoyGameBlueprintLibrary.h"
 #include "JoyGameplayTags.h"
 #include "JoyHeroCharacter.h"
 #include "JoyPawnExtensionComponent.h"
-#include "Components/GameFrameworkComponentDelegates.h"
-#include "Components/GameFrameworkComponentManager.h"
-#include "GameFramework/PlayerState.h"
 #include "Player/JoyPlayerController.h"
-#include "InputActionValue.h"
-#include "Gameplay/JoyCharacterControlManageSubsystem.h"
+#include "Utils/JoyCameraBlueprintLibrary.h"
 #include "Utils/JoyCharacterBlueprintLibrary.h"
 
 const FName UJoyHeroComponent::NAME_ActorFeatureName("Hero");
 
-UJoyHeroComponent::UJoyHeroComponent(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+UJoyHeroComponent::UJoyHeroComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -48,9 +48,8 @@ void UJoyHeroComponent::OnActorInitStateChanged(const FActorInitStateChangedPara
 void UJoyHeroComponent::CheckDefaultInitialization()
 {
 	static const TArray<FGameplayTag> StateChain = {JoyGameplayTags::InitState_Spawned,
-	                                                JoyGameplayTags::InitState_DataAvailable,
-	                                                JoyGameplayTags::InitState_DataInitialized,
-	                                                JoyGameplayTags::InitState_GameplayReady};
+		JoyGameplayTags::InitState_DataAvailable, JoyGameplayTags::InitState_DataInitialized,
+		JoyGameplayTags::InitState_GameplayReady};
 	ContinueInitStateChain(StateChain);
 }
 
@@ -70,8 +69,8 @@ void UJoyHeroComponent::OnRegister()
 	}
 }
 
-bool UJoyHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState,
-	FGameplayTag DesiredState) const
+bool UJoyHeroComponent::CanChangeInitState(
+	UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState) const
 {
 	check(Manager);
 
@@ -83,21 +82,21 @@ bool UJoyHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manag
 			return true;
 		}
 	}
-	else if (CurrentState == JoyGameplayTags::InitState_Spawned && DesiredState ==
-	         JoyGameplayTags::InitState_DataAvailable)
+	else if (CurrentState == JoyGameplayTags::InitState_Spawned &&
+			 DesiredState == JoyGameplayTags::InitState_DataAvailable)
 	{
 		if (!GetPlayerState<AJoyPlayerState>())
 		{
 			return false;
 		}
 
-		// If we're authority or autonomous, we need to wait for a controller with registered ownership of the player state.
+		// If we're authority or autonomous, we need to wait for a controller with registered ownership of the player
+		// state.
 		if (Pawn->GetLocalRole() != ROLE_SimulatedProxy)
 		{
 			const AController* Controller = GetController<AController>();
-			const bool bHasControllerPairedWithPS = (Controller != nullptr) &&
-			                                        (Controller->PlayerState != nullptr) &&
-			                                        (Controller->PlayerState->GetOwner() == Controller);
+			const bool bHasControllerPairedWithPS = (Controller != nullptr) && (Controller->PlayerState != nullptr) &&
+													(Controller->PlayerState->GetOwner() == Controller);
 
 			if (!bHasControllerPairedWithPS)
 			{
@@ -119,16 +118,16 @@ bool UJoyHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manag
 
 		return true;
 	}
-	else if (CurrentState == JoyGameplayTags::InitState_DataAvailable && DesiredState ==
-	         JoyGameplayTags::InitState_DataInitialized)
+	else if (CurrentState == JoyGameplayTags::InitState_DataAvailable &&
+			 DesiredState == JoyGameplayTags::InitState_DataInitialized)
 	{
 		// Wait for player state and extension component
 		const AJoyPlayerState* JoyPS = GetPlayerState<AJoyPlayerState>();
 		return JoyPS && Manager->HasFeatureReachedInitState(Pawn, UJoyPawnExtensionComponent::NAME_ActorFeatureName,
-			       JoyGameplayTags::InitState_DataInitialized);
+							JoyGameplayTags::InitState_DataInitialized);
 	}
-	else if (CurrentState == JoyGameplayTags::InitState_DataInitialized && DesiredState ==
-	         JoyGameplayTags::InitState_GameplayReady)
+	else if (CurrentState == JoyGameplayTags::InitState_DataInitialized &&
+			 DesiredState == JoyGameplayTags::InitState_GameplayReady)
 	{
 		// TODO add ability initialization checks?
 		return true;
@@ -137,11 +136,11 @@ bool UJoyHeroComponent::CanChangeInitState(UGameFrameworkComponentManager* Manag
 	return false;
 }
 
-void UJoyHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState,
-	FGameplayTag DesiredState)
+void UJoyHeroComponent::HandleChangeInitState(
+	UGameFrameworkComponentManager* Manager, FGameplayTag CurrentState, FGameplayTag DesiredState)
 {
-	if (CurrentState == JoyGameplayTags::InitState_DataAvailable && DesiredState ==
-	    JoyGameplayTags::InitState_DataInitialized)
+	if (CurrentState == JoyGameplayTags::InitState_DataAvailable &&
+		DesiredState == JoyGameplayTags::InitState_DataInitialized)
 	{
 		const APawn* Pawn = GetPawn<APawn>();
 		const AJoyPlayerState* JoyPS = GetPlayerState<AJoyPlayerState>();
@@ -154,8 +153,8 @@ void UJoyHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* Ma
 	}
 }
 
-void UJoyHeroComponent::ReceiveMoveInput_Implementation(UObject* InputReceiver,
-	const FInputActionValue& InputActionValue)
+void UJoyHeroComponent::ReceiveMoveInput_Implementation(
+	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {
 	const FVector2D Value = InputActionValue.Get<FVector2D>();
 	auto* Controller = UJoyGameBlueprintLibrary::GetJoyPlayerController(GetOwner());
@@ -180,30 +179,32 @@ void UJoyHeroComponent::ReceiveMoveInput_Implementation(UObject* InputReceiver,
 
 void UJoyHeroComponent::ReceiveAbilityTagPressInput_Implementation(UObject* InputReceiver, FGameplayTag const& InputTag)
 {
-	// @TODO GAS	
+	// @TODO GAS
 }
 
-void UJoyHeroComponent::ReceiveAbilityTagReleaseInput_Implementation(UObject* InputReceiver,
-	FGameplayTag const& InputTag)
+void UJoyHeroComponent::ReceiveAbilityTagReleaseInput_Implementation(
+	UObject* InputReceiver, FGameplayTag const& InputTag)
 {
-	// @TODO GAS	
+	// @TODO GAS
 }
 
-void UJoyHeroComponent::ReceiveLookMoveInput_Implementation(UObject* InputReceiver,
-	const FInputActionValue& InputActionValue)
+void UJoyHeroComponent::ReceiveLookMoveInput_Implementation(
+	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {
 	const FVector2D Value = InputActionValue.Get<FVector2D>();
 	auto* HeroCharacter = Cast<AJoyHeroCharacter>(GetOwner());
-	if (UJoyCharacterBlueprintLibrary::CheckCharacterControlled(HeroCharacter))
+
+	auto* PlayerController = UJoyGameBlueprintLibrary::GetJoyPlayerController(GetOwner());
+	if (UJoyCharacterBlueprintLibrary::CheckCharacterControlled(HeroCharacter) && PlayerController != nullptr)
 	{
 		if (Value.X != 0.0f)
 		{
-			HeroCharacter->AddControllerYawInput(Value.X);
+			PlayerController->AddYawInput(Value.X);
 		}
 
 		if (Value.Y != 0.0f)
 		{
-			HeroCharacter->AddControllerPitchInput(Value.Y);
+			PlayerController->AddPitchInput(Value.Y);
 		}
 	}
 }

@@ -5,7 +5,6 @@
 #include "GameplayTagContainer.h"
 #include "Input/JoyInputBlocker.h"
 #include "Input/JoyInputReceiver.h"
-#include "JoyCharacter.h"
 
 AJoySpectator::AJoySpectator()
 {
