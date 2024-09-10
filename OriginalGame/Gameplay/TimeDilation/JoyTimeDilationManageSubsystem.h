@@ -32,7 +32,7 @@ struct FJoyTimeDilationHandle
 	int64 SequenceID{};
 };
 
-DECLARE_DELEGATE_TwoParams(FFGOnTimeDilationApply, const FJoyTimeDilationHandle&, bool);
+DECLARE_DELEGATE_TwoParams(FJoyOnTimeDilationApply, const FJoyTimeDilationHandle&, bool);
 
 USTRUCT()
 struct FJoyTimeDilationHandleCache
@@ -88,7 +88,7 @@ struct FJoyTimeDilationRequestCache
 
 	FString Description = TEXT("");
 
-	FFGOnTimeDilationApply OnApplyCallback{};
+	FJoyOnTimeDilationApply OnApplyCallback{};
 
 	bool bIsAdd{};
 	bool bIsGlobal{};
@@ -112,7 +112,7 @@ struct FJoyTimeDilationRequestCache
  * @brief 处理时间膨胀相关逻辑的子系统，目的是方便全局统一获取正确的时间膨胀系数值。
  *        该子系统的 tick 逻辑会在一般的 actor 和 component 的 tick 之后进行，新设置的时间膨胀会在下一帧生效。
  */
-UCLASS(DisplayName = "FG Time Dilation Manage Subsystem")
+UCLASS(DisplayName = "Joy Time Dilation Manage Subsystem")
 class ORIGINALGAME_API UJoyTimeDilationManageSubsystem : public UGameInstanceSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
@@ -135,7 +135,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FJoyTimeDilationHandle AddGlobalTimeDilation(float TimeDilation, const FString Description = "");
 	FJoyTimeDilationHandle AddGlobalTimeDilationWithCallback(
-		float TimeDilation, FFGOnTimeDilationApply OnApply, const FString Description = "");
+		float TimeDilation, FJoyOnTimeDilationApply OnApply, const FString Description = "");
 
 	/**
 	 * 覆盖全局的时间膨胀系数，所有之前正在生效的时间膨胀系数会失效，只有本次新覆盖的时间膨胀系数会生效。
@@ -143,7 +143,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FJoyTimeDilationHandle OverrideGlobalTimeDilation(float TimeDilation, const FString Description = "");
 	FJoyTimeDilationHandle OverrideGlobalTimeDilationWithCallback(
-		float TimeDilation, FFGOnTimeDilationApply OnApply, const FString Description = "");
+		float TimeDilation, FJoyOnTimeDilationApply OnApply, const FString Description = "");
 
 	/**
 	 * 添加一个角色的时间膨胀系数，所有当前正在生效的时间膨胀系数会相乘得出当前应该生效的时间膨胀系数。
@@ -151,7 +151,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FJoyTimeDilationHandle AddActorTimeDilation(AActor* Actor, float TimeDilation, const FString Description = "");
 	FJoyTimeDilationHandle AddActorTimeDilationWithCallback(
-		AActor* Actor, float TimeDilation, FFGOnTimeDilationApply OnApply, const FString Description = "");
+		AActor* Actor, float TimeDilation, FJoyOnTimeDilationApply OnApply, const FString Description = "");
 
 	/**
 	 * 覆盖角色的时间膨胀系数，所有之前正在生效的时间膨胀系数会失效，只有本次新覆盖的时间膨胀系数会生效。
@@ -170,7 +170,7 @@ public:
 	FJoyTimeDilationHandle OverrideActorTimeDilation(
 		AActor* Actor, float TimeDilation, bool bUseAbsoluteValue = true, const FString Description = "");
 	FJoyTimeDilationHandle OverrideActorTimeDilationWithCallback(AActor* Actor, float TimeDilation,
-		bool bUseAbsoluteValue, FFGOnTimeDilationApply OnApply, const FString Description = "");
+		bool bUseAbsoluteValue, FJoyOnTimeDilationApply OnApply, const FString Description = "");
 
 	/**
 	 * 更新一个全局的时间膨胀系数。
@@ -189,7 +189,7 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable)
 	void RemoveGlobalTimeDilation(FJoyTimeDilationHandle const& Handle);
-	void RemoveGlobalTimeDilationWithCallback(FJoyTimeDilationHandle const& Handle, FFGOnTimeDilationApply OnApply);
+	void RemoveGlobalTimeDilationWithCallback(FJoyTimeDilationHandle const& Handle, FJoyOnTimeDilationApply OnApply);
 
 	/**
 	 * 移除一个角色的时间膨胀系数。
@@ -197,7 +197,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void RemoveActorTimeDilation(AActor* Actor, FJoyTimeDilationHandle const& Handle);
 	void RemoveActorTimeDilationWithCallback(
-		AActor* Actor, FJoyTimeDilationHandle const& Handle, FFGOnTimeDilationApply OnApply);
+		AActor* Actor, FJoyTimeDilationHandle const& Handle, FJoyOnTimeDilationApply OnApply);
 
 	UFUNCTION(BlueprintCallable)
 	float GetGlobalTimeDilation() const;
@@ -212,9 +212,9 @@ private:
 	bool RemoveActorTimeDilationImpl(FJoyTimeDilationHandle Handle, AActor* Actor);
 
 	FJoyTimeDilationHandle NewAddTimeDilationRequestCache(bool bIsGlobal, bool bOverride, AActor* Actor,
-		float TimeDilation, bool bUseAbsoluteValue, FFGOnTimeDilationApply OnApply, const FString& Description = "");
+		float TimeDilation, bool bUseAbsoluteValue, FJoyOnTimeDilationApply OnApply, const FString& Description = "");
 	void NewRemoveTimeDilationRequestCache(
-		FJoyTimeDilationHandle Handle, bool bIsGlobal, AActor* Actor, FFGOnTimeDilationApply OnApply);
+		FJoyTimeDilationHandle Handle, bool bIsGlobal, AActor* Actor, FJoyOnTimeDilationApply OnApply);
 
 	static void ReCalculateCacheTimeDilation(FJoyTimeDilationManageCache& Cache);
 

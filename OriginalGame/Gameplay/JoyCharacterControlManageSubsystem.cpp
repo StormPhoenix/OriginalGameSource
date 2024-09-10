@@ -59,6 +59,8 @@ void UJoyCharacterControlManageSubsystem::OnCharacterSwitchFinished(
 		ControlState.LastControlCharacter = ControlState.CurrentControlCharacter;
 		ControlState.CurrentControlCharacter = ControlState.TargetCharacterSwitchTo;
 		ControlState.TargetCharacterSwitchTo = nullptr;
+
+		OnControlCharacterChangedDelegate.Broadcast(PreviousCharacter, TargetCharacter);
 	}
 	else
 	{

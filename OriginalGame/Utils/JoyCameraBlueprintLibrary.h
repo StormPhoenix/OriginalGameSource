@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Camera/Controller/JoyCameraModifierController.h"
+#include "Camera/JoyCameraData.h"
 #include "CoreMinimal.h"
 
 #include "JoyCameraBlueprintLibrary.generated.h"
@@ -51,4 +52,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Camera", DisplayName = "获取目标本帧镜头数据")
 	static void GetCameraViewFromTarget(
 		AActor* Target, FMinimalViewInfo& OutView, bool bRealTime = false, float DeltaTime = 0.f);
+
+	static void GetCameraConfigMap(
+		UObject const* WorldContextObject, UPARAM(ref) TMap<FName, FJoyCameraConfigTable>& ConfigMapRef);	
 };

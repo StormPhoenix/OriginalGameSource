@@ -3,6 +3,10 @@
 #include "CameraMode/JoyCameraMode.h"
 #include "CameraMode/JoyCameraModeStack.h"
 
+FJoyCameraIDHandle::FJoyCameraIDHandle(int64 Seq) : SequenceID(Seq)
+{
+}
+
 UJoyCameraComponent::UJoyCameraComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 }
@@ -120,4 +124,93 @@ void UJoyCameraComponent::FrozeCamera()
 const FMinimalViewInfo& UJoyCameraComponent::GetFrozenView() const
 {
 	return FrozenCameraView;
+}
+
+FJoyCameraIDHandle UJoyCameraComponent::PushCameraConfig(FName CameraID)
+{
+	if (!CameraIDs.Contains(CameraID))
+	{
+		bIsCameraConfigDirty = true;
+		CameraIDs.Add(CameraID);
+
+		SequenceNumber++;
+		FJoyAddCameraIDRequestCache& NewRequest = CameraIDRequestQueue.Emplace_GetRef();
+		NewRequest.Handle = FJoyCameraIDHandle(SequenceNumber);
+		NewRequest.CameraID = CameraID;
+		return NewRequest.Handle;
+	}
+
+	return FJoyCameraIDHandle(0);
+}
+
+bool UJoyCameraComponent::RemoveCameraConfig(FJoyCameraIDHandle Handler)
+{
+	if (!Handler.IsValid())
+	{
+		return false;
+	}
+
+	const int32 Index = CameraIDRequestQueue.IndexOfByKey(Handler);
+	if (Index == INDEX_NONE)
+	{
+		return false;
+	}
+
+	const FName CameraID = CameraIDRequestQueue[Index].CameraID;
+	bIsCameraConfigDirty = true;
+	CameraIDs.Remove(CameraID);
+
+	CameraIDRequestQueue.RemoveAt(Index);
+	return true;
+}
+
+bool UJoyCameraComponent::RemoveCameraConfigByID(FName CameraID)
+{
+	if (CameraID != NAME_None && CameraIDs.Contains(CameraID))
+	{
+		int32 Index = 0;
+		for (const auto& CacheRequest : CameraIDRequestQueue)
+		{
+			if (CacheRequest.CameraID == CameraID)
+			{
+				break;
+			}
+
+			Index++;
+		}
+
+		if (Index >= CameraIDRequestQueue.Num())
+		{
+			return false;
+		}
+
+		bIsCameraConfigDirty = true;
+		CameraIDRequestQueue.RemoveAt(Index);
+		CameraIDs.Remove(CameraID);
+
+		return true;
+	}
+
+	return false;
+}
+
+TArray<FName> UJoyCameraComponent::GetCameraIDs() const
+{
+	TArray<FName> OutResult{};
+	for (const auto& CacheRequest : CameraIDRequestQueue)
+	{
+		OutResult.Add(CacheRequest.CameraID);
+	}
+
+	return OutResult;
+}
+
+bool UJoyCameraComponent::IsCameraConfigDirty() const
+{
+	return bIsCameraConfigDirty;
+}
+
+void UJoyCameraComponent::RefreshCameraConfig()
+{
+	bIsCameraConfigDirty = false;
 }

@@ -11,6 +11,9 @@ class AJoyPlayerController;
 class AJoyCharacter;
 struct FJoyCharacterSwitchExtraParam;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+	FOnControlCharacterChanged, AJoyCharacter*, FromCharacter, AJoyCharacter*, ToCharacter);
+
 USTRUCT()
 struct FCharacterControlState
 {
@@ -52,9 +55,12 @@ public:
 		return ControlState.TargetCharacterSwitchTo;
 	}
 
+	UPROPERTY(BlueprintAssignable)
+	FOnControlCharacterChanged OnControlCharacterChangedDelegate{};
+
 	UFUNCTION()
 	void OnCharacterSwitchFinished(AJoyCharacter* PreviousCharacter, AJoyCharacter* TargetCharacter);
-
+	
 	void SetCharacterSwitchEnabled(bool bEnabled)
 	{
 		bAllowSwitchCharacter = bEnabled;

@@ -32,7 +32,7 @@ void UJoyCameraMode_ThirdPerson::LookAtLockTarget()
 
 FVector UJoyCameraMode_ThirdPerson::GetBaseEye() const
 {
-	// return AFGPlayerCameraManager::GetCharacterBaseEye(GetTargetActor()) + CurrentCrouchOffset;
+	// return AJoyPlayerCameraManager::GetCharacterBaseEye(GetTargetActor()) + CurrentCrouchOffset;
 	if (PlayerCameraManager != nullptr)
 	{
 		return PlayerCameraManager->GetCharacterCameraBase(GetTargetActor());
@@ -78,13 +78,12 @@ void UJoyCameraMode_ThirdPerson::UpdateFeelers()
 
 bool UJoyCameraMode_ThirdPerson::IsEnableLocationLag() const
 {
-	// @TODO 重新配置
-	return true;
+	return PlayerCameraManager != nullptr ? PlayerCameraManager->CameraLagEnable() : false;
 }
 
 bool UJoyCameraMode_ThirdPerson::IsEnableRotationLag() const
 {
-	return PlayerCameraManager != nullptr ? PlayerCameraManager->bEnableCameraRotLag : true;
+	return PlayerCameraManager != nullptr ? PlayerCameraManager->bEnableCameraRotLag : false;
 }
 
 void UJoyCameraMode_ThirdPerson::UpdateView(float DeltaTime)
@@ -154,10 +153,7 @@ void UJoyCameraMode_ThirdPerson::UpdateDesiredViewPose(
 
 	FRotator DesiredRot = OutCameraRot;
 
-	// 临时的旋转二次插值逻辑，这块逻辑可能和战斗自带的 lag 冲突，因此这里采用完全不同的分支逻辑处理
-	bool const bEnableSecondaryRotLag = PlayerCameraManager && PlayerCameraManager->bEnableCameraSecondaryRotLag;
-
-	if (IsEnableRotationLag() || bEnableSecondaryRotLag)
+	if (IsEnableRotationLag())
 	{
 		if (!CameraComponent->CameraDataThisFrame.ViewRotation.CheckValid())
 		{
@@ -165,29 +161,12 @@ void UJoyCameraMode_ThirdPerson::UpdateDesiredViewPose(
 			return;
 		}
 
-		if (bEnableSecondaryRotLag)
-		{
-			/**
-			 * 这里进行二次插值计算相机旋转角度，角度差越小旋转速度越慢。
-			 */
-			float const VMin = PlayerCameraManager->CameraSecondaryRotLagRange.X;
-			float const VMax = PlayerCameraManager->CameraSecondaryRotLagRange.Y;
-			FQuat const QCurrent = CameraComponent->CameraDataThisFrame.ViewRotation.Data.GetNormalized().Quaternion();
-			FQuat const QTarget = DesiredRot.GetNormalized().Quaternion();
-			float const AngleDifference = FMath::Abs(QCurrent.AngularDistance(QTarget));
-			float const CurrentSpeed =
-				FMath::GetMappedRangeValueClamped(FVector2D(0.f, 180.f), FVector2D(VMin, VMax), AngleDifference);
-			DesiredRot = FMath::RInterpTo(QCurrent.Rotator(), QTarget.Rotator(), DeltaTime, CurrentSpeed);
-		}
-		else
-		{
-			FQuat const QCurrent = CameraComponent->CameraDataThisFrame.ViewRotation.Data.GetNormalized().Quaternion();
-			FQuat const QTarget = DesiredRot.GetNormalized().Quaternion();
-			const float CameraRotLagRecoverSpeed = PlayerCameraManager != nullptr
-													   ? PlayerCameraManager->GetArmRotatorLagRecoverSpeed()
-													   : DefaultCameraRotLagSpeed;
-			DesiredRot = FMath::RInterpTo(QCurrent.Rotator(), QTarget.Rotator(), DeltaTime, CameraRotLagRecoverSpeed);
-		}
+		FQuat const QCurrent = CameraComponent->CameraDataThisFrame.ViewRotation.Data.GetNormalized().Quaternion();
+		FQuat const QTarget = DesiredRot.GetNormalized().Quaternion();
+		const float CameraRotLagRecoverSpeed = PlayerCameraManager != nullptr
+			                                       ? PlayerCameraManager->GetArmRotatorLagRecoverSpeed()
+			                                       : DefaultCameraRotLagSpeed;
+		DesiredRot = FMath::RInterpTo(QCurrent.Rotator(), QTarget.Rotator(), DeltaTime, CameraRotLagRecoverSpeed);
 	}
 
 	/*
@@ -206,18 +185,18 @@ void UJoyCameraMode_ThirdPerson::UpdateDesiredViewPose(
 	if (IsEnableLocationLag())
 	{
 		const float CameraLagRecoverSpeed = PlayerCameraManager != nullptr
-												? PlayerCameraManager->GetArmCenterLagRecoverSpeed()
-												: DefaultCameraLagRecoverSpeed;
+			                                    ? PlayerCameraManager->GetArmCenterLagRecoverSpeed()
+			                                    : DefaultCameraLagRecoverSpeed;
 
 		DesiredLoc = FMath::VInterpTo(
 			CameraComponent->CameraDataThisFrame.ArmLocation.Data, DesiredLoc, DeltaTime, CameraLagRecoverSpeed);
 		const float CameraLagMaxDistanceXY = PlayerCameraManager != nullptr
-												 ? PlayerCameraManager->GetArmCenterLagMaxDistanceXY()
-												 : DefaultCameraLagMaxDistance;
+			                                     ? PlayerCameraManager->GetArmCenterLagMaxDistanceXY()
+			                                     : DefaultCameraLagMaxDistance;
 
 		const float CameraLagMaxDistanceZ = PlayerCameraManager != nullptr
-												? PlayerCameraManager->GetArmCenterLagMaxDistanceZ()
-												: DefaultCameraLagMaxDistance;
+			                                    ? PlayerCameraManager->GetArmCenterLagMaxDistanceZ()
+			                                    : DefaultCameraLagMaxDistance;
 
 		if (CameraLagMaxDistanceXY >= 0.f && CameraLagMaxDistanceZ >= 0.f)
 		{
@@ -248,7 +227,7 @@ void UJoyCameraMode_ThirdPerson::UpdateDesiredViewPose(
 
 		// 如果角色是面对着相机移动的，那么要防止角色太靠近相机导致穿模
 		if (FVector::DotProduct(
-				DesiredRot.Vector(), (DesiredLoc - CameraComponent->CameraDataThisFrame.ArmLocation.Data)) < 0.)
+			    DesiredRot.Vector(), (DesiredLoc - CameraComponent->CameraDataThisFrame.ArmLocation.Data)) < 0.)
 		{
 			float LaggedLength = (DesiredLoc - OutCameraLoc).Length();
 			if ((ArmOffset.Length() - LaggedLength) < MinArmLength)
@@ -415,7 +394,7 @@ void UJoyCameraMode_ThirdPerson::PreventCameraPenetration(class AActor const& Vi
 			// cast for world and pawn hits separately.  this is so we can safely ignore the
 			// camera's target pawn
 			SphereShape.Sphere.Radius = Feeler.Extent;
-			ECollisionChannel TraceChannel = ECC_Camera;	//(Feeler.PawnWeight > 0.f) ? ECC_Pawn : ECC_Camera;
+			ECollisionChannel TraceChannel = ECC_Camera; //(Feeler.PawnWeight > 0.f) ? ECC_Pawn : ECC_Camera;
 
 			// do multi-line check to make sure the hits we throw out aren't
 			// masking real hits behind (these are important rays).

@@ -11,10 +11,13 @@
 #include "Gameplay/TimeDilation/JoyTimeDilationManageSubsystem.h"
 #include "JoyCameraComponent.h"
 #include "JoyGameBlueprintLibrary.h"
+#include "Controller/JoyCameraConfigController.h"
+#include "Controller/JoyCameraInputController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Memory/MemoryView.h"
 #include "Player/JoyPlayerController.h"
 
+class AJoyHeroCharacter;
 DECLARE_CYCLE_STAT(TEXT("Camera ProcessViewRotation"), STAT_Camera_ProcessViewRotation, STATGROUP_Game);
 
 FVirtualCamera& FVirtualCamera::operator=(const FVirtualCamera& Other)
@@ -61,7 +64,8 @@ void AJoyPlayerCameraManager::BlendViewInfo(FMinimalViewInfo& A, FMinimalViewInf
 	}
 }
 
-AJoyPlayerCameraManager::AJoyPlayerCameraManager(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+AJoyPlayerCameraManager::AJoyPlayerCameraManager(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bCanEverTick = true;
@@ -70,6 +74,7 @@ AJoyPlayerCameraManager::AJoyPlayerCameraManager(const FObjectInitializer& Objec
 void AJoyPlayerCameraManager::BeginPlay()
 {
 	UJoyGameBlueprintLibrary::RegisterInputBlocker(GetWorld(), this);
+	Super::BeginPlay();
 }
 
 void AJoyPlayerCameraManager::UpdateViewTarget(FTViewTarget& OutVT, float DeltaTime)
@@ -90,10 +95,99 @@ float AJoyPlayerCameraManager::ComputeTimeDilation(float DeltaTime) const
 	}
 }
 
+void AJoyPlayerCameraManager::EndCurrentCameraFadingProcess()
+{
+	CameraConfigFadingDescription.bDuringFading = false;
+	if (CameraConfigFadingDescription.bOverrideCameraInput)
+	{
+		SetArmPitchInputEnabled(true);
+		SetArmYawInputEnabled(true);
+	}
+
+	CameraConfigFadingDescription.bOverrideCameraInput = false;
+}
+
+void AJoyPlayerCameraManager::UpdateCameraConfigs(UJoyCameraComponent* CameraComponent)
+{
+	if (CameraComponent == nullptr)
+	{
+		return;
+	}
+
+	if (CameraComponent->IsCameraConfigDirty())
+	{
+		const TArray<FName> SubCameraIDs = CameraComponent->GetCameraIDs();
+		if (SubCameraIDs.Num() < CameraConfigDescription.CameraStack.Num() && CameraConfigDescription.CameraStack.Num()
+		    > 0)
+		{
+			CameraConfigDescription.FadeOutCamera = CameraConfigDescription.CameraStack[
+				CameraConfigDescription.CameraStack.Num() - 1];
+		}
+
+		CameraConfigDescription.CameraStack = SubCameraIDs;
+		CameraComponent->RefreshCameraConfig();
+		if (CameraConfigController != nullptr)
+		{
+			CameraConfigController->MarkDirty();
+		}
+
+		CameraConfigDescription.bForceUpdateCameraConfigSet = false;
+	}
+	else if (CameraConfigDescription.bForceUpdateCameraConfigSet)
+	{
+		const auto& CameraIDs = CameraComponent->GetCameraIDs();
+		bool bCameraConfigEqual = (CameraConfigDescription.CameraStack.Num() == CameraIDs.Num());
+		if (bCameraConfigEqual)
+		{
+			for (int i = 0; i < CameraIDs.Num(); i++)
+			{
+				if (CameraConfigDescription.CameraStack[i] != CameraIDs[i])
+				{
+					bCameraConfigEqual = false;
+					break;
+				}
+			}
+		}
+
+		if (!bCameraConfigEqual)
+		{
+			CameraConfigDescription.CameraStack = CameraIDs;
+			if (CameraConfigController != nullptr)
+			{
+				CameraConfigController->MarkDirty();
+			}
+		}
+
+		CameraConfigDescription.bForceUpdateCameraConfigSet = false;
+	}
+}
+
 void AJoyPlayerCameraManager::UpdateCameraControllers(float DeltaTime)
 {
+	if (CameraConfigController != nullptr)
+	{
+		const AActor* TargetCameraOwner = PendingViewTarget.Target;
+		if (TargetCameraOwner == nullptr || !TargetCameraOwner->IsA<AJoyHeroCharacter>() ||
+		    UJoyCameraComponent::FindCameraComponent(TargetCameraOwner) == nullptr)
+		{
+			TargetCameraOwner = ViewTarget.Target;
+		}
+
+		if (auto* Camera = UJoyCameraComponent::FindCameraComponent(TargetCameraOwner))
+		{
+			UpdateCameraConfigs(Camera);
+		}
+
+		CameraConfigController->Update(DeltaTime);
+	}
+
+	if (CameraInputController != nullptr)
+	{
+		CameraInputController->Update(DeltaTime);
+	}
+
 	for (auto ItViewTarget = MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateConstIterator(); ItViewTarget;
-		 ++ItViewTarget)
+	     ++ItViewTarget)
 	{
 		TWeakObjectPtr<AActor> NewViewTarget = ItViewTarget.Key();
 		const FViewTargetCameraInfo& CameraInfo = ItViewTarget.Value();
@@ -119,8 +213,8 @@ void AJoyPlayerCameraManager::UpdateViewTargetPose()
 {
 	const auto* CharacterControlManager = UJoyCharacterControlManageSubsystem::Get(GetWorld());
 	for (TMap<TWeakObjectPtr<AActor>, FViewTargetCameraInfo>::TIterator ItViewTarget =
-			 MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
-		 ItViewTarget; ++ItViewTarget)
+		     MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
+	     ItViewTarget; ++ItViewTarget)
 	{
 		TWeakObjectPtr<AActor> NewViewTarget = ItViewTarget.Key();
 		FViewTargetCameraInfo& CameraInfo = ItViewTarget.Value();
@@ -162,7 +256,7 @@ bool AJoyPlayerCameraManager::NeedUpdateViewTarget(AActor* InViewTarget, const F
 		}
 
 		if (CameraInfo.CameraModifierController.Get() != nullptr &&
-			CameraInfo.CameraModifierController.Get()->IsModifiedAndNeedUpdate())
+		    CameraInfo.CameraModifierController.Get()->IsModifiedAndNeedUpdate())
 		{
 			return true;
 		}
@@ -174,8 +268,8 @@ bool AJoyPlayerCameraManager::NeedUpdateViewTarget(AActor* InViewTarget, const F
 void AJoyPlayerCameraManager::ClearUnusedViewTargets()
 {
 	for (TMap<TWeakObjectPtr<AActor>, FViewTargetCameraInfo>::TIterator ItViewTarget =
-			 MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
-		 ItViewTarget; ++ItViewTarget)
+		     MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
+	     ItViewTarget; ++ItViewTarget)
 	{
 		TWeakObjectPtr<AActor> NewViewTarget = ItViewTarget.Key();
 		if (NewViewTarget.Get() == nullptr)
@@ -220,7 +314,7 @@ void AJoyPlayerCameraManager::InternalUpdateCamera(float DeltaTime)
 	UpdateArmLocation(DeltaTime);
 
 	/*
-	 * 上述代码修改过后的参数保留在 DesiredCamera 中，UpdateFading 将
+	 * 上述代码修改过后的参数保留在 DesiredCamera 中，SyncDesireCameraData 将
 	 * DesiredCamera 数据同步到 CurrentCamera 中
 	 */
 	SyncDesireCameraData(DeltaTimeThisFrame_IgnoreTimeDilation);
@@ -235,9 +329,16 @@ void AJoyPlayerCameraManager::InternalUpdateCamera(float DeltaTime)
 
 void AJoyPlayerCameraManager::SyncDesireCameraData(float DeltaTime)
 {
+	CameraConfigFadingDescription.ElapseTime += DeltaTime;
+	if (CameraConfigFadingDescription.bDuringFading && CameraConfigFadingDescription.ElapseTime >=
+	    CameraConfigFadingDescription.Duration)
+	{
+		EndCurrentCameraFadingProcess();
+	}
+
 	for (TMap<TWeakObjectPtr<AActor>, FViewTargetCameraInfo>::TIterator ItViewTarget =
-			 MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
-		 ItViewTarget; ++ItViewTarget)
+		     MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
+	     ItViewTarget; ++ItViewTarget)
 	{
 		TWeakObjectPtr<AActor> NewViewTarget = ItViewTarget.Key();
 		FViewTargetCameraInfo& CameraInfo = ItViewTarget.Value();
@@ -252,7 +353,91 @@ void AJoyPlayerCameraManager::SyncDesireCameraData(float DeltaTime)
 			continue;
 		}
 
-		CameraInfo.CurrentCamera.CopyCamera(CameraInfo.DesiredCamera);
+		if (!CameraConfigFadingDescription.bDuringFading)
+		{
+			CameraInfo.CurrentCamera.CopyCamera(CameraInfo.DesiredCamera);
+			continue;
+		}
+
+		if (!CameraInfo.bNeedFading)
+		{
+			CameraInfo.CurrentCamera.CopyCamera(CameraInfo.DesiredCamera);
+			continue;
+		}
+
+		const float BlendAlpha = FMath::Clamp(CameraConfigFadingDescription.ElapseTime / CameraConfigFadingDescription.Duration, 0, 1);
+		if (CameraInfo.bFadeArmLength && !CameraInfo.bCameraArmLength_HasModified)
+		{
+			CameraInfo.CurrentCamera.ArmLength =
+				FMath::Lerp(CameraInfo.LastCamera.ArmLength, CameraInfo.DesiredCamera.ArmLength, BlendAlpha);
+		}
+		else
+		{
+			CameraInfo.bFadeArmLength = false;
+			CameraInfo.CurrentCamera.ArmLength = CameraInfo.DesiredCamera.ArmLength;
+		}
+
+		if (CameraInfo.bFadeArmLengthRange)
+		{
+			CameraInfo.CurrentCamera.MinArmLength =
+				FMath::Lerp(CameraInfo.LastCamera.MinArmLength, CameraInfo.DesiredCamera.MinArmLength, BlendAlpha);
+			CameraInfo.CurrentCamera.MaxArmLength =
+				FMath::Lerp(CameraInfo.LastCamera.MaxArmLength, CameraInfo.DesiredCamera.MaxArmLength, BlendAlpha);
+		}
+		else
+		{
+			CameraInfo.CurrentCamera.MinArmLength = CameraInfo.DesiredCamera.MinArmLength;
+			CameraInfo.CurrentCamera.MaxArmLength = CameraInfo.DesiredCamera.MaxArmLength;
+		}
+
+		if (CameraInfo.bFadeLocalArmCenterOffset && !CameraInfo.bCameraOffset_HasModified)
+		{
+			CameraInfo.CurrentCamera.LocalArmCenterOffset = FMath::Lerp(
+				CameraInfo.LastCamera.LocalArmCenterOffset, CameraInfo.DesiredCamera.LocalArmCenterOffset, BlendAlpha);
+
+			CameraInfo.CurrentCamera.WorldArmOffsetAdditional =
+				FMath::Lerp(CameraInfo.LastCamera.WorldArmOffsetAdditional,
+					CameraInfo.DesiredCamera.WorldArmOffsetAdditional, BlendAlpha);
+		}
+		else
+		{
+			CameraInfo.bFadeLocalArmCenterOffset = false;
+			CameraInfo.CurrentCamera.LocalArmCenterOffset = CameraInfo.DesiredCamera.LocalArmCenterOffset;
+			CameraInfo.CurrentCamera.WorldArmOffsetAdditional = CameraInfo.DesiredCamera.WorldArmOffsetAdditional;
+		}
+
+		if (CameraInfo.bFadeArmPitch && !CameraInfo.bArmPitch_HasModified)
+		{
+			CameraInfo.CurrentCamera.ArmCenterRotation.Pitch =
+				FMath::Lerp(CameraInfo.LastCamera.ArmCenterRotation.Pitch, FadingTarget_ArmPitch, BlendAlpha);
+		}
+		else
+		{
+			CameraInfo.bFadeArmPitch = false;
+			CameraInfo.CurrentCamera.ArmCenterRotation.Pitch = CameraInfo.DesiredCamera.ArmCenterRotation.Pitch;
+		}
+
+		if (CameraInfo.bFadeArmYaw && !CameraInfo.bArmYaw_HasModified)
+		{
+			CameraInfo.CurrentCamera.ArmCenterRotation.Yaw =
+				FMath::Lerp(CameraInfo.LastCamera.ArmCenterRotation.Yaw, FadingTarget_ArmYaw, BlendAlpha);
+		}
+		else
+		{
+			CameraInfo.bFadeArmYaw = false;
+			CameraInfo.CurrentCamera.ArmCenterRotation.Yaw = CameraInfo.DesiredCamera.ArmCenterRotation.Yaw;
+		}
+
+		if (CameraInfo.bFadeCameraFov && !CameraInfo.bCameraFov_HasModified)
+		{
+			CameraInfo.CurrentCamera.Fov =
+				FMath::Lerp(CameraInfo.LastCamera.Fov, CameraInfo.DesiredCamera.Fov, BlendAlpha);
+		}
+		else
+		{
+			CameraInfo.bFadeCameraFov = false;
+			CameraInfo.CurrentCamera.Fov = CameraInfo.DesiredCamera.Fov;
+		}	
 	}
 }
 
@@ -265,8 +450,8 @@ void AJoyPlayerCameraManager::UpdateActorTransform(float DeltaTime)
 {
 	const auto* GravityManager = UJoyGravityManageSubsystem::Get(GetWorld());
 	for (TMap<TWeakObjectPtr<AActor>, FViewTargetCameraInfo>::TIterator ItViewTarget =
-			 MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
-		 ItViewTarget; ++ItViewTarget)
+		     MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
+	     ItViewTarget; ++ItViewTarget)
 	{
 		TWeakObjectPtr<AActor> NewViewTarget = ItViewTarget.Key();
 		FViewTargetCameraInfo& CameraInfo = ItViewTarget.Value();
@@ -287,7 +472,7 @@ void AJoyPlayerCameraManager::UpdateActorTransform(float DeltaTime)
 			GravityManager != nullptr ? GravityManager->WorldRotatorToLocal(WorldRotator) : WorldRotator;
 		LocalRotator.Pitch = FMath::Clamp(LocalRotator.Pitch, MinArmPitch, MaxArmPitch);
 		WorldRotator = GravityManager != nullptr ? GravityManager->LocalRotatorToWorld(LocalRotator) : LocalRotator;
-
+		
 		// 更新 Controller 的控制方向
 		SetRotationInternal(NewViewTarget.Get(), WorldRotator);
 
@@ -300,8 +485,8 @@ void AJoyPlayerCameraManager::UpdateActorTransform(float DeltaTime)
 		const FVector UpVec = CameraSpace.RotateVector(FVector(0.0, 0.0, 1.0));
 
 		CameraInfo.CurrentCamera.SetArmCenterOffset(CameraInfo.CurrentCamera.LocalArmCenterOffset.X * ForwardVec +
-													CameraInfo.CurrentCamera.LocalArmCenterOffset.Y * RightVec +
-													CameraInfo.CurrentCamera.LocalArmCenterOffset.Z * UpVec);
+		                                            CameraInfo.CurrentCamera.LocalArmCenterOffset.Y * RightVec +
+		                                            CameraInfo.CurrentCamera.LocalArmCenterOffset.Z * UpVec);
 
 		CameraInfo.CurrentCamera.SetArmCenterOffset(
 			CameraInfo.CurrentCamera.ArmCenterOffset + CameraInfo.CurrentCamera.WorldArmOffsetAdditional);
@@ -469,10 +654,10 @@ void AJoyPlayerCameraManager::AddNewViewTarget(AActor* NewViewTarget)
 
 	// Virtual camera 的默认值
 	FVirtualCamera VirtualCamera{};
-	VirtualCamera.ArmLength = BasicArmLength;
+	VirtualCamera.ArmLength = BaseArmLength;
 	VirtualCamera.MinArmLength = MinArmLength;
 	VirtualCamera.MaxArmLength = MaxArmLength;
-	VirtualCamera.Fov = BasicFov;
+	VirtualCamera.Fov = BaseFov;
 	VirtualCamera.LocalArmCenterOffset = GetBaseLocalArmOffset();
 	VirtualCamera.WorldArmOffsetAdditional = FVector::ZeroVector;
 	VirtualCamera.ArmCenterRotation = GetViewTargetViewRotation(NewViewTarget);
@@ -484,7 +669,7 @@ void AJoyPlayerCameraManager::InitializeFor(APlayerController* PC)
 {
 	// 初始化 CurrentCamera
 	for (TPair<TWeakObjectPtr<AActor>, FViewTargetCameraInfo>& ModifierContainer :
-		MultiViewTargetCameraManager.ViewTargetCameraInfos)
+	     MultiViewTargetCameraManager.ViewTargetCameraInfos)
 	{
 		auto NewViewTarget = ModifierContainer.Key;
 		FViewTargetCameraInfo& CameraInfo = ModifierContainer.Value;
@@ -494,10 +679,10 @@ void AJoyPlayerCameraManager::InitializeFor(APlayerController* PC)
 		}
 
 		// 初始化 CameraInfo.CurrentCamera
-		CameraInfo.CurrentCamera.ArmLength = BasicArmLength;
+		CameraInfo.CurrentCamera.ArmLength = BaseArmLength;
 		CameraInfo.CurrentCamera.MinArmLength = MinArmLength;
 		CameraInfo.CurrentCamera.MaxArmLength = MaxArmLength;
-		CameraInfo.CurrentCamera.Fov = BasicFov;
+		CameraInfo.CurrentCamera.Fov = BaseFov;
 		CameraInfo.CurrentCamera.LocalArmCenterOffset = GetBaseLocalArmOffset();
 		CameraInfo.CurrentCamera.WorldArmOffsetAdditional = FVector::ZeroVector;
 		CameraInfo.CurrentCamera.ArmCenterRotation = FRotator::ZeroRotator;
@@ -512,6 +697,15 @@ void AJoyPlayerCameraManager::InitializeFor(APlayerController* PC)
 		CameraInfo.CameraModifierController->ModifiedViewTarget = NewViewTarget.Get();
 	}
 
+	CameraInputController = NewObject<UJoyCameraInputController>(this);
+	check(CameraInputController);
+	CameraInputController->InitializeFor(this);
+
+	// CameraConfigController 要放在最后初始化，因为它要为其他 Controller 设置参数
+	CameraConfigController = NewObject<UJoyCameraConfigController>(this);
+	check(CameraConfigController);
+	CameraConfigController->InitializeFor(this);
+
 	Super::InitializeFor(PC);
 	FGameDelegates::Get().GetViewTargetChangedDelegate().AddUObject(this, &ThisClass::OnViewTargetChanged);
 }
@@ -519,8 +713,8 @@ void AJoyPlayerCameraManager::InitializeFor(APlayerController* PC)
 void AJoyPlayerCameraManager::ResetModifiedMarkers()
 {
 	for (TMap<TWeakObjectPtr<AActor>, FViewTargetCameraInfo>::TIterator ItViewTarget =
-			 MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
-		 ItViewTarget; ++ItViewTarget)
+		     MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
+	     ItViewTarget; ++ItViewTarget)
 	{
 		TWeakObjectPtr<AActor> NewViewTarget = ItViewTarget.Key();
 		FViewTargetCameraInfo& CameraInfo = ItViewTarget.Value();
@@ -555,15 +749,15 @@ float AJoyPlayerCameraManager::GetBaseMinArmLength() const
 
 float AJoyPlayerCameraManager::GetBaseArmLength() const
 {
-	return BasicArmLength;
+	return BaseArmLength;
 }
 
 float AJoyPlayerCameraManager::GetBaseCameraFov() const
 {
-	return BasicFov;
+	return BaseFov;
 }
 
-FRotator AJoyPlayerCameraManager::GetViewTargetViewRotation(const AActor* InViewTarget) const
+FRotator AJoyPlayerCameraManager::GetViewTargetViewRotation(const AActor* InViewTarget)
 {
 	if (auto* PawnTarget = Cast<APawn>(InViewTarget))
 	{
@@ -697,7 +891,7 @@ float AJoyPlayerCameraManager::GetCurrentArmLength(AActor* InViewTarget) const
 	return 0.;
 }
 
-FViewTargetCameraInfo* AJoyPlayerCameraManager::GetViewTargetCameraInfo(AActor* InViewTarget)
+FViewTargetCameraInfo* AJoyPlayerCameraManager::GetViewTargetCameraInfo(const AActor* InViewTarget)
 {
 	if (InViewTarget != nullptr && MultiViewTargetCameraManager.ContainsViewTarget(InViewTarget))
 	{
@@ -898,7 +1092,7 @@ void AJoyPlayerCameraManager::BlendViewFunc_ArcCurve(FMinimalViewInfo& A, FMinim
 		// Bezier 插值计算当前 pitch
 		const float MaxPitchDegree = FMath::Max(-(PitchParam_A * MaxHeightDelta + PitchParam_B), -85);
 		const float CurPitch = FMath::Square(1. - T) * A.Rotation.Pitch + 2. * T * (1 - T) * MaxPitchDegree +
-							   FMath::Square(T) * B.Rotation.Pitch;
+		                       FMath::Square(T) * B.Rotation.Pitch;
 		A.Rotation.Pitch = CurPitch;
 	}
 
@@ -935,6 +1129,11 @@ EJoyCameraBlendType AJoyPlayerCameraManager::GetBlendViewType() const
 	return BlendViewType;
 }
 
+const FCameraConfigDescription& AJoyPlayerCameraManager::GetCameraConfigDescription() const
+{
+	return CameraConfigDescription;
+}
+
 void AJoyPlayerCameraManager::SetBlendViewType(EJoyCameraBlendType InBlendViewWay)
 {
 	BlendViewType = InBlendViewWay;
@@ -968,7 +1167,7 @@ void AJoyPlayerCameraManager::ProcessViewRotation(float DeltaTime, FRotator& Out
 		if (ModifierList[ModifierIdx] != NULL && !ModifierList[ModifierIdx]->IsDisabled())
 		{
 			if (ModifierList[ModifierIdx]->ProcessViewRotation(
-					ViewTarget.Target, DeltaTime, OutViewRotation, OutDeltaRot))
+				ViewTarget.Target, DeltaTime, OutViewRotation, OutDeltaRot))
 			{
 				break;
 			}
@@ -1054,7 +1253,7 @@ TObjectPtr<class UJoyCameraModifierController> FMultiViewTargetCameraManager::Ge
 	return nullptr;
 }
 
-bool FMultiViewTargetCameraManager::ContainsViewTarget(AActor* InViewTarget) const
+bool FMultiViewTargetCameraManager::ContainsViewTarget(const AActor* InViewTarget) const
 {
 	return InViewTarget != nullptr && ViewTargetCameraInfos.Contains(InViewTarget);
 }
@@ -1083,27 +1282,133 @@ void FMultiViewTargetCameraManager::AddViewTarget(
 
 void AJoyPlayerCameraManager::SetArmPitchInputEnabled(bool bEnabled)
 {
-	InputOverrideConfig.bBlockArmPitch = !bEnabled;
+	InputOverrideDescription.BlockArmPitchCounter += (bEnabled ? -1 : 1);
 }
 
 void AJoyPlayerCameraManager::SetArmYawInputEnabled(bool bEnabled)
 {
-	InputOverrideConfig.bBlockArmYaw = !bEnabled;
+	InputOverrideDescription.BlockArmYawCounter += (bEnabled ? -1 : 1);
 }
 
 void AJoyPlayerCameraManager::SetArmLengthInputEnabled(bool bEnabled)
 {
-	InputOverrideConfig.bBlockArmLength = !bEnabled;
+	InputOverrideDescription.BlockArmLengthCounter += (bEnabled ? -1 : 1);
 }
 
 bool AJoyPlayerCameraManager::BlockLookMoveInput_Implementation(
-    UObject *InputReceiver, const FInputActionValue& InputActionValue)
+	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {
-	return InputOverrideConfig.bBlockArmPitch || InputOverrideConfig.bBlockArmYaw;
+	return InputOverrideDescription.BlockArmPitchCounter > 0 || InputOverrideDescription.BlockArmYawCounter > 0;
 }
 
 bool AJoyPlayerCameraManager::BlockMouseScrollInput_Implementation(UObject* InputReceiver,
-                                                                   const FInputActionValue& InputActionValue)
+	const FInputActionValue& InputActionValue)
 {
-	return InputOverrideConfig.bBlockArmLength;
+	return InputOverrideDescription.BlockArmLengthCounter > 0;
+}
+
+void AJoyPlayerCameraManager::SetConfigs(const TMap<EJoyCameraBasic, float>& Config)
+{
+	// 基础镜头设置
+	UPDATE_BASIC_CONFIGS(BaseArmLength);
+	UPDATE_BASIC_CONFIGS(MinArmLength);
+	UPDATE_BASIC_CONFIGS(MaxArmLength);
+	UPDATE_BASIC_CONFIGS(OverlayArmLength);
+	UPDATE_BASIC_CONFIGS(BaseFov);
+	UPDATE_BASIC_CONFIGS(ArmCenterOffsetX);
+	UPDATE_BASIC_CONFIGS(ArmCenterOffsetY);
+	UPDATE_BASIC_CONFIGS(ArmCenterOffsetZ);
+	UPDATE_BASIC_CONFIGS(ViewTargetSwitchTime);
+	UPDATE_BASIC_CONFIGS(ArmCenterLagRecoverSpeed);
+	UPDATE_BASIC_CONFIGS(ArmCenterLagMaxHorizontalDistance);
+	UPDATE_BASIC_CONFIGS(ArmCenterLagMaxVerticalDistance);
+
+	UPDATE_BASIC_CONFIGS(MinArmPitch);
+	ViewPitchMin = MinArmPitch;
+	UPDATE_BASIC_CONFIGS(MaxArmPitch);
+	ViewPitchMax = MaxArmPitch;
+
+	UPDATE_BASIC_CONFIGS(ArmRotationLagRecoverSpeed);
+}
+
+void AJoyPlayerCameraManager::ApplyConfig()
+{
+	if (CameraConfigController)
+	{
+		bEnableCameraLag = CameraConfigController->bArmCenterLagEnable;
+		FadingTarget_ArmPitch = CameraConfigController->FadeTargetArmPitch;
+	}
+
+	for (TMap<TWeakObjectPtr<AActor>, FViewTargetCameraInfo>::TIterator ItViewTarget =
+		     MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
+	     ItViewTarget; ++ItViewTarget)
+	{
+		TWeakObjectPtr<AActor> CachedViewTarget = ItViewTarget.Key();
+		FViewTargetCameraInfo& CachedCameraInfo = ItViewTarget.Value();
+
+		if (CachedViewTarget.Get() == nullptr)
+		{
+			ItViewTarget.RemoveCurrent();
+			continue;
+		}
+
+		// 将当前基础相机参数更新到缓存的 ViewTarget 上
+		CachedCameraInfo.DesiredCamera.ArmLength = BaseArmLength + OverlayArmLength;
+		CachedCameraInfo.DesiredCamera.MinArmLength = MinArmLength;
+		CachedCameraInfo.DesiredCamera.MaxArmLength = MaxArmLength;
+		CachedCameraInfo.DesiredCamera.SetArmCenterOffset(
+			FVector(ArmCenterOffsetX, ArmCenterOffsetY, ArmCenterOffsetZ));
+		CachedCameraInfo.DesiredCamera.LocalArmCenterOffset =
+			FVector(ArmCenterOffsetX, ArmCenterOffsetY, ArmCenterOffsetZ);
+		CachedCameraInfo.DesiredCamera.WorldArmOffsetAdditional = FVector::ZeroVector;
+		CachedCameraInfo.DesiredCamera.Fov = BaseFov;
+	}
+}
+
+void AJoyPlayerCameraManager::StartFade(float InFadeDuration, bool bFadeArmLengthRange, bool bInFadeArmLength,
+	bool bInFadeArmRotationPitch, bool bInFadeArmRotationYaw, bool bInFadeLocalArmCenterOffset, bool bInFadeFov,
+	bool bIgnoreTimeDilationDuringFading, bool bOverrideCameraInput)
+{
+	for (TMap<TWeakObjectPtr<AActor>, FViewTargetCameraInfo>::TIterator ItViewTarget =
+		     MultiViewTargetCameraManager.ViewTargetCameraInfos.CreateIterator();
+	     ItViewTarget; ++ItViewTarget)
+	{
+		TWeakObjectPtr<AActor> FadeViewTarget = ItViewTarget.Key();
+		FViewTargetCameraInfo& FadeCameraInfo = ItViewTarget.Value();
+
+		if (FadeViewTarget.Get() == nullptr)
+		{
+			ItViewTarget.RemoveCurrent();
+			continue;
+		}
+
+		// @TODO 如果在 Fade 期间同时进行了 CameraModifier，表现会异常，因为这两套机制同时写入了 LastCamera 变量
+		FadeCameraInfo.LastCamera.CopyCamera(FadeCameraInfo.CurrentCamera);
+		FadeCameraInfo.bFadeArmLengthRange = bFadeArmLengthRange;
+		FadeCameraInfo.bFadeArmLength = bInFadeArmLength;
+		FadeCameraInfo.bFadeArmPitch = bInFadeArmRotationPitch;
+		FadeCameraInfo.bFadeArmYaw = bInFadeArmRotationYaw;
+		FadeCameraInfo.bFadeLocalArmCenterOffset = bInFadeLocalArmCenterOffset;
+
+		FadeCameraInfo.bNeedFading = true;
+		FadeCameraInfo.bFadeCameraFov = bInFadeFov;
+	}
+
+	if (CameraConfigFadingDescription.bDuringFading)
+	{
+		// 中断上一段 Fading 过程
+		EndCurrentCameraFadingProcess();
+	}
+
+	CameraConfigFadingDescription.Duration = InFadeDuration;
+	CameraConfigFadingDescription.ElapseTime = 0;
+	CameraConfigFadingDescription.bDuringFading = true;
+	CameraConfigFadingDescription.bIgnoreTimeDilation = bIgnoreTimeDilationDuringFading;
+	CameraConfigFadingDescription.bOverrideCameraInput = bOverrideCameraInput;
+
+	if (CameraConfigFadingDescription.bOverrideCameraInput)
+	{
+		SetArmPitchInputEnabled(false);
+		SetArmYawInputEnabled(false);
+	}
 }

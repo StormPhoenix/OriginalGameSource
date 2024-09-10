@@ -145,12 +145,12 @@ bool UJoyCameraModifierController::IsModifiedAndNeedUpdate() const
 
 void UJoyCameraModifierController::UpdateInternal(float InDeltaSeconds)
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		return;
 	}
 
-	const float DeltaTime = bIgnoreTimeDilation ? PCM->DeltaTimeThisFrame_IgnoreTimeDilation : PCM->DeltaTimeThisFrame;
+	const float DeltaTime = bIgnoreTimeDilation ? CameraManager->DeltaTimeThisFrame_IgnoreTimeDilation : CameraManager->DeltaTimeThisFrame;
 	Super::UpdateInternal(DeltaTime);
 
 	if (ModifiedViewTarget.Get() == nullptr)
@@ -164,7 +164,7 @@ void UJoyCameraModifierController::UpdateInternal(float InDeltaSeconds)
 		ExternalDependencyCameraData.UpdateCameraData(ModifiedViewTarget->GetActorRotation().Quaternion());
 	}
 
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		return;
 	}
@@ -178,7 +178,7 @@ void UJoyCameraModifierController::UpdateInternal(float InDeltaSeconds)
 
 void UJoyCameraModifierController::UpdateModifyFadeOut(float DeltaSeconds)
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("UpdateModifyFadeOut: PCM is null"));
 		return;
@@ -195,7 +195,7 @@ void UJoyCameraModifierController::UpdateModifyFadeOut(float DeltaSeconds)
 		return;
 	}
 
-	FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	if (ModifyFadeOutData.bModifyArmLength)
 	{
 		// 如果修改了弹簧臂
@@ -398,12 +398,12 @@ void UJoyCameraModifierController::ApplyCameraModify_Immediately(const FCameraMo
 
 	constexpr float ElapsedTime = 1.;
 	UpdateInternal(ElapsedTime);
-	if (PCM != nullptr)
+	if (CameraManager != nullptr)
 	{
 		// 强制将 DesiredCamera 同步到 CurrentCamera
-		FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+		FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 		TargetCameraInfo.CurrentCamera.CopyCamera(TargetCameraInfo.DesiredCamera);
-		PCM->UpdateActorTransform(1.);
+		CameraManager->UpdateActorTransform(1.);
 	}
 	EndModify();
 	ResetViewTarget();
@@ -417,7 +417,7 @@ FCameraModifyHandle UJoyCameraModifierController::GetLastModifierHandle() const
 FCameraModifyHandle UJoyCameraModifierController::ApplyCameraModify(float Duration, float BlendInTime,
 	float BlendOutTime, FCameraModifiers const& InCameraModifiers, bool bNeedManualBreak)
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("ApplyCameraModify: PCM is null"));
 		return FCameraModifyHandle(0);
@@ -433,7 +433,7 @@ FCameraModifyHandle UJoyCameraModifierController::ApplyCameraModify(float Durati
 	EndModify();
 	CurrentCameraModifySpec.Clear();
 
-	FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	TargetCameraInfo.LastCamera.CopyCamera(TargetCameraInfo.CurrentCamera);
 	TargetCameraInfo.RestoreCamera.CopyCamera(TargetCameraInfo.CurrentCamera);
 	MakeRestoreCameraData(TargetCameraInfo.RestoreCamera);
@@ -466,14 +466,14 @@ FCameraModifyHandle UJoyCameraModifierController::ApplyCameraModify(float Durati
 		if (IsCameraRotationModified())
 		{
 			// 锁定镜头旋转输入
-			PCM->SetArmPitchInputEnabled(false);
-			PCM->SetArmYawInputEnabled(false);
+			CameraManager->SetArmPitchInputEnabled(false);
+			CameraManager->SetArmYawInputEnabled(false);
 		}
 
 		if (bNeedModifyAdditionalArmLength || CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.bModified)
 		{
 			// 锁定相机臂长修改
-			PCM->SetArmLengthInputEnabled(false);
+			CameraManager->SetArmLengthInputEnabled(false);
 		}
 
 		// 锁定角色切换
@@ -539,7 +539,7 @@ void UJoyCameraModifierController::StartModifyFadeOut()
 	ModifyFadeOutData.bModifyFov = bNeedModifyFov;
 	if (ModifyFadeOutData.bModifyFov)
 	{
-		ModifyFadeOutData.Fov = PCM->GetBaseCameraFov();
+		ModifyFadeOutData.Fov = CameraManager->GetBaseCameraFov();
 	}
 
 	ModifyFadeOutData.bModifyArmOffset =
@@ -590,13 +590,13 @@ void UJoyCameraModifierController::EndModify()
 		// 恢复输入输出的禁用
 		if (IsCameraRotationModified())
 		{
-			PCM->SetArmPitchInputEnabled(true);
-			PCM->SetArmYawInputEnabled(true);
+			CameraManager->SetArmPitchInputEnabled(true);
+			CameraManager->SetArmYawInputEnabled(true);
 		}
 
 		if (bNeedModifyAdditionalArmLength || CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.bModified)
 		{
-			PCM->SetArmLengthInputEnabled(true);
+			CameraManager->SetArmLengthInputEnabled(true);
 		}
 
 		// 恢复角色切换
@@ -628,9 +628,9 @@ void UJoyCameraModifierController::EndModify()
 	// 清空依赖数据
 	ExternalDependencyCameraData.Clean();
 
-	if (PCM)
+	if (CameraManager)
 	{
-		PCM->OnCameraModifyEndDelegate.Broadcast(ModifiedViewTarget, LastModifierHandle);
+		CameraManager->OnCameraModifyEndDelegate.Broadcast(ModifiedViewTarget, LastModifierHandle);
 	}
 }
 
@@ -647,7 +647,7 @@ void UJoyCameraModifierController::BreakModifier(FCameraModifyHandle ModifyHandl
 
 void UJoyCameraModifierController::UpdateFovModifier(EBlendState State, float Alpha)
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("UpdateFovModifier: PCM is null"));
 		return;
@@ -664,7 +664,7 @@ void UJoyCameraModifierController::UpdateFovModifier(EBlendState State, float Al
 		return;
 	}
 
-	FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 
 	if (CurrentCameraModifySpec.CameraModifiers.CameraFovSettings.bCameraFovCurveControl &&
 		CurrentCameraModifySpec.CameraModifiers.CameraFovSettings.CameraFovCurve != nullptr)
@@ -704,7 +704,7 @@ void UJoyCameraModifierController::UpdateFovModifier(EBlendState State, float Al
 
 void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, float Alpha)
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("UpdateArmRotationModifier: PCM is null"));
 		return;
@@ -716,7 +716,7 @@ void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, 
 		return;
 	}
 
-	FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	if (TargetCameraInfo.bArmYaw_HasModified || TargetCameraInfo.bArmPitch_HasModified ||
 		TargetCameraInfo.bArmRoll_HasModified)
 	{
@@ -759,7 +759,7 @@ void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, 
 			 CurrentCameraModifySpec.CameraModifiers.LocalRotationSettings.bModifyRoll)
 	{
 		/** 修改相机臂旋转（角色局部坐标系） */
-		if (State == EBlendState::BlendOut || (PCM != nullptr && PCM->bMoveInput))
+		if (State == EBlendState::BlendOut || (CameraManager != nullptr && CameraManager->bMoveInput))
 		{
 			// 进入 Blend Out 状态时，锁定依赖的角色朝向数据
 			ExternalDependencyCameraData.LockPawnFaceViewQuat();
@@ -854,7 +854,7 @@ void UJoyCameraModifierController::UpdateArmRotationModifier(EBlendState State, 
 
 void UJoyCameraModifierController::UpdateLocalArmCenterOffsetModifier(EBlendState State, float Alpha) const
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("UpdateCameraOffsetModifier: PCM is null"));
 		return;
@@ -872,7 +872,7 @@ void UJoyCameraModifierController::UpdateLocalArmCenterOffsetModifier(EBlendStat
 		return;
 	}
 
-	FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	FVector TargetCameraOffset = FVector::ZeroVector;
 	if (CurrentCameraModifySpec.CameraModifiers.LocalOffsetSettings.bModified)
 	{
@@ -881,7 +881,7 @@ void UJoyCameraModifierController::UpdateLocalArmCenterOffsetModifier(EBlendStat
 	}
 	else
 	{
-		TargetCameraOffset = FVector(PCM->ArmCenterOffsetX, PCM->ArmCenterOffsetY, PCM->ArmCenterOffsetZ);
+		TargetCameraOffset = FVector(CameraManager->ArmCenterOffsetX, CameraManager->ArmCenterOffsetY, CameraManager->ArmCenterOffsetZ);
 	}
 
 	// 额外 CameraOffset
@@ -914,7 +914,7 @@ void UJoyCameraModifierController::UpdateLocalArmCenterOffsetModifier(EBlendStat
 
 void UJoyCameraModifierController::UpdateWorldArmCenterOffsetModifier(EBlendState State, float Alpha) const
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("UpdateWorldArmCenterOffsetModifier: PCM is null"));
 		return;
@@ -931,7 +931,7 @@ void UJoyCameraModifierController::UpdateWorldArmCenterOffsetModifier(EBlendStat
 		return;
 	}
 
-	FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	const FVector TargetWorldArmOffsetAdditional =
 		CurrentCameraModifySpec.CameraModifiers.WorldOffsetAdditionalSettings.WorldArmOffsetAdditional;
 	switch (State)
@@ -958,7 +958,7 @@ void UJoyCameraModifierController::UpdateWorldArmCenterOffsetModifier(EBlendStat
 
 void UJoyCameraModifierController::UpdateArmLengthModifier(EBlendState State, float Alpha)
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("UpdateArmLengthModifier: PCM is null"));
 		return;
@@ -975,7 +975,7 @@ void UJoyCameraModifierController::UpdateArmLengthModifier(EBlendState State, fl
 		return;
 	}
 
-	FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	float TargetArmLength = 0;
 	if (CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.bModified)
 	{
@@ -1010,7 +1010,7 @@ void UJoyCameraModifierController::UpdateArmLengthModifier(EBlendState State, fl
 		}
 	}
 
-	TargetArmLength = FMath::Clamp(TargetArmLength, PCM->MinArmLength, PCM->MaxArmLength);
+	TargetArmLength = FMath::Clamp(TargetArmLength, CameraManager->MinArmLength, CameraManager->MaxArmLength);
 	switch (State)
 	{
 		case EBlendState::BlendIn:
@@ -1035,7 +1035,7 @@ void UJoyCameraModifierController::UpdateArmLengthModifier(EBlendState State, fl
 
 float UJoyCameraModifierController::GetFinalFov() const
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("GetFinalFov: PCM is null"));
 		return 90;
@@ -1043,18 +1043,18 @@ float UJoyCameraModifierController::GetFinalFov() const
 
 	if (CurrentCameraModifySpec.CameraModifiers.CameraFovSettings.bReset)
 	{
-		return PCM->GetBaseCameraFov();
+		return CameraManager->GetBaseCameraFov();
 	}
 	else
 	{
-		const FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+		const FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 		return TargetCameraInfo.CurrentCamera.Fov;
 	}
 }
 
 FRotator UJoyCameraModifierController::GetFinalArmRotation()
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("GetFinalArmRotation: PCM is null"));
 		return FRotator::ZeroRotator;
@@ -1066,7 +1066,7 @@ FRotator UJoyCameraModifierController::GetFinalArmRotation()
 		return FRotator::ZeroRotator;
 	}
 
-	FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	if (CurrentCameraModifySpec.CameraModifiers.WorldRotationSettings.bModified)
 	{
 		// 修改了世界坐标系旋转，检查是否需要复位
@@ -1110,7 +1110,7 @@ FRotator UJoyCameraModifierController::GetFinalArmRotation()
 
 FVector UJoyCameraModifierController::GetFinalWorldArmOffset() const
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("GetFinalLocalArmOffset: PCM is null"));
 		return FVector::ZeroVector;
@@ -1128,13 +1128,13 @@ FVector UJoyCameraModifierController::GetFinalWorldArmOffset() const
 	}
 
 	// 不还原相机臂中心偏移
-	const FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	const FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	return TargetCameraInfo.CurrentCamera.WorldArmOffsetAdditional;
 }
 
 FVector UJoyCameraModifierController::GetFinalLocalArmOffset() const
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("GetFinalLocalArmOffset: PCM is null"));
 		return FVector::ZeroVector;
@@ -1148,17 +1148,17 @@ FVector UJoyCameraModifierController::GetFinalLocalArmOffset() const
 
 	if (CurrentCameraModifySpec.CameraModifiers.LocalOffsetSettings.bReset)
 	{
-		return PCM->GetBaseLocalArmOffset();
+		return CameraManager->GetBaseLocalArmOffset();
 	}
 
 	// 不还原相机偏移
-	const FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	const FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	return TargetCameraInfo.CurrentCamera.LocalArmCenterOffset;
 }
 
 float UJoyCameraModifierController::GetFinalArmLength() const
 {
-	if (PCM == nullptr)
+	if (CameraManager == nullptr)
 	{
 		UE_LOG(LogJoyCamera, Error, TEXT("GetFinalArmLength: PCM is null"));
 		return 0;
@@ -1173,22 +1173,22 @@ float UJoyCameraModifierController::GetFinalArmLength() const
 	if (CurrentCameraModifySpec.CameraModifiers.ArmLengthSettings.bReset)
 	{
 		// 如果要还原 ArmLength，则还原到基础臂长
-		return PCM->GetBaseArmLength();
+		return CameraManager->GetBaseArmLength();
 	}
 
 	// 不还原相机臂长
-	const FViewTargetCameraInfo& TargetCameraInfo = PCM->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
+	const FViewTargetCameraInfo& TargetCameraInfo = CameraManager->MultiViewTargetCameraManager[ModifiedViewTarget.Get()];
 	return TargetCameraInfo.CurrentCamera.ArmLength;
 }
 
 void UJoyCameraModifierController::ResetViewTarget()
 {
-	if (bResetViewTarget && PCM != nullptr)
+	if (bResetViewTarget && CameraManager != nullptr)
 	{
 		if (const auto* ControlManager = UJoyCharacterControlManageSubsystem::Get(GetWorld()))
 		{
 			const AJoyCharacter* CurrentControlCharacter = ControlManager->GetCurrentControlCharacter();
-			const AActor* CurrentViewTarget = PCM->GetViewTarget();
+			const AActor* CurrentViewTarget = CameraManager->GetViewTarget();
 			if (CurrentViewTarget != CurrentControlCharacter)
 			{
 				// 需要复原 ViewTarget，为了保证复原过程中方向不变，需要重置 Controller 方向
@@ -1203,7 +1203,7 @@ void UJoyCameraModifierController::ResetViewTarget()
 					JoyPlayerController->SetControlRotation(FrozenView.Rotation);
 				}
 
-				PCM->ResetCameraToPlayer(TimeToResetViewTarget);
+				CameraManager->ResetCameraToPlayer(TimeToResetViewTarget);
 			}
 		}
 

@@ -40,7 +40,7 @@ protected:
 	virtual void UpdateDeactivateInternal(float DeltaSeconds);
 
 	UPROPERTY()
-	TObjectPtr<class AJoyPlayerCameraManager> PCM;
+	TObjectPtr<class AJoyPlayerCameraManager> CameraManager;
 
 	bool bIsActive = true;
 };

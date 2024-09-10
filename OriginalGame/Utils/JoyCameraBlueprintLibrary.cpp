@@ -5,8 +5,10 @@
 #include "Camera/JoyCameraComponent.h"
 #include "Camera/JoyPlayerCameraManager.h"
 #include "JoyGameBlueprintLibrary.h"
+#include "Camera/JoyCameraData.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/JoyPlayerController.h"
+#include "Settings/JoyGlobalGameSettings.h"
 
 void UJoyCameraBlueprintLibrary::ApplyCameraSettings_Immediately(
 	AActor* OwnerActor, FCameraModifiers const& CameraModifiers)
@@ -150,4 +152,12 @@ AJoyPlayerCameraManager* UJoyCameraBlueprintLibrary::GetJoyPlayerCameraManager(c
 	}
 
 	return nullptr;
+}
+
+void UJoyCameraBlueprintLibrary::GetCameraConfigMap(UObject const* WorldContextObject, TMap<FName, FJoyCameraConfigTable>& ConfigMapRef)
+{
+	if (UJoyCameraData const* CameraDataConfig = UJoyGlobalGameSettings::GetCameraDataConfig(WorldContextObject))
+	{
+		ConfigMapRef = CameraDataConfig->CacheCameraConfigs;
+	}	
 }

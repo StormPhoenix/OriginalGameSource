@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Camera/PlayerCameraManager.h"
-#include "Controller/JoyCameraModifierController.h"
+#include "Camera/Controller/JoyCameraMeta.h"
+#include "Camera/Controller/JoyCameraModifierController.h"
 #include "Input/JoyInputBlocker.h"
 
 #include "JoyPlayerCameraManager.generated.h"
@@ -12,6 +13,9 @@ class AJoyCharacter;
 class FDebugDisplayInfo;
 class UCanvas;
 class UObject;
+class UJoyCameraComponent;
+class UJoyCameraConfigController;
+class UJoyCameraInputController;
 class UJoyCameraModifierController;
 
 #define JOY_CAMERA_DEFAULT_FOV (80.0f)
@@ -38,9 +42,6 @@ struct FVirtualCamera
 {
 	GENERATED_BODY()
 
-	/**
-	 * 相机臂中心偏移 (世界坐标系)
-	 */
 	UPROPERTY()
 	FVector ArmCenterOffset = FVector::ZeroVector;
 
@@ -55,9 +56,6 @@ struct FVirtualCamera
 
 	FVirtualCamera& operator=(const FVirtualCamera& Other);
 
-	/**
-	 * 相机臂中心偏移 (局部坐标系)
-	 */
 	UPROPERTY(DisplayName = "设置相机额外偏移(局部空间)")
 	FVector LocalArmCenterOffset = FVector::ZeroVector;
 
@@ -67,9 +65,6 @@ struct FVirtualCamera
 	UPROPERTY()
 	float Fov = 0;
 
-	/**
-	 * 相机臂中心旋转
-	 */
 	UPROPERTY()
 	FRotator ArmCenterRotation = FRotator::ZeroRotator;
 
@@ -149,20 +144,35 @@ struct FViewTargetCameraInfo
 };
 
 USTRUCT()
+struct FCameraConfigDescription
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FName> CameraStack{};
+
+	UPROPERTY()
+	bool bForceUpdateCameraConfigSet{true};
+
+	UPROPERTY()
+	FName FadeOutCamera{};
+};
+
+USTRUCT()
 struct FMultiViewTargetCameraManager
 {
 	GENERATED_BODY()
 
 	TObjectPtr<class UJoyCameraModifierController> GetCameraModifier(AActor* InViewTarget);
 
-	bool ContainsViewTarget(AActor* InViewTarget) const;
+	bool ContainsViewTarget(const AActor* InViewTarget) const;
 
-	FViewTargetCameraInfo& operator[](AActor* InViewTarget)
+	FViewTargetCameraInfo& operator[](const AActor* InViewTarget)
 	{
 		return ViewTargetCameraInfos[InViewTarget];
 	}
 
-	const FViewTargetCameraInfo& operator[](AActor* InViewTarget) const
+	const FViewTargetCameraInfo& operator[](const AActor* InViewTarget) const
 	{
 		return ViewTargetCameraInfos[InViewTarget];
 	}
@@ -175,7 +185,7 @@ struct FMultiViewTargetCameraManager
 };
 
 USTRUCT()
-struct FCameraConfigFadingSpecifier
+struct FCameraConfigFadingDescription
 {
 	GENERATED_BODY()
 
@@ -196,15 +206,15 @@ struct FCameraConfigFadingSpecifier
 };
 
 USTRUCT()
-struct FInputOverrideSpec
+struct FInputOverrideDescription
 {
 	GENERATED_BODY()
 
-	bool bBlockArmPitch{false};
+	int BlockArmPitchCounter{0};
 
-	bool bBlockArmYaw{false};
+	int BlockArmYawCounter{0};
 
-	bool bBlockArmLength{false};
+	int BlockArmLengthCounter{0};
 };
 
 /**
@@ -218,6 +228,8 @@ class ORIGINALGAME_API AJoyPlayerCameraManager : public APlayerCameraManager, pu
 	GENERATED_BODY()
 
 	friend class UJoyCameraModifierController;
+	friend class UJoyCameraConfigController;
+	friend class UJoyCameraInputController;
 
 public:
 	virtual bool BlockMoveInput_Implementation(
@@ -250,52 +262,35 @@ public:
 	void SetArmLengthInputEnabled(bool bEnabled);
 
 	// @TODO 此处配置挪动到资产中
-	UPROPERTY(EditAnywhere, Category = "Joy|CameraMovement", DisplayName = "相机垂直运动方向参数 a")
+	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "相机垂直运动方向参数 a")
 	float MaxHeightParam_A = 0.5;
 
-	UPROPERTY(EditAnywhere, Category = "Joy|CameraMovement", DisplayName = "相机垂直运动方向参数 b")
+	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "相机垂直运动方向参数 b")
 	float MaxHeightParam_B = 10;
 
-	UPROPERTY(EditAnywhere, Category = "Joy|CameraMovement", DisplayName = "相机垂直运动最大高度 h")
+	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "相机垂直运动最大高度 h")
 	float MaxHeightParam_C = 500;
 
-	UPROPERTY(EditAnywhere, Category = "Joy|CameraMovement", DisplayName = "相机水平运动方向参数 a")
+	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "相机水平运动方向参数 a")
 	float MaxXYOffsetParam_A = 0.5;
 
-	UPROPERTY(EditAnywhere, Category = "Joy|CameraMovement", DisplayName = "相机水平运动方向参数 b")
+	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "相机水平运动方向参数 b")
 	float MaxXYOffsetParam_B = 10;
 
-	UPROPERTY(EditAnywhere, Category = "Joy|CameraMovement", DisplayName = "相机水平运动最大偏移 w")
+	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "相机水平运动最大偏移 w")
 	float MaxXYOffsetParam_C = 300;
 
-	UPROPERTY(EditAnywhere, Category = "Joy|CameraMovement", DisplayName = "战斗状态下，相机开始水平时的阈值")
+	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "战斗状态下，相机开始水平时的阈值")
 	float ThresholdWhenOffsetBegin = 135;
 
-	UPROPERTY(EditAnywhere, Category = "Joy|CameraMovement", DisplayName = "相机 Pitch 参数 a")
+	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "相机 Pitch 参数 a")
 	float PitchParam_A = 0.01;
 
-	UPROPERTY(EditAnywhere, Category = "Joy|CameraMovement", DisplayName = "相机 Pitch 参数 b")
+	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "相机 Pitch 参数 b")
 	float PitchParam_B = 3;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Joy|Camera")
-	bool bUseCameraFollowMovement{false};
-
-	UPROPERTY(BlueprintReadOnly, Category = "Joy|Camera")
-	bool bUseCameraAttaching{false};
-
-	UPROPERTY(BlueprintReadOnly, Category = "Joy|Camera")
-	bool bBlockDeviceInputOnCameraFollowing{false};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Joy|Camera|Lag")
 	bool bEnableCameraRotLag = true;
-
-	// @TODO 删除
-	UPROPERTY(BlueprintReadWrite, Category = "Joy|Camera|Lag")
-	bool bEnableCameraSecondaryRotLag = false;
-
-	// @TODO 删除
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Joy|Camera|Lag")
-	FVector2f CameraSecondaryRotLagRange{1.0f};
 
 	/**
 	 * If true and camera location lag is enabled, draws markers at the camera
@@ -364,7 +359,7 @@ public:
 	 */
 	float GetCurrentArmLength(AActor* InViewTarget) const;
 
-	FViewTargetCameraInfo* GetViewTargetCameraInfo(AActor* InViewTarget);
+	FViewTargetCameraInfo* GetViewTargetCameraInfo(const AActor* InViewTarget);
 
 	/**
 	 * 获取当前相机 Fov
@@ -399,10 +394,20 @@ protected:
 
 	virtual void UpdateViewTarget(FTViewTarget& OutVT, float DeltaTime) override;
 
+	void SetConfigs(const TMap<EJoyCameraBasic, float>& Config);
+
+	void ApplyConfig();
+
+	void StartFade(float InFadeDuration, bool bFadeArmLengthRange, bool bInFadeArmLength, bool bInFadeArmRotationPitch,
+		bool bInFadeArmRotationYaw, bool bInFadeLocalArmCenterOffset, bool bInFadeFov,
+		bool bIgnoreTimeDilationDuringFading = true, bool bOverrideCameraInput = false);
+
 public:
 	EJoyCameraBlendType BlendViewType = EJoyCameraBlendType::Default;
 
 	EJoyCameraBlendType GetBlendViewType() const;
+
+	const FCameraConfigDescription& GetCameraConfigDescription() const;
 
 	void SetBlendViewType(EJoyCameraBlendType InBlendViewWay);
 
@@ -418,27 +423,32 @@ public:
 
 	float GetArmCenterLagRecoverSpeed() const
 	{
-		return ArmCenterLagRecoverSpeed_OnMove;
+		return ArmCenterLagRecoverSpeed;
 	}
 
 	float GetArmRotatorLagRecoverSpeed() const
 	{
-		return ArmRotatorLagRecoverSpeed_OnMove;
+		return ArmRotationLagRecoverSpeed;
 	}
 
 	float GetArmCenterLagMaxDistanceXY() const
 	{
-		return ArmCenterLagMaxDistanceXY_OnMove;
+		return ArmCenterLagMaxHorizontalDistance;
 	}
 
 	float GetArmCenterLagMaxDistanceZ() const
 	{
-		return ArmCenterLagMaxDistanceZ_OnMove;
+		return ArmCenterLagMaxVerticalDistance;
 	}
 
 	float GetArmCenterSwitchTime() const
 	{
-		return ArmCenterFadeTime;
+		return ViewTargetSwitchTime;
+	}
+
+	bool CameraLagEnable() const
+	{
+		return bEnableCameraLag;
 	}
 
 	UJoyCameraModifierController* GetCameraModifier(AActor* InActor);
@@ -463,7 +473,7 @@ protected:
 private:
 	/** ****************** Camera Configs Begin ****************** */
 	// 相机基础臂长
-	float BasicArmLength = 350;
+	float BaseArmLength = 350;
 	// 最小相机臂长
 	float MinArmLength = 50;
 	// 最大相机臂长
@@ -471,49 +481,28 @@ private:
 	// 相机叠加臂长
 	float OverlayArmLength = 0;
 	// 相机 FOV
-	float BasicFov = 90;
+	float BaseFov = 90;
 	// 相机偏移
-	float ArmCenterOffsetX = 0;
-	float ArmCenterOffsetY = 0;
-	float ArmCenterOffsetZ = 0;
+	float ArmCenterOffsetX{0};
+
+	float ArmCenterOffsetY{0};
+
+	float ArmCenterOffsetZ{0};
+
 	// 相机臂中心切换过度时间
-	float ArmCenterFadeTime = 1.0;
+	float ViewTargetSwitchTime{1.0};
 	// 角色移动时相机臂中心滞后恢复速度
-	float ArmCenterLagRecoverSpeed_OnMove = 1;
-	float ArmRotatorLagRecoverSpeed_OnMove = 1;
+	float ArmCenterLagRecoverSpeed{1.};
+	float ArmRotationLagRecoverSpeed{1.};
 	// 角色移动时相机臂中心滞后最大距离
-	float ArmCenterLagMaxDistanceXY_OnMove = 0;
-	float ArmCenterLagMaxDistanceZ_OnMove = 0;
+	float ArmCenterLagMaxHorizontalDistance{0};
+	float ArmCenterLagMaxVerticalDistance{0};
 	// 角色移动时相机臂长度回弹设置
-	float ArmMaxStretchedLength_OnMove = 300;
-	float ArmMinCompressedLength_OnMove = 100;
-	float ArmLengthRecoverFactor_OnMove = 3.0;
-	float MinArmLengthRecoverSpeed_OnMove = 30;
-	float MinArmCenterUpHeight_ATBMode_SKillIndicator = 50;
-	float MaxArmCenterUpHeight_ATBMode_SKillIndicator = 500;
-	float MinArmCenterBackLength_ATBMode_SKillIndicator = 50;
-	float MaxArmCenterBackLength_ATBMode_SKillIndicator = 500;
-	float MinSkillIndicatorParam1_ATBMode_SKillIndicator = 1;
-	float MaxSkillIndicatorParam1_ATBMode_SKillIndicator = 500;
-	float MinSkillIndicatorFocusFactor_ATBMode_SKillIndicator = 0.1;
-	float MaxSkillIndicatorFocusFactor_ATBMode_SKillIndicator = 1.0;
-	float FadeTime_ATBMode = 0.5;
 
 	float MinArmPitch = -87;
 	float MaxArmPitch = 87;
 
-	float FocusFactor_ATBMode_TargetSelector = 0.89;
-	float ViewYaw_ATBMode_TargetSelector = 25.;
-	float MaxHorizonOffset_ATBMode_TargetSelector{200};
-	float FrustumAlpha_ATBMode_TargetSelector{10.};
-	float CameraRetreatDistance_ATBMode_TargetSelector{350};
-	float FrustumPitch_ATBMode_TargetSelector{10};
-
-	float MinArmPitch_ATBMode_TargetSelector{-15};
-	float MaxArmPitch_ATBMode_TargetSelector{45};
-
-	float FovOnHitFace{30.};
-	/** ****************** Camera Configs End ****************** */
+	bool bEnableCameraLag{false};
 
 	void BlendViewFunc_Default(FMinimalViewInfo& A, FMinimalViewInfo& B, float T);
 
@@ -525,9 +514,11 @@ private:
 	void BlendViewFunc_KeepViewDirection(FMinimalViewInfo& A, FMinimalViewInfo& B, float T);
 	/** 视角混合切换 End */
 
-	FRotator GetViewTargetViewRotation(const AActor* InViewTarget) const;
+	static FRotator GetViewTargetViewRotation(const AActor* InViewTarget);
 
 	void BlendViewInfo(FMinimalViewInfo& A, FMinimalViewInfo& B, float T);
+
+	void UpdateCameraConfigs(UJoyCameraComponent* CameraComponent);
 
 	void UpdateCameraControllers(float DeltaTime);
 
@@ -543,15 +534,26 @@ private:
 
 	float ComputeTimeDilation(float DeltaTime) const;
 
-	UPROPERTY()
-	FMultiViewTargetCameraManager MultiViewTargetCameraManager{};
+	void EndCurrentCameraFadingProcess();
 
 	UPROPERTY()
-	bool bLockArmLengthWhenMoving{false};
+	TObjectPtr<UJoyCameraInputController> CameraInputController{nullptr};
+
+	UPROPERTY()
+	TObjectPtr<UJoyCameraConfigController> CameraConfigController{nullptr};
+
+	UPROPERTY()
+	FMultiViewTargetCameraManager MultiViewTargetCameraManager{};
 
 	UPROPERTY()
 	TWeakObjectPtr<UCurveFloat> BlendViewCurve{nullptr};
 
 	UPROPERTY()
-	FInputOverrideSpec InputOverrideConfig{};
+	FInputOverrideDescription InputOverrideDescription{};
+
+	UPROPERTY()
+	FCameraConfigDescription CameraConfigDescription{};
+
+	UPROPERTY()
+	FCameraConfigFadingDescription CameraConfigFadingDescription{};
 };

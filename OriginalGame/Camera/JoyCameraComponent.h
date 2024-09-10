@@ -56,6 +56,56 @@ struct FCameraData
 	}
 };
 
+USTRUCT(BlueprintType)
+struct FJoyCameraIDHandle
+{
+	GENERATED_BODY()
+
+	FJoyCameraIDHandle() = default;
+
+	explicit FJoyCameraIDHandle(int64 Seq);
+
+	friend static bool operator==(FJoyCameraIDHandle const& L, FJoyCameraIDHandle const& R)
+	{
+		return L.SequenceID == R.SequenceID;
+	}
+
+	friend static bool operator!=(FJoyCameraIDHandle const& L, FJoyCameraIDHandle const& R)
+	{
+		return L.SequenceID != R.SequenceID;
+	}
+
+	bool IsValid() const
+	{
+		return SequenceID > 0;
+	}
+
+	UPROPERTY()
+	int64 SequenceID{};
+};
+
+USTRUCT()
+struct FJoyAddCameraIDRequestCache
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FJoyCameraIDHandle Handle{};
+
+	UPROPERTY()
+	FName CameraID;
+
+	friend static bool operator==(FJoyAddCameraIDRequestCache const& L, FJoyCameraIDHandle const& R)
+	{
+		return L.Handle == R;
+	}
+
+	friend static bool operator==(FJoyCameraIDHandle const& L, FJoyAddCameraIDRequestCache const& R)
+	{
+		return L == R.Handle;
+	}
+};
+
 UCLASS(HideCategories = (Mobility, Rendering, LOD), Blueprintable, ClassGroup = Camera,
 	meta = (BlueprintSpawnableComponent))
 class ORIGINALGAME_API UJoyCameraComponent : public UCameraComponent
@@ -99,6 +149,27 @@ public:
 
 	const FMinimalViewInfo& GetFrozenView() const;
 
+	/** ========================= 相机镜头配置 ============================ */
+	UFUNCTION(BlueprintCallable, Category = "Joy|Camera")
+	FJoyCameraIDHandle PushCameraConfig(FName CameraID);
+
+	UFUNCTION(BlueprintCallable, Category = "Joy|Camera")
+	bool RemoveCameraConfig(FJoyCameraIDHandle Handler);
+
+	UFUNCTION(BlueprintCallable, Category = "Joy|Camera")
+	bool RemoveCameraConfigByID(FName CameraID);
+
+private:
+	bool bIsCameraConfigDirty{false};
+
+public:
+	TArray<FName> GetCameraIDs() const;
+
+	bool IsCameraConfigDirty() const;
+
+	void RefreshCameraConfig();
+	/** ========================= END ============================ */
+
 protected:
 	virtual void OnRegister() override;
 	virtual void GetCameraView(float DeltaTime, FMinimalViewInfo& DesiredView) override;
@@ -113,8 +184,17 @@ protected:
 
 private:
 	UPROPERTY()
+	TArray<FJoyAddCameraIDRequestCache> CameraIDRequestQueue;
+
+	UPROPERTY()
+	TSet<FName> CameraIDs;
+
+	UPROPERTY()
 	bool bCameraFrozen = false;
 
 	UPROPERTY()
 	FMinimalViewInfo FrozenCameraView;
+
+	UPROPERTY()
+	mutable int64 SequenceNumber{0};
 };

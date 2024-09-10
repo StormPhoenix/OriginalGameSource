@@ -197,6 +197,7 @@ void UJoyHeroComponent::ReceiveLookMoveInput_Implementation(
 	auto* PlayerController = UJoyGameBlueprintLibrary::GetJoyPlayerController(GetOwner());
 	if (UJoyCharacterBlueprintLibrary::CheckCharacterControlled(HeroCharacter) && PlayerController != nullptr)
 	{
+		// @TODO 此处的输入交给 CameraInputController 控制
 		if (Value.X != 0.0f)
 		{
 			PlayerController->AddYawInput(Value.X);

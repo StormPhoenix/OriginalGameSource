@@ -32,7 +32,7 @@ void UJoyCameraControllerBase::InitializeFor(AJoyPlayerCameraManager* PCMgr)
 		return;
 	}
 
-	PCM = PCMgr;
+	CameraManager = PCMgr;
 }
 
 void UJoyCameraControllerBase::Lock(UJoyCameraControllerBase* Other)
@@ -47,7 +47,7 @@ void UJoyCameraControllerBase::Unlock(UJoyCameraControllerBase* Other)
 
 AJoyPlayerCameraManager* UJoyCameraControllerBase::GetPlayerCameraManager() const
 {
-	return PCM;
+	return CameraManager;
 }
 
 void UJoyCameraControllerBase::OnEnable()
