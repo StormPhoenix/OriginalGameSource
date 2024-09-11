@@ -261,6 +261,10 @@ public:
 
 	void SetArmLengthInputEnabled(bool bEnabled);
 
+	void AddDeviceYawInput(float Val) const;
+
+	void AddDevicePitchInput(float Val) const;
+
 	// @TODO 此处配置挪动到资产中
 	UPROPERTY(EditAnywhere, Category = "Joy|Camera", DisplayName = "相机垂直运动方向参数 a")
 	float MaxHeightParam_A = 0.5;

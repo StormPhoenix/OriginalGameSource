@@ -1295,6 +1295,22 @@ void AJoyPlayerCameraManager::SetArmLengthInputEnabled(bool bEnabled)
 	InputOverrideDescription.BlockArmLengthCounter += (bEnabled ? -1 : 1);
 }
 
+void AJoyPlayerCameraManager::AddDevicePitchInput(const float Val) const
+{
+	if (CameraInputController)
+	{
+		CameraInputController->AddPitchInput(Val);
+	}
+}
+
+void AJoyPlayerCameraManager::AddDeviceYawInput(const float Val) const
+{
+	if (CameraInputController)
+	{
+		CameraInputController->AddYawInput(Val);
+	}
+}
+
 bool AJoyPlayerCameraManager::BlockLookMoveInput_Implementation(
 	UObject* InputReceiver, const FInputActionValue& InputActionValue)
 {

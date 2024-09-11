@@ -25,7 +25,7 @@ enum class EJoyCameraBasic : uint8
 
 	ArmCenterLagRecoverSpeed = 9 UMETA(DisplayName = "角色移动时相机臂中心滞后恢复速度"),
 	ArmCenterLagMaxHorizontalDistance = 10 UMETA(DisplayName = "角色移动时相机臂中心滞后最大距离(水平)"),
-	ArmCenterLagMaxVerticalDistance = 11 UMETA(DisplayName = "相机方向输入时相机旋转的滞后恢复速度"),
+	ArmCenterLagMaxVerticalDistance = 11 UMETA(DisplayName = "角色移动时相机臂中心滞后最大距离(垂直)"),
 
 	MinArmPitch = 12 UMETA(DisplayName = "相机臂最小 Pitch"),
 	MaxArmPitch = 13 UMETA(DisplayName = "相机臂最大 Pitch"),

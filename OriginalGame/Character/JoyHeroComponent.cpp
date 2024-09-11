@@ -194,18 +194,18 @@ void UJoyHeroComponent::ReceiveLookMoveInput_Implementation(
 	const FVector2D Value = InputActionValue.Get<FVector2D>();
 	auto* HeroCharacter = Cast<AJoyHeroCharacter>(GetOwner());
 
-	auto* PlayerController = UJoyGameBlueprintLibrary::GetJoyPlayerController(GetOwner());
-	if (UJoyCharacterBlueprintLibrary::CheckCharacterControlled(HeroCharacter) && PlayerController != nullptr)
+	auto* PlayerCameraManager = UJoyCameraBlueprintLibrary::GetJoyPlayerCameraManager(GetOwner());
+	if (UJoyCharacterBlueprintLibrary::CheckCharacterControlled(HeroCharacter) && PlayerCameraManager != nullptr)
 	{
 		// @TODO 此处的输入交给 CameraInputController 控制
 		if (Value.X != 0.0f)
 		{
-			PlayerController->AddYawInput(Value.X);
+			PlayerCameraManager->AddDeviceYawInput(Value.X);
 		}
 
 		if (Value.Y != 0.0f)
 		{
-			PlayerController->AddPitchInput(Value.Y);
+			PlayerCameraManager->AddDevicePitchInput(Value.Y);
 		}
 	}
 }
