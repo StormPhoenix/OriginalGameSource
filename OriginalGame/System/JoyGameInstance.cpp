@@ -6,12 +6,23 @@
 #include "JoyGameplayTags.h"
 #include "Player/JoyPlayerController.h"
 #include "GameFramework/PlayerState.h"
+#include "..\TypeScript\JoyTypeScriptGameInstanceSystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(JoyGameInstance)
 
 UJoyGameInstance::UJoyGameInstance(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+}
+
+void UJoyGameInstance::OnStart()
+{
+	if (auto* TsSystem = UJoyTypeScriptGameInstanceSystem::Get(GetWorld()))
+	{
+		TsSystem->Start();
+	}
+
+	Super::OnStart();
 }
 
 void UJoyGameInstance::Init()

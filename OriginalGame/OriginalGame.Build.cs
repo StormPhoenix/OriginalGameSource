@@ -23,7 +23,8 @@ public class OriginalGame : ModuleRules
 			"AIModule",
 			"GameplayAbilities",
 			"CommonGame",
-			"GameplayTags"
+			"GameplayTags",
+			"JsEnv"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
@@ -42,7 +43,7 @@ public class OriginalGame : ModuleRules
 			"Slate",
 			"EnhancedInput",
 			"RHI",
-			"UMG"
+			"UMG", "Puerts"
 		});
 
 		if (Target.bBuildEditor)
